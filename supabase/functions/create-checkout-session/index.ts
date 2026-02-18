@@ -14,7 +14,7 @@ Deno.serve(async (req) => {
   try {
     // Verify JWT
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
+    if (!authHeader?.startsWith('Bearer ')) {
       return new Response(JSON.stringify({ error: 'Missing auth' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -26,16 +26,17 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_ANON_KEY')!,
     );
 
-    const { data: { user }, error: userError } = await supabase.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    );
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
 
-    if (userError || !user) {
+    if (claimsError || !claimsData?.claims) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    const userId = claimsData.claims.sub;
 
     const { pot_id, amount_cents } = await req.json();
 
@@ -50,7 +51,7 @@ Deno.serve(async (req) => {
       apiVersion: '2024-06-20',
     });
 
-    const origin = req.headers.get('origin') ?? 'https://qaecrbkoaefwirzybtjn.supabase.co';
+    const origin = req.headers.get('origin') ?? 'https://id-preview--59da60b6-faa4-4fa4-890f-0b571d3b5fa7.lovable.app';
 
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
@@ -59,14 +60,14 @@ Deno.serve(async (req) => {
           price_data: {
             currency: 'eur',
             unit_amount: amount_cents,
-            product_data: { name: `Monto Pot Contribution` },
+            product_data: { name: 'Monto Pot Contribution' },
           },
           quantity: 1,
         },
       ],
       metadata: {
         pot_id,
-        user_id: user.id,
+        user_id: userId,
       },
       success_url: `${origin}/pots/${pot_id}?success=true`,
       cancel_url: `${origin}/pots/${pot_id}`,
