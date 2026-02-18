@@ -1,20 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, ChevronRight, Bell, Settings } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { Bell, Settings, ChevronRight, Droplets, CircleDot, PieChart, Fuel, Plane } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile, usePots } from '@/hooks/usePots';
-import { useQueryClient } from '@tanstack/react-query';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
+import CreatePotModal from '@/components/CreatePotModal';
 
 function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat('en-IE', {
@@ -24,64 +13,76 @@ function formatCurrency(amount: number, currency: string) {
   }).format(amount);
 }
 
+// Liquid Bubble SVG visual (default pot style)
+function LiquidBubble({ balance, goal }: { balance: number; goal?: number | null }) {
+  const pct = goal && goal > 0 ? Math.min(balance / goal, 1) : 0;
+  const r = 22;
+  const cx = 28;
+  const cy = 28;
+  const circumference = 2 * Math.PI * r;
+  return (
+    <div className="relative w-14 h-14 flex-shrink-0">
+      <svg width={56} height={56} viewBox="0 0 56 56">
+        <defs>
+          <linearGradient id="bubbleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="hsl(221,83%,68%)" />
+            <stop offset="100%" stopColor="hsl(221,83%,45%)" />
+          </linearGradient>
+        </defs>
+        {/* Track */}
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="hsl(214,32%,91%)" strokeWidth={5} />
+        {/* Fill arc */}
+        <circle
+          cx={cx} cy={cy} r={r}
+          fill="none"
+          stroke="url(#bubbleGrad)"
+          strokeWidth={5}
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={circumference * (1 - pct)}
+          transform={`rotate(-90 ${cx} ${cy})`}
+        />
+        {/* Center blob */}
+        <circle cx={cx} cy={cy} r={14} fill="hsl(221,83%,96%)" />
+        <text x={cx} y={cy + 1} textAnchor="middle" dominantBaseline="middle" fontSize="8" fontWeight="700" fill="hsl(221,83%,45%)">
+          {Math.round(pct * 100)}%
+        </text>
+      </svg>
+    </div>
+  );
+}
+
+function VisualIcon({ style }: { style: string }) {
+  switch (style) {
+    case 'progress_ring': return <CircleDot size={20} className="text-primary" />;
+    case 'cake_slice': return <PieChart size={20} className="text-primary" />;
+    case 'fuel_tank': return <Fuel size={20} className="text-primary" />;
+    case 'flight_progress': return <Plane size={20} className="text-primary" />;
+    default: return null;
+  }
+}
+
 export default function MyPots() {
-  const { user, signOut } = useAuth();
+  const { signOut } = useAuth();
   const { data: profile } = useProfile();
   const { data: pots, isLoading } = usePots();
   const [showCreate, setShowCreate] = useState(false);
-  const [potName, setPotName] = useState('');
-  const [creating, setCreating] = useState(false);
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-
-  const handleCreatePot = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) return;
-    setCreating(true);
-
-    const { data: pot, error } = await supabase
-      .from('pots')
-      .insert({ name: potName.trim(), created_by: user.id })
-      .select()
-      .single();
-
-    if (error || !pot) {
-      setCreating(false);
-      toast({ title: 'Error', description: error?.message ?? 'Could not create pot.', variant: 'destructive' });
-      return;
-    }
-
-    // Insert creator as member
-    const { error: memberError } = await supabase
-      .from('pot_members')
-      .insert({ pot_id: pot.id, user_id: user.id, role: 'creator' });
-
-    setCreating(false);
-    if (memberError) {
-      toast({ title: 'Error', description: memberError.message, variant: 'destructive' });
-      return;
-    }
-
-    setPotName('');
-    setShowCreate(false);
-    queryClient.invalidateQueries({ queryKey: ['pots'] });
-    toast({ title: 'Pot created!', description: `"${pot.name}" is ready.` });
-    navigate(`/pots/${pot.id}`);
-  };
 
   return (
-    <div className="min-h-screen bg-surface">
+    <div className="min-h-screen" style={{ background: 'hsl(220,20%,97%)' }}>
       {/* Header */}
-      <div className="bg-card border-b border-border sticky top-0 z-10">
-        <div className="max-w-lg mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-foreground">My Pots</h1>
-            <p className="text-sm text-muted-foreground">
-              Welcome back, {profile?.first_name ?? '…'}
-            </p>
+      <div className="bg-card border-b border-border sticky top-0 z-20">
+        <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
+          {/* Avatar + title */}
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center shadow-pill">
+              <span className="text-primary-foreground font-bold text-sm">M</span>
+            </div>
+            <span className="font-bold text-foreground text-base">My Pots</span>
           </div>
-          <div className="flex items-center gap-2">
+          {/* Right icons */}
+          <div className="flex items-center gap-1">
             <button className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:bg-secondary transition-colors">
               <Bell size={18} />
             </button>
@@ -95,19 +96,26 @@ export default function MyPots() {
         </div>
       </div>
 
-      {/* Content */}
-      <div className="max-w-lg mx-auto px-4 py-6">
+      <div className="max-w-lg mx-auto px-4 pt-7 pb-24">
+        {/* Welcome heading */}
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-foreground">
+            Welcome back, {profile?.first_name ?? '…'} 👋
+          </h1>
+          <p className="text-sm text-muted-foreground mt-0.5">Here are your savings pots</p>
+        </div>
+
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
         ) : !pots || pots.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mx-auto mb-4">
-              <Plus size={28} className="text-muted-foreground" />
+          <div className="bg-card rounded-2xl border border-border p-10 text-center shadow-card">
+            <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center mx-auto mb-4">
+              <Droplets size={28} className="text-primary" />
             </div>
             <h2 className="font-semibold text-foreground mb-1">No pots yet</h2>
-            <p className="text-sm text-muted-foreground">Create your first savings pot to get started.</p>
+            <p className="text-sm text-muted-foreground">Tap the + button to create your first savings pot.</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -115,30 +123,34 @@ export default function MyPots() {
               <button
                 key={pot.id}
                 onClick={() => navigate(`/pots/${pot.id}`)}
-                className="w-full bg-card rounded-2xl shadow-card hover:shadow-card-hover border border-border p-4 flex items-center gap-4 text-left transition-all duration-150 active:scale-[0.99]"
+                className="w-full bg-card rounded-2xl border border-border shadow-card hover:shadow-card-hover p-4 flex items-center gap-4 text-left transition-all duration-150 active:scale-[0.99] group"
               >
-                {/* Avatar */}
-                <div className="w-12 h-12 rounded-full border-2 border-border bg-surface flex-shrink-0" />
+                {/* Liquid bubble visual */}
+                <LiquidBubble balance={pot.balance ?? 0} goal={pot.goal_amount} />
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-foreground truncate">{pot.name}</span>
-                    <span className="flex-shrink-0 text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 font-medium">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span className="font-bold text-foreground truncate text-[15px]">{pot.name}</span>
+                    <span className="flex-shrink-0 text-[11px] px-2 py-0.5 rounded-full bg-accent text-primary font-semibold border border-primary/20">
                       {pot.role === 'creator' ? 'Creator' : 'Member'}
                     </span>
                   </div>
-                  <div className="text-xs text-muted-foreground mt-0.5">
+                  <div className="text-xs text-muted-foreground">
                     {pot.memberCount} {pot.memberCount === 1 ? 'member' : 'members'}
                   </div>
-                  <div className="text-primary font-bold mt-1">
+                  <div className="text-primary font-bold text-base mt-1">
                     {formatCurrency(pot.balance ?? 0, pot.currency ?? 'EUR')}
                   </div>
-                  <div className="text-xs text-muted-foreground">0% left</div>
                 </div>
 
+                {/* Visual style icon */}
+                {pot.visual_style && pot.visual_style !== 'liquid_bubble' && (
+                  <VisualIcon style={pot.visual_style} />
+                )}
+
                 {/* Arrow */}
-                <ChevronRight size={18} className="text-muted-foreground flex-shrink-0" />
+                <ChevronRight size={18} className="text-muted-foreground flex-shrink-0 group-hover:text-primary transition-colors" />
               </button>
             ))}
           </div>
@@ -148,47 +160,14 @@ export default function MyPots() {
       {/* Floating + button */}
       <button
         onClick={() => setShowCreate(true)}
-        className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-primary shadow-modal flex items-center justify-center text-primary-foreground hover:bg-primary/90 transition-colors active:scale-95"
+        className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-primary shadow-modal flex items-center justify-center text-primary-foreground hover:bg-primary/90 transition-all duration-150 active:scale-95 text-2xl font-light"
         aria-label="Create pot"
+        style={{ boxShadow: '0 8px 24px rgba(37,99,235,0.35)' }}
       >
-        <Plus size={24} />
+        +
       </button>
 
-      {/* Create Pot Modal */}
-      <Dialog open={showCreate} onOpenChange={setShowCreate}>
-        <DialogContent className="max-w-sm rounded-2xl">
-          <DialogHeader>
-            <DialogTitle>Create a new pot</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleCreatePot} className="space-y-4 mt-2">
-            <div className="space-y-1.5">
-              <Label htmlFor="potName">Pot name</Label>
-              <Input
-                id="potName"
-                placeholder="e.g. Holiday Fund"
-                value={potName}
-                onChange={(e) => setPotName(e.target.value)}
-                required
-                className="h-11"
-                autoFocus
-              />
-            </div>
-            <div className="flex gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                className="flex-1"
-                onClick={() => setShowCreate(false)}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" className="flex-1" disabled={creating || !potName.trim()}>
-                {creating ? 'Creating…' : 'Create pot'}
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <CreatePotModal open={showCreate} onOpenChange={setShowCreate} />
     </div>
   );
 }

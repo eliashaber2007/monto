@@ -59,24 +59,42 @@ export type Database = {
           created_at: string
           created_by: string
           currency: string
+          goal_amount: number | null
           id: string
           name: string
+          receipt_window_days: number
+          require_receipt: boolean
+          visual_style: string
+          withdrawal_password: string | null
+          withdrawal_rule: string
         }
         Insert: {
           balance?: number
           created_at?: string
           created_by: string
           currency?: string
+          goal_amount?: number | null
           id?: string
           name: string
+          receipt_window_days?: number
+          require_receipt?: boolean
+          visual_style?: string
+          withdrawal_password?: string | null
+          withdrawal_rule?: string
         }
         Update: {
           balance?: number
           created_at?: string
           created_by?: string
           currency?: string
+          goal_amount?: number | null
           id?: string
           name?: string
+          receipt_window_days?: number
+          require_receipt?: boolean
+          visual_style?: string
+          withdrawal_password?: string | null
+          withdrawal_rule?: string
         }
         Relationships: [
           {
@@ -105,6 +123,63 @@ export type Database = {
           id?: string
         }
         Relationships: []
+      }
+      receipts: {
+        Row: {
+          created_at: string
+          deadline: string | null
+          id: string
+          image_url: string | null
+          pot_id: string
+          reviewed_at: string | null
+          reviewer_comment: string | null
+          status: string
+          submitted_at: string | null
+          transaction_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deadline?: string | null
+          id?: string
+          image_url?: string | null
+          pot_id: string
+          reviewed_at?: string | null
+          reviewer_comment?: string | null
+          status?: string
+          submitted_at?: string | null
+          transaction_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deadline?: string | null
+          id?: string
+          image_url?: string | null
+          pot_id?: string
+          reviewed_at?: string | null
+          reviewer_comment?: string | null
+          status?: string
+          submitted_at?: string | null
+          transaction_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "receipts_pot_id_fkey"
+            columns: ["pot_id"]
+            isOneToOne: false
+            referencedRelation: "pots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receipts_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       transactions: {
         Row: {
