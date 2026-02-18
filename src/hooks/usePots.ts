@@ -39,7 +39,11 @@ export function usePots() {
             balance,
             currency,
             created_at,
-            created_by
+            created_by,
+            visual_style,
+            goal_amount,
+            require_receipt,
+            withdrawal_rule
           )
         `)
         .eq('user_id', user.id)

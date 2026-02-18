@@ -69,13 +69,16 @@ export default {
       },
       borderRadius: {
         lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        md: "var(--radius-sm)",
+        sm: "calc(var(--radius-sm) - 4px)",
+        xl: "1.25rem",
+        "2xl": "1.5rem",
       },
       boxShadow: {
-        card: "0 1px 3px 0 rgba(0,0,0,0.07), 0 1px 2px -1px rgba(0,0,0,0.05)",
-        "card-hover": "0 4px 12px 0 rgba(0,0,0,0.10), 0 2px 4px -1px rgba(0,0,0,0.06)",
-        modal: "0 20px 60px -10px rgba(0,0,0,0.15)",
+        card: "0 1px 4px 0 rgba(0,0,0,0.06), 0 1px 2px -1px rgba(0,0,0,0.04)",
+        "card-hover": "0 8px 24px 0 rgba(37,99,235,0.10), 0 2px 8px -2px rgba(0,0,0,0.06)",
+        modal: "0 24px 64px -12px rgba(0,0,0,0.18)",
+        pill: "0 2px 8px 0 rgba(37,99,235,0.18)",
       },
       keyframes: {
         "accordion-down": {

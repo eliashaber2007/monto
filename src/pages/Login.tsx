@@ -26,45 +26,29 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-surface flex items-center justify-center px-4">
+    <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-primary mb-4">
-            <span className="text-primary-foreground font-bold text-lg">M</span>
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary mb-4 shadow-pill">
+            <span className="text-primary-foreground font-bold text-xl">M</span>
           </div>
           <h1 className="text-2xl font-bold text-foreground">Welcome back</h1>
           <p className="text-muted-foreground text-sm mt-1">Sign in to your Monto account</p>
         </div>
 
         {/* Card */}
-        <div className="bg-card rounded-2xl shadow-card p-6 border border-border">
+        <div className="bg-card rounded-2xl shadow-card p-6 border border-border space-y-4">
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="h-11"
-              />
+              <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="h-11 rounded-xl" />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="h-11"
-              />
+              <Input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required className="h-11 rounded-xl" />
             </div>
-            <Button type="submit" className="w-full h-11 mt-2" disabled={loading}>
+            <Button type="submit" className="w-full h-11 rounded-xl mt-2" disabled={loading}>
               {loading ? 'Signing in…' : 'Sign in'}
             </Button>
           </form>
@@ -72,9 +56,7 @@ export default function Login() {
 
         <p className="text-center text-sm text-muted-foreground mt-6">
           Don't have an account?{' '}
-          <Link to="/signup" className="text-primary font-medium hover:underline">
-            Create one
-          </Link>
+          <Link to="/signup" className="text-primary font-semibold hover:underline">Create one</Link>
         </p>
       </div>
     </div>

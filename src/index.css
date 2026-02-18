@@ -2,84 +2,63 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Monto Design System — all colors in HSL */
+/* Monto Design System — Revolut/Monzo-inspired fintech, light only */
 @layer base {
   :root {
-    /* Brand colors */
-    --primary: 221 83% 53%;           /* #2563EB */
-    --primary-foreground: 0 0% 100%;  /* white */
+    /* Brand */
+    --primary: 221 83% 53%;             /* #2563EB */
+    --primary-foreground: 0 0% 100%;
 
-    --background: 0 0% 100%;          /* #FFFFFF */
-    --foreground: 215 91% 8%;         /* #0F172A */
+    /* Page background — #F5F7FA */
+    --background: 220 20% 97%;
+    --foreground: 222 47% 11%;          /* #0F172A */
 
-    --surface: 210 40% 98%;           /* #F8FAFC */
+    /* Card / surface — pure white */
     --card: 0 0% 100%;
-    --card-foreground: 215 91% 8%;
+    --card-foreground: 222 47% 11%;
+    --surface: 220 20% 97%;
 
-    --muted: 213 27% 84%;             /* #E2E8F0 area */
-    --muted-foreground: 215 16% 47%;  /* #64748B */
+    /* Muted */
+    --muted: 214 32% 94%;
+    --muted-foreground: 215 16% 47%;    /* #64748B */
 
-    --border: 214 32% 91%;            /* #E2E8F0 */
+    /* Border & inputs */
+    --border: 214 32% 91%;
     --input: 214 32% 91%;
     --ring: 221 83% 53%;
 
+    /* Popover */
     --popover: 0 0% 100%;
-    --popover-foreground: 215 91% 8%;
+    --popover-foreground: 222 47% 11%;
 
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 215 91% 8%;
+    /* Secondary */
+    --secondary: 214 32% 94%;
+    --secondary-foreground: 222 47% 11%;
 
-    --accent: 210 40% 96%;
-    --accent-foreground: 215 91% 8%;
+    /* Accent */
+    --accent: 221 83% 96%;
+    --accent-foreground: 221 83% 35%;
 
-    --success: 142 72% 29%;           /* #16A34A */
+    /* Semantic */
+    --success: 142 71% 45%;
     --success-foreground: 0 0% 100%;
-
-    --warning: 38 92% 50%;            /* #F59E0B */
+    --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
-
-    --destructive: 0 84% 60%;         /* #EF4444 */
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --radius: 0.75rem;
+    /* Radius — 16px default, 12px for buttons/inputs */
+    --radius: 1rem;
+    --radius-sm: 0.75rem;
 
-    --sidebar-background: 210 40% 98%;
-    --sidebar-foreground: 215 91% 8%;
+    /* Sidebar (unused but required by shadcn) */
+    --sidebar-background: 220 20% 97%;
+    --sidebar-foreground: 222 47% 11%;
     --sidebar-primary: 221 83% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 40% 96%;
-    --sidebar-accent-foreground: 215 91% 8%;
+    --sidebar-accent: 214 32% 94%;
+    --sidebar-accent-foreground: 222 47% 11%;
     --sidebar-border: 214 32% 91%;
-    --sidebar-ring: 221 83% 53%;
-  }
-
-  .dark {
-    --background: 215 91% 8%;
-    --foreground: 210 40% 98%;
-    --card: 215 60% 12%;
-    --card-foreground: 210 40% 98%;
-    --popover: 215 60% 12%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 221 83% 53%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 215 32% 20%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 215 32% 20%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 215 32% 20%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62% 30%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 215 32% 20%;
-    --input: 215 32% 20%;
-    --ring: 221 83% 53%;
-    --sidebar-background: 215 60% 10%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 221 83% 53%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 215 32% 20%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 215 32% 20%;
     --sidebar-ring: 221 83% 53%;
   }
 }
@@ -94,4 +73,10 @@
     font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
+
+  /* Smooth scrollbars */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 999px; }
 }
+
