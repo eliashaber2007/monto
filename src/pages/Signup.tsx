@@ -1,58 +1,63 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Signup() {
-  const [firstName, setFirstName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [firstName, setFirstName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (password.length < 6) {
-      toast({ title: 'Password too short', description: 'Use at least 6 characters.', variant: 'destructive' });
+      toast({
+        title: "Password too short",
+        description: "Use at least 6 characters.",
+        variant: "destructive",
+      });
       return;
     }
+
     setLoading(true);
 
+    // ✅ Do NOT insert into `profiles` from the client.
+    // The database trigger creates the profiles row when auth.users is created.
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { emailRedirectTo: window.location.origin },
+      options: {
+        // Store first name in Auth metadata (raw_user_meta_data)
+        data: { first_name: firstName },
+        emailRedirectTo: window.location.origin,
+      },
     });
 
     if (error) {
       setLoading(false);
-      toast({ title: 'Sign up failed', description: error.message, variant: 'destructive' });
+      toast({ title: "Sign up failed", description: error.message, variant: "destructive" });
       return;
     }
 
-    if (data.user) {
-      // Insert profile
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({ id: data.user.id, first_name: firstName });
-
-      if (profileError) {
-        setLoading(false);
-        toast({ title: 'Profile error', description: profileError.message, variant: 'destructive' });
-        return;
-      }
-    }
-
     setLoading(false);
+
+    // Depending on your Supabase email confirmation setting,
+    // data.user may exist but session may be null.
     toast({
-      title: 'Account created!',
-      description: 'Check your email to verify your account, then sign in.',
+      title: "Account created!",
+      description: data.session
+        ? "You’re signed up. You can now sign in."
+        : "Check your email to verify your account, then sign in.",
     });
-    navigate('/login');
+
+    navigate("/login");
   };
 
   return (
@@ -70,25 +75,54 @@ export default function Signup() {
           <form onSubmit={handleSignup} className="space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="firstName">First name</Label>
-              <Input id="firstName" type="text" placeholder="Alex" value={firstName} onChange={(e) => setFirstName(e.target.value)} required className="h-11 rounded-xl" />
+              <Input
+                id="firstName"
+                type="text"
+                placeholder="Alex"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                required
+                className="h-11 rounded-xl"
+              />
             </div>
+
             <div className="space-y-1.5">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="h-11 rounded-xl" />
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="h-11 rounded-xl"
+              />
             </div>
+
             <div className="space-y-1.5">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" placeholder="Min. 6 characters" value={password} onChange={(e) => setPassword(e.target.value)} required className="h-11 rounded-xl" />
+              <Input
+                id="password"
+                type="password"
+                placeholder="Min. 6 characters"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="h-11 rounded-xl"
+              />
             </div>
+
             <Button type="submit" className="w-full h-11 rounded-xl mt-2" disabled={loading}>
-              {loading ? 'Creating account…' : 'Create account'}
+              {loading ? "Creating account…" : "Create account"}
             </Button>
           </form>
         </div>
 
         <p className="text-center text-sm text-muted-foreground mt-6">
-          Already have an account?{' '}
-          <Link to="/login" className="text-primary font-semibold hover:underline">Sign in</Link>
+          Already have an account?{" "}
+          <Link to="/login" className="text-primary font-semibold hover:underline">
+            Sign in
+          </Link>
         </p>
       </div>
     </div>
