@@ -188,7 +188,7 @@ export default function PotDetail() {
       return;
     }
     queryClient.invalidateQueries({ queryKey: ['pots'] });
-    toast({ title: 'Pot closed', description: 'The pot has been closed and is no longer active.' });
+    toast({ title: 'Pot closed', description: 'The pot has been closed and the remaining funds are being transferred to your account.' });
     navigate('/');
   };
 
@@ -443,7 +443,7 @@ export default function PotDetail() {
           <AlertDialogHeader>
             <AlertDialogTitle>Close this pot?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently close "{pot.name}". The full balance of {formatCurrency(pot.balance ?? 0, currency)} will be recorded as withdrawn to your account. The pot will no longer appear for any members.
+              This will permanently close "{pot.name}". The remaining funds of {formatCurrency(pot.balance ?? 0, currency)} will be transferred to your account. The pot will no longer appear for any members.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
