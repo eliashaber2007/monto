@@ -259,7 +259,10 @@ export default function PotDetail() {
 
         {/* Action row */}
         <div className="flex gap-3">
-          <Button className="flex-1 h-12 rounded-xl font-semibold" onClick={() => setShowAddFunds(true)}>
+          <Button variant="outline" className="flex-1 h-12 rounded-xl font-semibold border-primary text-primary hover:bg-primary/10">
+            Request Withdrawal
+          </Button>
+          <Button variant="secondary" className="flex-1 h-12 rounded-xl font-semibold bg-muted text-foreground hover:bg-muted/80" onClick={() => setShowAddFunds(true)}>
             <Plus size={16} className="mr-1" />
             Add Funds
           </Button>
@@ -368,10 +371,7 @@ export default function PotDetail() {
         </Tabs>
 
         {/* Bottom action buttons */}
-        <div className="pt-4 space-y-3">
-          <Button variant="outline" className="w-full h-12 rounded-xl font-semibold text-base">
-            Request Withdrawal
-          </Button>
+        <div className="pt-4">
           {isCreator ? (
             <Button
               variant="destructive"
