@@ -396,30 +396,25 @@ export default function PotDetail() {
 
       {/* Invite Modal */}
       <Dialog open={showInviteModal} onOpenChange={setShowInviteModal}>
-        <DialogContent className="max-w-sm rounded-2xl">
+        <DialogContent className="max-w-xs rounded-2xl border-primary/30">
           <DialogHeader>
-            <DialogTitle>Invite members to "{pot.name}"</DialogTitle>
+            <DialogTitle className="text-center text-lg">{pot.name}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 mt-2">
-            <p className="text-sm text-muted-foreground">
-              Share this link with friends to invite them to your pot.
-            </p>
-            <div className="flex items-center gap-2">
-              <div className="flex-1 bg-secondary rounded-xl px-4 py-3 text-sm text-foreground break-all font-mono">
-                {inviteLink}
-              </div>
-              <Button
-                size="icon"
-                variant={copied ? "default" : "outline"}
-                className="h-11 w-11 rounded-xl flex-shrink-0"
-                onClick={handleCopyLink}
-              >
-                {copied ? <Check size={16} /> : <Copy size={16} />}
-              </Button>
+          <div className="space-y-4 mt-1">
+            <p className="text-sm text-muted-foreground text-center">Share this invite</p>
+            <div className="rounded-xl border border-primary/30 bg-accent/50 px-4 py-3 text-sm text-foreground text-center font-mono truncate">
+              {window.location.host}/join/{id?.slice(0, 8)}…
             </div>
-            {copied && (
-              <p className="text-xs text-success font-medium">✅ Copied to clipboard!</p>
-            )}
+            <Button
+              className="w-full h-11 rounded-xl font-semibold"
+              onClick={handleCopyLink}
+            >
+              {copied ? (
+                <><Check size={16} className="mr-1.5" /> Copied!</>
+              ) : (
+                <><Copy size={16} className="mr-1.5" /> Copy Invite Link</>
+              )}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
