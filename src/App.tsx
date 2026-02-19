@@ -10,6 +10,7 @@ import Signup from "./pages/Signup";
 import MyPots from "./pages/MyPots";
 import PotDetail from "./pages/PotDetail";
 import JoinPot from "./pages/JoinPot";
+import Notifications from "./pages/Notifications";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -45,6 +46,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <JoinPot />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/notifications"
+              element={
+                <ProtectedRoute>
+                  <Notifications />
                 </ProtectedRoute>
               }
             />
