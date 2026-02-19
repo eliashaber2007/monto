@@ -43,7 +43,8 @@ export function usePots() {
             visual_style,
             goal_amount,
             require_receipt,
-            withdrawal_rule
+            withdrawal_rule,
+            status
           )
         `)
         .eq('user_id', user.id)
