@@ -91,9 +91,13 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
 
     const userId = session.user.id;
 
-    const { data: pot, error: potError } = await supabase
+    // Generate a pot ID client-side so we don't need to .select() before becoming a member
+    const potId = crypto.randomUUID();
+
+    const { error: potError } = await supabase
       .from("pots")
       .insert({
+        id: potId,
         name: potName.trim(),
         created_by: userId,
         visual_style: visualStyle,
@@ -103,11 +107,9 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
         withdrawal_password: withdrawalRule === "requires_password" ? withdrawalPassword : null,
         require_receipt: requireReceipt,
         receipt_window_days: receiptWindowDays,
-      })
-      .select()
-      .single();
+      });
 
-    if (potError || !pot) {
+    if (potError) {
       setCreating(false);
       toast({
         title: "Error creating pot",
@@ -117,6 +119,9 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
       return;
     }
 
+    const pot = { id: potId, name: potName.trim() };
+
+    // Add creator as member first — this enables SELECT access via RLS
     const { error: memberError } = await supabase
       .from("pot_members")
       .insert({ pot_id: pot.id, user_id: userId, role: "creator" });
