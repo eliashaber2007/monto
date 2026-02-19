@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Users, Plus, CheckCircle2, XCircle, Clock, Image as ImageIcon, Upload } from 'lucide-react';
+import { ArrowLeft, Users, Plus, CheckCircle2, Image as ImageIcon, Upload, X, LogOut } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePotDetail } from '@/hooks/usePots';
@@ -8,6 +8,16 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import AddFundsModal from '@/components/AddFundsModal';
 import ReceiptUploadModal from '@/components/ReceiptUploadModal';
 import ReceiptReviewModal from '@/components/ReceiptReviewModal';
@@ -43,8 +53,7 @@ function ReceiptStatusBadge({ status }: { status: string }) {
   );
 }
 
-// Liquid Bubble progress ring for detail
-function ProgressRing({ balance, goal }: { balance: number; goal?: number | null }) {
+function ProgressRing({ balance, goal, currency }: { balance: number; goal?: number | null; currency: string }) {
   const radius = 88;
   const stroke = 10;
   const norm = radius - stroke / 2;
@@ -74,10 +83,12 @@ function ProgressRing({ balance, goal }: { balance: number; goal?: number | null
         />
       </svg>
       <div className="text-center z-10">
-        <div className="text-3xl font-bold text-foreground">{formatCurrency(balance, 'EUR')}</div>
+        <div className="text-3xl font-bold text-foreground">{formatCurrency(balance, currency)}</div>
         <div className="text-xs text-muted-foreground mt-1">balance</div>
         {goal && goal > 0 && (
-          <div className="text-xs text-primary font-medium mt-0.5">{Math.round(pct * 100)}% of goal</div>
+          <div className="text-xs text-primary font-medium mt-0.5">
+            {Math.round(pct * 100)}% of {formatCurrency(goal, currency)}
+          </div>
         )}
       </div>
     </div>
@@ -92,33 +103,27 @@ export default function PotDetail() {
   const { data, isLoading, refetch } = usePotDetail(id);
   const [showAddFunds, setShowAddFunds] = useState(false);
   const [receipts, setReceipts] = useState<any[]>([]);
-  const [showUpload, setShowUpload] = useState<string | null>(null); // transactionId
-  const [showReview, setShowReview] = useState<any | null>(null);   // receipt row
+  const [showUpload, setShowUpload] = useState<string | null>(null);
+  const [showReview, setShowReview] = useState<any | null>(null);
+  const [showLeaveDialog, setShowLeaveDialog] = useState(false);
+  const [showCloseDialog, setShowCloseDialog] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+  const [closing, setClosing] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   useEffect(() => {
     const payment = searchParams.get('payment');
     if (payment === 'success') {
-      toast({
-        title: '🎉 Payment successful!',
-        description: 'Your balance will update shortly.',
-      });
-      // Refetch balance after a short delay to allow webhook to process
+      toast({ title: '🎉 Payment successful!', description: 'Your balance will update shortly.' });
       setTimeout(() => refetch(), 3000);
-      // Clean up the query param
       setSearchParams({}, { replace: true });
     } else if (payment === 'cancelled') {
-      toast({
-        title: 'Payment cancelled',
-        description: 'No funds were added.',
-        variant: 'destructive',
-      });
+      toast({ title: 'Payment cancelled', description: 'No funds were added.', variant: 'destructive' });
       setSearchParams({}, { replace: true });
     }
   }, [searchParams]);
 
-  // Realtime balance
   useEffect(() => {
     if (!id) return;
     const channel = supabase
@@ -128,16 +133,48 @@ export default function PotDetail() {
     return () => { supabase.removeChannel(channel); };
   }, [id, refetch]);
 
-  // Load receipts for this pot
   useEffect(() => {
     if (!id) return;
     supabase.from('receipts').select('*').eq('pot_id', id).order('created_at', { ascending: false })
       .then(({ data }) => setReceipts(data ?? []));
   }, [id]);
 
+  const handleLeavePot = async () => {
+    setLeaving(true);
+    const { error } = await supabase
+      .from('pot_members')
+      .delete()
+      .eq('pot_id', id!)
+      .eq('user_id', user!.id);
+    setLeaving(false);
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      return;
+    }
+    queryClient.invalidateQueries({ queryKey: ['pots'] });
+    toast({ title: 'Left pot', description: 'You have left this pot.' });
+    navigate('/');
+  };
+
+  const handleClosePot = async () => {
+    setClosing(true);
+    const { error } = await supabase
+      .from('pots')
+      .update({ status: 'closed' })
+      .eq('id', id!);
+    setClosing(false);
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      return;
+    }
+    queryClient.invalidateQueries({ queryKey: ['pots'] });
+    toast({ title: 'Pot closed', description: 'The pot has been closed and is no longer active.' });
+    navigate('/');
+  };
+
   if (isLoading || !data) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: 'hsl(220,20%,97%)' }}>
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -145,16 +182,16 @@ export default function PotDetail() {
 
   const { pot, members, transactions, myRole } = data;
   const isCreator = myRole === 'creator';
+  const currency = pot.currency ?? 'EUR';
 
-  // Map receipt by transaction id for quick lookup
   const receiptByTx: Record<string, any> = {};
   receipts.forEach(r => { if (r.transaction_id) receiptByTx[r.transaction_id] = r; });
 
   return (
-    <div className="min-h-screen pb-24" style={{ background: 'hsl(220,20%,97%)' }}>
+    <div className="min-h-screen pb-28 bg-background">
       {/* Top bar */}
       <div className="bg-card border-b border-border sticky top-0 z-10">
-        <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">
+        <div className="max-w-lg mx-auto px-5 py-4 flex items-center gap-3">
           <button
             onClick={() => navigate('/')}
             className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:bg-secondary transition-colors"
@@ -163,32 +200,43 @@ export default function PotDetail() {
           </button>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h1 className="font-bold text-foreground truncate">{pot.name}</h1>
+              <h1 className="font-bold text-foreground truncate text-lg">{pot.name}</h1>
               <span className="flex-shrink-0 text-[11px] px-2 py-0.5 rounded-full bg-accent text-primary border border-primary/20 font-semibold">
-                {myRole === 'creator' ? 'Creator' : 'Member'}
+                {isCreator ? '👑 Creator' : '👤 Member'}
               </span>
             </div>
           </div>
-          <button className="flex items-center gap-1.5 text-xs text-primary font-semibold border border-primary/30 rounded-full px-3 py-1.5 hover:bg-accent transition-colors">
-            <Users size={13} />
-            Invite
-          </button>
+          <div className="flex items-center gap-2">
+            <button className="flex items-center gap-1.5 text-xs text-primary font-semibold border border-primary/30 rounded-full px-3 py-1.5 hover:bg-accent transition-colors">
+              <Users size={13} />
+              Invite
+            </button>
+            {isCreator && (
+              <button
+                onClick={() => setShowCloseDialog(true)}
+                className="flex items-center gap-1.5 text-xs text-destructive font-semibold border border-destructive/30 rounded-full px-3 py-1.5 hover:bg-destructive/10 transition-colors"
+              >
+                <X size={13} />
+                Close
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="max-w-lg mx-auto px-4 py-6 space-y-4">
+      <div className="max-w-lg mx-auto px-5 py-8 space-y-6">
         {/* Ring + balance */}
-        <div className="bg-card rounded-2xl shadow-card border border-border p-6 text-center">
-          <ProgressRing balance={pot.balance ?? 0} goal={pot.goal_amount} />
+        <div className="bg-card rounded-2xl shadow-sm border border-border p-8 text-center">
+          <ProgressRing balance={pot.balance ?? 0} goal={pot.goal_amount} currency={currency} />
           {pot.goal_amount ? (
-            <p className="text-sm text-muted-foreground mt-3">
-              {formatCurrency(pot.balance ?? 0, pot.currency ?? 'EUR')} of {formatCurrency(pot.goal_amount, pot.currency ?? 'EUR')} goal
+            <p className="text-sm text-muted-foreground mt-4">
+              {formatCurrency(pot.balance ?? 0, currency)} of {formatCurrency(pot.goal_amount, currency)} saved
             </p>
           ) : (
-            <p className="text-sm text-muted-foreground mt-3">No goal set</p>
+            <p className="text-sm text-muted-foreground mt-4">No goal set — save as much as you like! 🎯</p>
           )}
           {pot.require_receipt && (
-            <div className="mt-2 inline-flex items-center gap-1.5 text-xs text-warning font-medium bg-warning/10 px-2.5 py-1 rounded-full border border-warning/20">
+            <div className="mt-3 inline-flex items-center gap-1.5 text-xs text-warning font-medium bg-warning/10 px-2.5 py-1 rounded-full border border-warning/20">
               <CheckCircle2 size={11} />
               Receipt verification enabled
             </div>
@@ -197,7 +245,7 @@ export default function PotDetail() {
 
         {/* Action row */}
         <div className="flex gap-3">
-          <Button variant="outline" className="flex-1 h-12 rounded-xl font-semibold" disabled>
+          <Button variant="outline" className="flex-1 h-12 rounded-xl font-semibold">
             Request Withdrawal
           </Button>
           <Button className="h-12 px-6 rounded-xl font-semibold" onClick={() => setShowAddFunds(true)}>
@@ -214,9 +262,7 @@ export default function PotDetail() {
             <TabsTrigger value="members" className="flex-1 rounded-lg text-sm">Members</TabsTrigger>
           </TabsList>
 
-          {/* ── Activity ── */}
-          <TabsContent value="activity" className="mt-4 space-y-3">
-            {/* Creation event */}
+          <TabsContent value="activity" className="mt-5 space-y-3">
             <div className="bg-card rounded-xl border border-border p-4 flex items-center gap-3">
               <div className="w-9 h-9 rounded-full bg-accent flex items-center justify-center flex-shrink-0">
                 <span className="text-base">🎉</span>
@@ -227,7 +273,6 @@ export default function PotDetail() {
               </div>
             </div>
 
-            {/* Transactions */}
             {transactions.map((tx) => {
               const receipt = receiptByTx[tx.id];
               const myTx = tx.user_id === user?.id;
@@ -241,7 +286,7 @@ export default function PotDetail() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-foreground">
-                        Added {formatCurrency(tx.amount, pot.currency ?? 'EUR')}
+                        Added {formatCurrency(tx.amount, currency)}
                       </p>
                       <p className="text-xs text-muted-foreground">{formatDate(tx.created_at)}</p>
                       {receipt && (
@@ -251,7 +296,7 @@ export default function PotDetail() {
                       )}
                     </div>
                     <div className="flex flex-col items-end gap-1.5">
-                      <span className="text-success font-bold text-sm">+{formatCurrency(tx.amount, pot.currency ?? 'EUR')}</span>
+                      <span className="text-success font-bold text-sm">+{formatCurrency(tx.amount, currency)}</span>
                       {needsReceipt && (
                         <button
                           onClick={() => setShowUpload(tx.id)}
@@ -277,25 +322,23 @@ export default function PotDetail() {
             })}
 
             {transactions.length === 0 && (
-              <div className="bg-card rounded-xl border border-border p-8 text-center">
-                <p className="text-sm text-muted-foreground">No transactions yet. Add funds to get started!</p>
+              <div className="bg-card rounded-xl border border-border p-10 text-center">
+                <p className="text-sm text-muted-foreground">No transactions yet. Add funds to get started! 💰</p>
               </div>
             )}
           </TabsContent>
 
-          {/* ── Leaderboard ── */}
-          <TabsContent value="leaderboard" className="mt-4">
-            <div className="bg-card rounded-xl border border-border p-8 text-center">
-              <p className="text-muted-foreground text-sm">Leaderboard coming soon</p>
+          <TabsContent value="leaderboard" className="mt-5">
+            <div className="bg-card rounded-xl border border-border p-10 text-center">
+              <p className="text-muted-foreground text-sm">Leaderboard coming soon 🏆</p>
             </div>
           </TabsContent>
 
-          {/* ── Members ── */}
-          <TabsContent value="members" className="mt-4 space-y-3">
+          <TabsContent value="members" className="mt-5 space-y-3">
             {members.map((m) => (
               <div key={m.id} className="bg-card rounded-xl border border-border p-4 flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center flex-shrink-0 text-primary font-bold text-sm">
-                  {m.user_id === user?.id ? 'You' : 'M'}
+                  {m.user_id === user?.id ? '🙋' : '👤'}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-foreground">
@@ -305,14 +348,72 @@ export default function PotDetail() {
                 </div>
                 {m.role === 'creator' && (
                   <span className="text-[11px] px-2 py-0.5 rounded-full bg-accent text-primary border border-primary/20 font-semibold">
-                    Creator
+                    👑 Creator
                   </span>
                 )}
               </div>
             ))}
           </TabsContent>
         </Tabs>
+
+        {/* Leave Pot button for non-creators */}
+        {!isCreator && (
+          <div className="pt-4">
+            <Button
+              variant="destructive"
+              className="w-full h-12 rounded-xl font-semibold text-base"
+              onClick={() => setShowLeaveDialog(true)}
+            >
+              <LogOut size={16} className="mr-2" />
+              Leave Pot
+            </Button>
+          </div>
+        )}
       </div>
+
+      {/* Leave Pot Dialog */}
+      <AlertDialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Leave this pot?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You will be removed from "{pot.name}" and won't be able to see it anymore. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleLeavePot}
+              disabled={leaving}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {leaving ? 'Leaving…' : 'Leave Pot'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Close Pot Dialog (Creator only) */}
+      <AlertDialog open={showCloseDialog} onOpenChange={setShowCloseDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Close this pot?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently close "{pot.name}". The full balance of {formatCurrency(pot.balance ?? 0, currency)} will be recorded as withdrawn to your account. The pot will no longer appear for any members.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleClosePot}
+              disabled={closing}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {closing ? 'Closing…' : 'Close Pot'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Modals */}
       <AddFundsModal
@@ -320,7 +421,7 @@ export default function PotDetail() {
         onOpenChange={setShowAddFunds}
         potId={id!}
         potName={pot.name}
-        currency={pot.currency ?? 'EUR'}
+        currency={currency}
       />
 
       {showUpload && (

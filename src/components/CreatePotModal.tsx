@@ -7,17 +7,18 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Droplets, CircleDot, PieChart, Fuel, Plane, ChevronLeft, Receipt, Clock } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ChevronLeft, Receipt, Clock } from "lucide-react";
 
 type VisualStyle = "liquid_bubble" | "progress_ring" | "cake_slice" | "fuel_tank" | "flight_progress";
 type WithdrawalRule = "auto_approve" | "requires_approval" | "requires_password";
 
-const VISUAL_STYLES: { id: VisualStyle; label: string; Icon: React.ElementType; desc: string }[] = [
-  { id: "liquid_bubble", label: "Liquid Bubble", Icon: Droplets, desc: "Fluid animated fill" },
-  { id: "progress_ring", label: "Progress Ring", Icon: CircleDot, desc: "Classic circular ring" },
-  { id: "cake_slice", label: "Cake Slice", Icon: PieChart, desc: "Pie chart progress" },
-  { id: "fuel_tank", label: "Fuel Tank", Icon: Fuel, desc: "Gauge-style fill" },
-  { id: "flight_progress", label: "Flight Progress", Icon: Plane, desc: "Journey tracker" },
+const VISUAL_STYLES: { id: VisualStyle; label: string; emoji: string; desc: string }[] = [
+  { id: "liquid_bubble", label: "Liquid Bubble", emoji: "💧", desc: "Fluid animated fill" },
+  { id: "progress_ring", label: "Progress Ring", emoji: "⭕", desc: "Classic circular ring" },
+  { id: "cake_slice", label: "Cake Slice", emoji: "🍰", desc: "Pie chart progress" },
+  { id: "fuel_tank", label: "Fuel Tank", emoji: "⛽", desc: "Gauge-style fill" },
+  { id: "flight_progress", label: "Flight Progress", emoji: "✈️", desc: "Journey tracker" },
 ];
 
 const WITHDRAWAL_RULES: { id: WithdrawalRule; label: string; desc: string }[] = [
@@ -25,6 +26,63 @@ const WITHDRAWAL_RULES: { id: WithdrawalRule; label: string; desc: string }[] = 
   { id: "requires_approval", label: "Requires Approval", desc: "Creator must approve each withdrawal" },
   { id: "requires_password", label: "Requires Password", desc: "Members enter a password to withdraw" },
 ];
+
+// CSS-based animations for each visual style
+function StyleAnimation({ style, selected }: { style: VisualStyle; selected: boolean }) {
+  const baseClasses = "w-12 h-12 rounded-xl flex items-center justify-center relative overflow-hidden transition-all duration-300";
+
+  if (style === "liquid_bubble") {
+    return (
+      <div className={`${baseClasses} ${selected ? 'bg-primary' : 'bg-secondary'}`}>
+        <div className={`absolute bottom-0 left-0 right-0 bg-primary/30 rounded-b-xl transition-all duration-700 ${selected ? 'h-3/4' : 'h-1/3'}`}
+          style={{ animation: 'wave 2s ease-in-out infinite' }} />
+        <span className="relative z-10 text-xl">💧</span>
+      </div>
+    );
+  }
+  if (style === "progress_ring") {
+    return (
+      <div className={`${baseClasses} ${selected ? 'bg-primary' : 'bg-secondary'}`}>
+        <svg width={28} height={28} viewBox="0 0 28 28" className="relative z-10">
+          <circle cx={14} cy={14} r={10} fill="none" stroke={selected ? 'white' : 'hsl(214,32%,85%)'} strokeWidth={3} opacity={0.3} />
+          <circle cx={14} cy={14} r={10} fill="none" stroke={selected ? 'white' : 'hsl(221,83%,53%)'} strokeWidth={3}
+            strokeLinecap="round" strokeDasharray={62.8} strokeDashoffset={selected ? 15 : 40}
+            transform="rotate(-90 14 14)" style={{ transition: 'stroke-dashoffset 0.6s ease' }} />
+        </svg>
+      </div>
+    );
+  }
+  if (style === "cake_slice") {
+    return (
+      <div className={`${baseClasses} ${selected ? 'bg-primary' : 'bg-secondary'}`}>
+        <svg width={28} height={28} viewBox="0 0 28 28" className="relative z-10">
+          <circle cx={14} cy={14} r={10} fill={selected ? 'rgba(255,255,255,0.2)' : 'hsl(214,32%,85%)'} />
+          <path d={`M14,14 L14,4 A10,10 0 ${selected ? '1,1' : '0,1'} ${selected ? '6,21' : '24,14'} Z`}
+            fill={selected ? 'white' : 'hsl(221,83%,53%)'} opacity={0.8} />
+        </svg>
+      </div>
+    );
+  }
+  if (style === "fuel_tank") {
+    return (
+      <div className={`${baseClasses} ${selected ? 'bg-primary' : 'bg-secondary'}`}>
+        <div className="relative z-10 w-6 h-8 border-2 rounded-sm flex flex-col justify-end overflow-hidden"
+          style={{ borderColor: selected ? 'white' : 'hsl(221,83%,53%)' }}>
+          <div className={`transition-all duration-500 rounded-b-sm ${selected ? 'h-3/4 bg-white/80' : 'h-1/3 bg-primary/60'}`} />
+        </div>
+      </div>
+    );
+  }
+  // flight_progress
+  return (
+    <div className={`${baseClasses} ${selected ? 'bg-primary' : 'bg-secondary'}`}>
+      <div className="relative z-10 w-8 flex items-center">
+        <div className={`h-0.5 flex-1 ${selected ? 'bg-white/40' : 'bg-muted-foreground/30'}`} />
+        <span className={`text-lg transition-transform duration-500 ${selected ? 'translate-x-1' : '-translate-x-1'}`}>✈️</span>
+      </div>
+    </div>
+  );
+}
 
 interface Props {
   open: boolean;
@@ -46,7 +104,6 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
   const [requireReceipt, setRequireReceipt] = useState(false);
   const [receiptWindowDays, setReceiptWindowDays] = useState(7);
   const [creating, setCreating] = useState(false);
-  // Step 5: initial deposit when no goal amount is set
   const [initialDeposit, setInitialDeposit] = useState("");
   const [createdPotId, setCreatedPotId] = useState<string | null>(null);
 
@@ -79,11 +136,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
 
   const handleCreate = async () => {
     if (!potName.trim()) {
-      toast({
-        title: "Missing pot name",
-        description: "Please enter a name for your pot.",
-        variant: "destructive",
-      });
+      toast({ title: "Missing pot name", description: "Please enter a name for your pot.", variant: "destructive" });
       return;
     }
 
@@ -94,17 +147,11 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
 
     if (sessionError || !session) {
       setCreating(false);
-      toast({
-        title: "Not signed in",
-        description: "Please sign in again, then try creating a pot.",
-        variant: "destructive",
-      });
+      toast({ title: "Not signed in", description: "Please sign in again.", variant: "destructive" });
       return;
     }
 
     const userId = session.user.id;
-
-    // Generate a pot ID client-side so we don't need to .select() before becoming a member
     const potId = crypto.randomUUID();
 
     const { error: potError } = await supabase
@@ -124,36 +171,25 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
 
     if (potError) {
       setCreating(false);
-      toast({
-        title: "Error creating pot",
-        description: potError?.message ?? "Could not create pot.",
-        variant: "destructive",
-      });
+      toast({ title: "Error creating pot", description: potError?.message ?? "Could not create pot.", variant: "destructive" });
       return;
     }
 
-    // Add creator as member first — this enables SELECT access via RLS
     const { error: memberError } = await supabase
       .from("pot_members")
       .insert({ pot_id: potId, user_id: userId, role: "creator" });
 
     if (memberError) {
       setCreating(false);
-      toast({
-        title: "Pot created but member setup failed",
-        description: memberError.message,
-        variant: "destructive",
-      });
+      toast({ title: "Pot created but member setup failed", description: memberError.message, variant: "destructive" });
       return;
     }
 
     queryClient.invalidateQueries({ queryKey: ["pots"] });
 
-    // If a goal amount was set, use it as the initial deposit amount
     if (goalAmount && parseFloat(goalAmount) > 0) {
       try {
         await redirectToCheckout(potId, parseFloat(goalAmount));
-        // page navigates away; no need to reset
       } catch (err: any) {
         setCreating(false);
         toast({ title: "Checkout error", description: err.message ?? "Could not start checkout.", variant: "destructive" });
@@ -161,9 +197,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
       return;
     }
 
-    // No goal amount — move to step 5 to ask for an initial deposit
     setCreating(false);
-    // Store the created pot id so step 5 can use it
     setCreatedPotId(potId);
     setStep(5);
   };
@@ -186,10 +220,11 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
   const handleSkipDeposit = () => {
     reset();
     onOpenChange(false);
-    toast({ title: "Pot created!", description: `"${potName}" is ready.` });
+    toast({ title: "🎉 Pot created!", description: `"${potName}" is ready to go.` });
     navigate(`/pots/${createdPotId}`);
   };
 
+  const currencySymbol = currency === "EUR" ? "€" : currency === "GBP" ? "£" : "$";
   const totalSteps = 4;
 
   return (
@@ -215,11 +250,11 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
                 </button>
               )}
               <DialogTitle className="text-base">
-                {step === 1 && "Choose a visual style"}
+                {step === 1 && "Choose how your pot is displayed ✨"}
                 {step === 2 && "Set initial details"}
                 {step === 3 && "Withdrawal rules"}
                 {step === 4 && "Spending verification"}
-                {step === 5 && "Make an initial deposit"}
+                {step === 5 && "Make an initial deposit 💰"}
               </DialogTitle>
               {step <= 4 && (
                 <span className="ml-auto text-xs text-muted-foreground font-medium">
@@ -236,7 +271,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
                 <Label htmlFor="potName">Pot name</Label>
                 <Input
                   id="potName"
-                  placeholder="e.g. Holiday Fund"
+                  placeholder="e.g. Holiday Fund 🏖️"
                   value={potName}
                   onChange={(e) => setPotName(e.target.value)}
                   autoFocus
@@ -245,35 +280,26 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
               </div>
 
               <div>
-                <Label className="mb-2 block">Visual style</Label>
+                <Label className="mb-2 block">Pick a vibe for your pot</Label>
                 <div className="space-y-2">
-                  {VISUAL_STYLES.map(({ id, label, Icon, desc }) => (
+                  {VISUAL_STYLES.map(({ id, label, desc }) => (
                     <button
                       key={id}
                       type="button"
                       onClick={() => setVisualStyle(id)}
                       className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${
                         visualStyle === id
-                          ? "border-primary bg-accent"
+                          ? "border-primary bg-accent shadow-sm"
                           : "border-border bg-card hover:border-primary/40"
                       }`}
                     >
-                      <div
-                        className={`w-9 h-9 rounded-lg flex items-center justify-center ${
-                          visualStyle === id ? "bg-primary" : "bg-secondary"
-                        }`}
-                      >
-                        <Icon
-                          size={18}
-                          className={visualStyle === id ? "text-primary-foreground" : "text-muted-foreground"}
-                        />
-                      </div>
-                      <div>
+                      <StyleAnimation style={id} selected={visualStyle === id} />
+                      <div className="flex-1">
                         <div className="text-sm font-semibold text-foreground">{label}</div>
                         <div className="text-xs text-muted-foreground">{desc}</div>
                       </div>
                       {visualStyle === id && (
-                        <div className="ml-auto w-4 h-4 rounded-full bg-primary flex items-center justify-center">
+                        <div className="ml-auto w-5 h-5 rounded-full bg-primary flex items-center justify-center">
                           <div className="w-2 h-2 rounded-full bg-white" />
                         </div>
                       )}
@@ -293,22 +319,23 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
             <div className="space-y-4">
               <div className="space-y-1.5">
                 <Label>Currency</Label>
-                <select
-                  value={currency}
-                  onChange={(e) => setCurrency(e.target.value)}
-                  className="w-full h-11 rounded-xl border border-border bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                >
-                  <option value="EUR">EUR — Euro (€)</option>
-                  <option value="GBP">GBP — British Pound (£)</option>
-                  <option value="USD">USD — US Dollar ($)</option>
-                </select>
+                <Select value={currency} onValueChange={setCurrency}>
+                  <SelectTrigger className="h-11 rounded-xl">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="EUR">EUR — Euro (€)</SelectItem>
+                    <SelectItem value="GBP">GBP — British Pound (£)</SelectItem>
+                    <SelectItem value="USD">USD — US Dollar ($)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-1.5">
                 <Label htmlFor="goalAmount">Savings goal (optional)</Label>
                 <div className="relative">
                   <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground font-medium text-sm select-none">
-                    {currency === "EUR" ? "€" : currency === "GBP" ? "£" : "$"}
+                    {currencySymbol}
                   </span>
                   <Input
                     id="goalAmount"
@@ -341,7 +368,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
                     onClick={() => setWithdrawalRule(id)}
                     className={`w-full flex items-center gap-3 p-3.5 rounded-xl border transition-all text-left ${
                       withdrawalRule === id
-                        ? "border-primary bg-accent"
+                        ? "border-primary bg-accent shadow-sm"
                         : "border-border bg-card hover:border-primary/40"
                     }`}
                   >
@@ -350,7 +377,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
                       <div className="text-xs text-muted-foreground">{desc}</div>
                     </div>
                     {withdrawalRule === id && (
-                      <div className="ml-auto w-4 h-4 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                      <div className="ml-auto w-5 h-5 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
                         <div className="w-2 h-2 rounded-full bg-white" />
                       </div>
                     )}
@@ -387,7 +414,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
             <div className="space-y-5">
               <div
                 className={`rounded-xl border p-4 cursor-pointer transition-all ${
-                  requireReceipt ? "border-primary bg-accent" : "border-border bg-card"
+                  requireReceipt ? "border-primary bg-accent shadow-sm" : "border-border bg-card"
                 }`}
                 onClick={() => setRequireReceipt((r) => !r)}
               >
@@ -479,26 +506,26 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
                   Back
                 </Button>
                 <Button className="flex-1 h-11 rounded-xl" onClick={handleCreate} disabled={creating} type="button">
-                  {creating ? "Creating…" : "Create Pot"}
+                  {creating ? "Creating…" : "Create Pot 🎉"}
                 </Button>
               </div>
             </div>
           )}
 
-          {/* STEP 5 — Initial deposit (only shown when no goal amount was set) */}
+          {/* STEP 5 — Initial deposit */}
           {step === 5 && (
             <div className="space-y-5">
               <p className="text-sm text-muted-foreground">
-                Your pot is ready! Add an initial deposit to get things started, or skip for now.
+                Your pot is ready! 🎉 Add an initial deposit to kickstart your savings, or skip for now.
               </p>
 
               <div className="space-y-1.5">
                 <Label htmlFor="initialDeposit">
-                  Deposit amount ({currency === "EUR" ? "€" : currency === "GBP" ? "£" : "$"})
+                  Deposit amount ({currencySymbol})
                 </Label>
                 <div className="relative">
                   <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground font-medium text-sm select-none">
-                    {currency === "EUR" ? "€" : currency === "GBP" ? "£" : "$"}
+                    {currencySymbol}
                   </span>
                   <Input
                     id="initialDeposit"
@@ -540,4 +567,3 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
     </Dialog>
   );
 }
-

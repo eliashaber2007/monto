@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Settings, ChevronRight, Droplets, CircleDot, PieChart, Fuel, Plane } from 'lucide-react';
+import { Bell, Settings, ChevronRight, Droplets, Sparkles } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile, usePots } from '@/hooks/usePots';
 import CreatePotModal from '@/components/CreatePotModal';
@@ -13,7 +13,6 @@ function formatCurrency(amount: number, currency: string) {
   }).format(amount);
 }
 
-// Liquid Bubble SVG visual (default pot style)
 function LiquidBubble({ balance, goal }: { balance: number; goal?: number | null }) {
   const pct = goal && goal > 0 ? Math.min(balance / goal, 1) : 0;
   const r = 22;
@@ -29,9 +28,7 @@ function LiquidBubble({ balance, goal }: { balance: number; goal?: number | null
             <stop offset="100%" stopColor="hsl(221,83%,45%)" />
           </linearGradient>
         </defs>
-        {/* Track */}
         <circle cx={cx} cy={cy} r={r} fill="none" stroke="hsl(214,32%,91%)" strokeWidth={5} />
-        {/* Fill arc */}
         <circle
           cx={cx} cy={cy} r={r}
           fill="none"
@@ -42,7 +39,6 @@ function LiquidBubble({ balance, goal }: { balance: number; goal?: number | null
           strokeDashoffset={circumference * (1 - pct)}
           transform={`rotate(-90 ${cx} ${cy})`}
         />
-        {/* Center blob */}
         <circle cx={cx} cy={cy} r={14} fill="hsl(221,83%,96%)" />
         <text x={cx} y={cy + 1} textAnchor="middle" dominantBaseline="middle" fontSize="8" fontWeight="700" fill="hsl(221,83%,45%)">
           {Math.round(pct * 100)}%
@@ -52,16 +48,6 @@ function LiquidBubble({ balance, goal }: { balance: number; goal?: number | null
   );
 }
 
-function VisualIcon({ style }: { style: string }) {
-  switch (style) {
-    case 'progress_ring': return <CircleDot size={20} className="text-primary" />;
-    case 'cake_slice': return <PieChart size={20} className="text-primary" />;
-    case 'fuel_tank': return <Fuel size={20} className="text-primary" />;
-    case 'flight_progress': return <Plane size={20} className="text-primary" />;
-    default: return null;
-  }
-}
-
 export default function MyPots() {
   const { signOut } = useAuth();
   const { data: profile } = useProfile();
@@ -69,19 +55,22 @@ export default function MyPots() {
   const [showCreate, setShowCreate] = useState(false);
   const navigate = useNavigate();
 
+  // Filter out closed pots
+  const activePots = (pots ?? []).filter((p: any) => p.status !== 'closed');
+
   return (
-    <div className="min-h-screen" style={{ background: 'hsl(220,20%,97%)' }}>
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="bg-card border-b border-border sticky top-0 z-20">
-        <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
-          {/* Avatar + title */}
+        <div className="max-w-lg mx-auto px-5 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center shadow-pill">
-              <span className="text-primary-foreground font-bold text-sm">M</span>
+            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow-sm">
+              <span className="text-primary-foreground font-bold text-sm">
+                {profile?.first_name?.[0]?.toUpperCase() ?? 'M'}
+              </span>
             </div>
-            <span className="font-bold text-foreground text-base">My Pots</span>
+            <span className="font-bold text-foreground text-lg">My Pots 🏦</span>
           </div>
-          {/* Right icons */}
           <div className="flex items-center gap-1">
             <button className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:bg-secondary transition-colors">
               <Bell size={18} />
@@ -96,60 +85,65 @@ export default function MyPots() {
         </div>
       </div>
 
-      <div className="max-w-lg mx-auto px-4 pt-7 pb-24">
+      <div className="max-w-lg mx-auto px-5 pt-8 pb-28">
         {/* Welcome heading */}
-        <div className="mb-6">
+        <div className="mb-8">
           <h1 className="text-2xl font-bold text-foreground">
-            Welcome back, {profile?.first_name ?? '…'} 👋
+            Hey {profile?.first_name ?? '…'}! 👋
           </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Here are your savings pots</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            {activePots.length > 0
+              ? `You've got ${activePots.length} active ${activePots.length === 1 ? 'pot' : 'pots'}. Keep saving! 🚀`
+              : "Let's start your savings journey! 💪"}
+          </p>
         </div>
 
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
-        ) : !pots || pots.length === 0 ? (
-          <div className="bg-card rounded-2xl border border-border p-10 text-center shadow-card">
-            <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center mx-auto mb-4">
-              <Droplets size={28} className="text-primary" />
+        ) : activePots.length === 0 ? (
+          <div className="bg-card rounded-2xl border border-border p-12 text-center shadow-sm">
+            <div className="w-20 h-20 rounded-full bg-accent flex items-center justify-center mx-auto mb-5">
+              <span className="text-4xl">🐷</span>
             </div>
-            <h2 className="font-semibold text-foreground mb-1">No pots yet</h2>
-            <p className="text-sm text-muted-foreground">Tap the + button to create your first savings pot.</p>
+            <h2 className="font-bold text-foreground text-lg mb-2">Your piggy bank is empty!</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-xs mx-auto">
+              Start saving with friends by creating your first pot. It only takes a minute! ✨
+            </p>
+            <button
+              onClick={() => setShowCreate(true)}
+              className="mt-6 inline-flex items-center gap-2 bg-primary text-primary-foreground font-semibold px-6 py-3 rounded-xl hover:bg-primary/90 transition-colors"
+            >
+              <Sparkles size={16} />
+              Create my first pot
+            </button>
           </div>
         ) : (
           <div className="space-y-3">
-            {pots.map((pot) => (
+            {activePots.map((pot: any) => (
               <button
                 key={pot.id}
                 onClick={() => navigate(`/pots/${pot.id}`)}
-                className="w-full bg-card rounded-2xl border border-border shadow-card hover:shadow-card-hover p-4 flex items-center gap-4 text-left transition-all duration-150 active:scale-[0.99] group"
+                className="w-full bg-card rounded-2xl border border-border shadow-sm hover:shadow-md p-5 flex items-center gap-4 text-left transition-all duration-200 active:scale-[0.99] group"
               >
-                {/* Liquid bubble visual */}
                 <LiquidBubble balance={pot.balance ?? 0} goal={pot.goal_amount} />
 
-                {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <span className="font-bold text-foreground truncate text-[15px]">{pot.name}</span>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-bold text-foreground truncate">{pot.name}</span>
                     <span className="flex-shrink-0 text-[11px] px-2 py-0.5 rounded-full bg-accent text-primary font-semibold border border-primary/20">
-                      {pot.role === 'creator' ? 'Creator' : 'Member'}
+                      {pot.role === 'creator' ? '👑 Creator' : '👤 Member'}
                     </span>
                   </div>
-                  <div className="text-xs text-muted-foreground">
-                    {pot.memberCount} {pot.memberCount === 1 ? 'member' : 'members'}
+                  <div className="text-xs text-muted-foreground mb-1">
+                    {pot.memberCount} {pot.memberCount === 1 ? 'saver' : 'savers'} 🤝
                   </div>
-                  <div className="text-primary font-bold text-base mt-1">
+                  <div className="text-primary font-bold text-base">
                     {formatCurrency(pot.balance ?? 0, pot.currency ?? 'EUR')}
                   </div>
                 </div>
 
-                {/* Visual style icon */}
-                {pot.visual_style && pot.visual_style !== 'liquid_bubble' && (
-                  <VisualIcon style={pot.visual_style} />
-                )}
-
-                {/* Arrow */}
                 <ChevronRight size={18} className="text-muted-foreground flex-shrink-0 group-hover:text-primary transition-colors" />
               </button>
             ))}
@@ -160,7 +154,7 @@ export default function MyPots() {
       {/* Floating + button */}
       <button
         onClick={() => setShowCreate(true)}
-        className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-primary shadow-modal flex items-center justify-center text-primary-foreground hover:bg-primary/90 transition-all duration-150 active:scale-95 text-2xl font-light"
+        className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-primary shadow-lg flex items-center justify-center text-primary-foreground hover:bg-primary/90 transition-all duration-150 active:scale-95 text-2xl font-light"
         aria-label="Create pot"
         style={{ boxShadow: '0 8px 24px rgba(37,99,235,0.35)' }}
       >
