@@ -332,7 +332,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="goalAmount">Savings goal (optional)</Label>
+                <Label htmlFor="goalAmount">Pot amount (optional)</Label>
                 <div className="relative">
                   <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground font-medium text-sm select-none">
                     {currencySymbol}
