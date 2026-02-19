@@ -64,12 +64,20 @@ export default function MyPots() {
       {/* Header */}
       <div className="bg-card border-b border-border sticky top-0 z-20">
         <div className="max-w-lg mx-auto px-5 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow-sm">
-              <span className="text-primary-foreground font-bold text-sm">
-                {profile?.first_name?.[0]?.toUpperCase() ?? 'M'}
-              </span>
-            </div>
+           <div className="flex items-center gap-3">
+              <button
+                onClick={() => navigate('/profile')}
+                className="w-10 h-10 rounded-full flex items-center justify-center shadow-sm overflow-hidden"
+                style={{ backgroundColor: (profile as any)?.avatar_url ? undefined : ((profile as any)?.avatar_color ?? 'hsl(var(--primary))') }}
+              >
+                {(profile as any)?.avatar_url ? (
+                  <img src={(profile as any).avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-white font-bold text-sm">
+                    {profile?.first_name?.[0]?.toUpperCase() ?? 'M'}
+                  </span>
+                )}
+              </button>
             <span className="font-bold text-foreground text-lg">My Pots 🏦</span>
           </div>
           <div className="flex items-center gap-1">
