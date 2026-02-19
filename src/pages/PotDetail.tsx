@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePotDetail } from '@/hooks/usePots';
 import { useQueryClient } from '@tanstack/react-query';
+import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import AddFundsModal from '@/components/AddFundsModal';
@@ -85,22 +86,35 @@ function ProgressRing({ balance, goal }: { balance: number; goal?: number | null
 
 export default function PotDetail() {
   const { id } = useParams<{ id: string }>();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data, isLoading, refetch } = usePotDetail(id);
   const [showAddFunds, setShowAddFunds] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
   const [receipts, setReceipts] = useState<any[]>([]);
   const [showUpload, setShowUpload] = useState<string | null>(null); // transactionId
   const [showReview, setShowReview] = useState<any | null>(null);   // receipt row
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   useEffect(() => {
-    if (searchParams.get('success') === 'true') {
-      setShowSuccess(true);
-      const t = setTimeout(() => setShowSuccess(false), 5000);
-      return () => clearTimeout(t);
+    const payment = searchParams.get('payment');
+    if (payment === 'success') {
+      toast({
+        title: '🎉 Payment successful!',
+        description: 'Your balance will update shortly.',
+      });
+      // Refetch balance after a short delay to allow webhook to process
+      setTimeout(() => refetch(), 3000);
+      // Clean up the query param
+      setSearchParams({}, { replace: true });
+    } else if (payment === 'cancelled') {
+      toast({
+        title: 'Payment cancelled',
+        description: 'No funds were added.',
+        variant: 'destructive',
+      });
+      setSearchParams({}, { replace: true });
     }
   }, [searchParams]);
 
@@ -138,13 +152,6 @@ export default function PotDetail() {
 
   return (
     <div className="min-h-screen pb-24" style={{ background: 'hsl(220,20%,97%)' }}>
-      {/* Success banner */}
-      {showSuccess && (
-        <div className="bg-success text-success-foreground text-sm text-center py-3 px-4 font-medium animate-fade-in">
-          🎉 Payment successful! Your balance will update shortly.
-        </div>
-      )}
-
       {/* Top bar */}
       <div className="bg-card border-b border-border sticky top-0 z-10">
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">

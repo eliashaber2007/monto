@@ -69,8 +69,8 @@ Deno.serve(async (req) => {
         pot_id,
         user_id: userId,
       },
-      success_url: `${origin}/pots/${pot_id}?success=true`,
-      cancel_url: `${origin}/pots/${pot_id}`,
+      success_url: `${origin}/pots/${pot_id}?payment=success`,
+      cancel_url: `${origin}/pots/${pot_id}?payment=cancelled`,
     });
 
     return new Response(JSON.stringify({ url: session.url }), {
