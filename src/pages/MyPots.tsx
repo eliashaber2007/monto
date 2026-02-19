@@ -93,7 +93,7 @@ export default function MyPots() {
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
             {activePots.length > 0
-              ? `You've got ${activePots.length} active ${activePots.length === 1 ? 'pot' : 'pots'}. Keep saving! 🚀`
+              ? `💰 You've got ${activePots.length} active ${activePots.length === 1 ? 'pot' : 'pots'}`
               : "Let's start your savings journey! 💪"}
           </p>
         </div>
@@ -137,7 +137,7 @@ export default function MyPots() {
                     </span>
                   </div>
                   <div className="text-xs text-muted-foreground mb-1">
-                    {pot.memberCount} {pot.memberCount === 1 ? 'saver' : 'savers'} 🤝
+                    {pot.memberCount} {pot.memberCount === 1 ? 'member' : 'members'} 🤝
                   </div>
                   <div className="text-primary font-bold text-base">
                     {formatCurrency(pot.balance ?? 0, pot.currency ?? 'EUR')}
