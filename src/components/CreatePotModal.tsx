@@ -10,15 +10,9 @@ import { Label } from "@/components/ui/label";
 import { Droplets, CircleDot, PieChart, Fuel, Plane, ChevronLeft, Receipt, Clock } from "lucide-react";
 
 type VisualStyle = "liquid_bubble" | "progress_ring" | "cake_slice" | "fuel_tank" | "flight_progress";
-
 type WithdrawalRule = "auto_approve" | "requires_approval" | "requires_password";
 
-const VISUAL_STYLES: {
-  id: VisualStyle;
-  label: string;
-  Icon: React.ElementType;
-  desc: string;
-}[] = [
+const VISUAL_STYLES: { id: VisualStyle; label: string; Icon: React.ElementType; desc: string }[] = [
   { id: "liquid_bubble", label: "Liquid Bubble", Icon: Droplets, desc: "Fluid animated fill" },
   { id: "progress_ring", label: "Progress Ring", Icon: CircleDot, desc: "Classic circular ring" },
   { id: "cake_slice", label: "Cake Slice", Icon: PieChart, desc: "Pie chart progress" },
@@ -71,7 +65,6 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
   };
 
   const handleCreate = async () => {
-    // Basic validation
     if (!potName.trim()) {
       toast({
         title: "Missing pot name",
@@ -83,11 +76,10 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
 
     setCreating(true);
 
-    // ✅ Ensure we have an authenticated user at the moment of insert
-    const { data: userData, error: userError } = await supabase.auth.getUser();
-    const authedUser = userData?.user;
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    const session = sessionData?.session;
 
-    if (userError || !authedUser) {
+    if (sessionError || !session) {
       setCreating(false);
       toast({
         title: "Not signed in",
@@ -97,12 +89,13 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
       return;
     }
 
-    // ✅ Insert pot with correct owner column: creator_id
-    const { data: pot, error } = await supabase
+    const userId = session.user.id;
+
+    const { data: pot, error: potError } = await supabase
       .from("pots")
       .insert({
         name: potName.trim(),
-        created_by: authedUser.id,
+        creator_id: userId,
         visual_style: visualStyle,
         currency,
         goal_amount: goalAmount ? parseFloat(goalAmount) : null,
@@ -114,26 +107,25 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
       .select()
       .single();
 
-    if (error || !pot) {
+    if (potError || !pot) {
       setCreating(false);
       toast({
-        title: "Error",
-        description: error?.message ?? "Could not create pot.",
+        title: "Error creating pot",
+        description: potError?.message ?? "Could not create pot.",
         variant: "destructive",
       });
       return;
     }
 
-    // Add creator as member
     const { error: memberError } = await supabase
       .from("pot_members")
-      .insert({ pot_id: pot.id, user_id: authedUser.id, role: "creator" });
+      .insert({ pot_id: pot.id, user_id: userId, role: "creator" });
 
     setCreating(false);
 
     if (memberError) {
       toast({
-        title: "Error",
+        title: "Pot created but member setup failed",
         description: memberError.message,
         variant: "destructive",
       });
@@ -152,7 +144,6 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-sm rounded-2xl p-0 overflow-hidden gap-0">
-        {/* Progress bar */}
         <div className="h-1 bg-muted">
           <div
             className="h-full bg-primary transition-all duration-300 ease-out"
@@ -184,7 +175,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
             </div>
           </DialogHeader>
 
-          {/* ── STEP 1: Visual Style ── */}
+          {/* STEP 1 */}
           {step === 1 && (
             <div className="space-y-4">
               <div className="space-y-1.5">
@@ -243,7 +234,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
             </div>
           )}
 
-          {/* ── STEP 2: Balance & Currency ── */}
+          {/* STEP 2 */}
           {step === 2 && (
             <div className="space-y-4">
               <div className="space-y-1.5">
@@ -285,7 +276,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
             </div>
           )}
 
-          {/* ── STEP 3: Withdrawal Rules ── */}
+          {/* STEP 3 */}
           {step === 3 && (
             <div className="space-y-4">
               <div className="space-y-2">
@@ -337,7 +328,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
             </div>
           )}
 
-          {/* ── STEP 4: Receipt Requirement ── */}
+          {/* STEP 4 */}
           {step === 4 && (
             <div className="space-y-5">
               <div
@@ -361,7 +352,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-semibold text-foreground">Require receipt upload</span>
                       <div
-                        className={`relative w-10 h-5.5 rounded-full transition-colors flex-shrink-0 ${
+                        className={`relative rounded-full transition-colors flex-shrink-0 ${
                           requireReceipt ? "bg-primary" : "bg-muted"
                         }`}
                         style={{ height: "22px", width: "40px" }}
@@ -381,7 +372,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
               </div>
 
               {requireReceipt && (
-                <div className="space-y-3 animate-fade-in">
+                <div className="space-y-3">
                   <div className="space-y-1.5">
                     <Label className="flex items-center gap-1.5">
                       <Clock size={13} className="text-muted-foreground" />
@@ -433,7 +424,6 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
                 <Button variant="outline" className="flex-1 h-11 rounded-xl" onClick={() => setStep(3)} type="button">
                   Back
                 </Button>
-
                 <Button className="flex-1 h-11 rounded-xl" onClick={handleCreate} disabled={creating} type="button">
                   {creating ? "Creating…" : "Create Pot"}
                 </Button>
