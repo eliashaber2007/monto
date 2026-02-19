@@ -9,6 +9,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import MyPots from "./pages/MyPots";
 import PotDetail from "./pages/PotDetail";
+import JoinPot from "./pages/JoinPot";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <PotDetail />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/join/:potId"
+              element={
+                <ProtectedRoute>
+                  <JoinPot />
                 </ProtectedRoute>
               }
             />

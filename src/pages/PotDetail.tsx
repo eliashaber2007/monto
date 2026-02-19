@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Users, Plus, CheckCircle2, Image as ImageIcon, Upload, X, LogOut } from 'lucide-react';
+import { ArrowLeft, Users, Plus, CheckCircle2, Image as ImageIcon, Upload, X, LogOut, Copy, Check } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePotDetail } from '@/hooks/usePots';
@@ -18,6 +18,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import AddFundsModal from '@/components/AddFundsModal';
 import ReceiptUploadModal from '@/components/ReceiptUploadModal';
 import ReceiptReviewModal from '@/components/ReceiptReviewModal';
@@ -107,10 +113,24 @@ export default function PotDetail() {
   const [showReview, setShowReview] = useState<any | null>(null);
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showCloseDialog, setShowCloseDialog] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [closing, setClosing] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
+
+  const inviteLink = `${window.location.origin}/join/${id}`;
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(inviteLink);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast({ title: 'Failed to copy', variant: 'destructive' });
+    }
+  };
 
   useEffect(() => {
     const payment = searchParams.get('payment');
@@ -189,8 +209,8 @@ export default function PotDetail() {
 
   return (
     <div className="min-h-screen pb-28 bg-background">
-      {/* Top bar */}
-      <div className="bg-card border-b border-border sticky top-0 z-10">
+      {/* Sticky top bar */}
+      <div className="bg-card border-b border-border sticky top-0 z-20">
         <div className="max-w-lg mx-auto px-5 py-4 flex items-center gap-3">
           <button
             onClick={() => navigate('/')}
@@ -206,10 +226,15 @@ export default function PotDetail() {
               </span>
             </div>
           </div>
-          <button className="flex items-center gap-1.5 text-xs text-primary font-semibold border border-primary/30 rounded-full px-3 py-1.5 hover:bg-accent transition-colors">
+          {isCreator && (
+            <button
+              onClick={() => setShowInviteModal(true)}
+              className="flex items-center gap-1.5 text-xs text-primary font-semibold border border-primary/30 rounded-full px-3 py-1.5 hover:bg-accent transition-colors"
+            >
               <Users size={13} />
               Invite
             </button>
+          )}
         </div>
       </div>
 
@@ -368,6 +393,36 @@ export default function PotDetail() {
           )}
         </div>
       </div>
+
+      {/* Invite Modal */}
+      <Dialog open={showInviteModal} onOpenChange={setShowInviteModal}>
+        <DialogContent className="max-w-sm rounded-2xl">
+          <DialogHeader>
+            <DialogTitle>Invite members to "{pot.name}"</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            <p className="text-sm text-muted-foreground">
+              Share this link with friends to invite them to your pot.
+            </p>
+            <div className="flex items-center gap-2">
+              <div className="flex-1 bg-secondary rounded-xl px-4 py-3 text-sm text-foreground break-all font-mono">
+                {inviteLink}
+              </div>
+              <Button
+                size="icon"
+                variant={copied ? "default" : "outline"}
+                className="h-11 w-11 rounded-xl flex-shrink-0"
+                onClick={handleCopyLink}
+              >
+                {copied ? <Check size={16} /> : <Copy size={16} />}
+              </Button>
+            </div>
+            {copied && (
+              <p className="text-xs text-success font-medium">✅ Copied to clipboard!</p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Leave Pot Dialog */}
       <AlertDialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
