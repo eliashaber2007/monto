@@ -279,6 +279,47 @@ export type Database = {
           },
         ]
       }
+      withdrawals: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          note: string | null
+          pot_id: string
+          processed_at: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          note?: string | null
+          pot_id: string
+          processed_at?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          note?: string | null
+          pot_id?: string
+          processed_at?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "withdrawals_pot_id_fkey"
+            columns: ["pot_id"]
+            isOneToOne: false
+            referencedRelation: "pots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
