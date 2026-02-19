@@ -230,7 +230,7 @@ export default function PotDetail() {
           <ProgressRing balance={pot.balance ?? 0} goal={pot.goal_amount} currency={currency} />
           {pot.goal_amount ? (
             <p className="text-sm text-muted-foreground mt-4">
-              {formatCurrency(pot.balance ?? 0, currency)} of {formatCurrency(pot.goal_amount, currency)} saved
+              {Math.round((pot.balance ?? 0) / pot.goal_amount * 100)}% of {formatCurrency(pot.goal_amount, currency)}
             </p>
           ) : (
             <p className="text-sm text-muted-foreground mt-4">No goal set — save as much as you like! 🎯</p>
