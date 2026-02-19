@@ -64,6 +64,7 @@ export type Database = {
           name: string
           receipt_window_days: number
           require_receipt: boolean
+          status: string
           visual_style: string
           withdrawal_password: string | null
           withdrawal_rule: string
@@ -78,6 +79,7 @@ export type Database = {
           name: string
           receipt_window_days?: number
           require_receipt?: boolean
+          status?: string
           visual_style?: string
           withdrawal_password?: string | null
           withdrawal_rule?: string
@@ -92,6 +94,7 @@ export type Database = {
           name?: string
           receipt_window_days?: number
           require_receipt?: boolean
+          status?: string
           visual_style?: string
           withdrawal_password?: string | null
           withdrawal_rule?: string
