@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ChevronLeft, Receipt, Clock } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 
 type VisualStyle = "liquid_bubble" | "progress_ring" | "cake_slice" | "fuel_tank" | "flight_progress";
 type WithdrawalRule = "auto_approve" | "requires_approval" | "requires_password";
@@ -101,8 +101,6 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
   const [goalAmount, setGoalAmount] = useState("");
   const [withdrawalRule, setWithdrawalRule] = useState<WithdrawalRule>("auto_approve");
   const [withdrawalPassword, setWithdrawalPassword] = useState("");
-  const [requireReceipt, setRequireReceipt] = useState(false);
-  const [receiptWindowDays, setReceiptWindowDays] = useState(7);
   const [creating, setCreating] = useState(false);
   const [initialDeposit, setInitialDeposit] = useState("");
   const [createdPotId, setCreatedPotId] = useState<string | null>(null);
@@ -115,8 +113,6 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
     setGoalAmount("");
     setWithdrawalRule("auto_approve");
     setWithdrawalPassword("");
-    setRequireReceipt(false);
-    setReceiptWindowDays(7);
     setInitialDeposit("");
   };
 
@@ -165,8 +161,6 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
         goal_amount: goalAmount ? parseFloat(goalAmount) : null,
         withdrawal_rule: withdrawalRule,
         withdrawal_password: withdrawalRule === "requires_password" ? withdrawalPassword : null,
-        require_receipt: requireReceipt,
-        receipt_window_days: receiptWindowDays,
       });
 
     if (potError) {
@@ -197,9 +191,8 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
       return;
     }
 
-    setCreating(false);
     setCreatedPotId(potId);
-    setStep(5);
+    setStep(4);
   };
 
   const handleInitialDeposit = async () => {
@@ -225,7 +218,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
   };
 
   const currencySymbol = currency === "EUR" ? "€" : currency === "GBP" ? "£" : "$";
-  const totalSteps = 4;
+  const totalSteps = 3;
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -253,10 +246,9 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
                 {step === 1 && "Choose how your pot is displayed ✨"}
                 {step === 2 && "Set initial details"}
                 {step === 3 && "Withdrawal rules"}
-                {step === 4 && "Spending verification"}
-                {step === 5 && "Make an initial deposit 💰"}
+                {step === 4 && "Make an initial deposit 💰"}
               </DialogTitle>
-              {step <= 4 && (
+              {step <= 3 && (
                 <span className="ml-auto text-xs text-muted-foreground font-medium">
                   {step}/{totalSteps}
                 </span>
@@ -402,118 +394,15 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
               <Button
                 className="w-full h-11 rounded-xl"
                 disabled={withdrawalRule === "requires_password" && !withdrawalPassword.trim()}
-                onClick={() => setStep(4)}
+                onClick={handleCreate}
               >
-                Next
+                {creating ? "Creating…" : "Create Pot 🎉"}
               </Button>
             </div>
           )}
 
-          {/* STEP 4 */}
+          {/* STEP 4 — Initial deposit */}
           {step === 4 && (
-            <div className="space-y-5">
-              <div
-                className={`rounded-xl border p-4 cursor-pointer transition-all ${
-                  requireReceipt ? "border-primary bg-accent shadow-sm" : "border-border bg-card"
-                }`}
-                onClick={() => setRequireReceipt((r) => !r)}
-              >
-                <div className="flex items-start gap-3">
-                  <div
-                    className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                      requireReceipt ? "bg-primary" : "bg-secondary"
-                    }`}
-                  >
-                    <Receipt
-                      size={18}
-                      className={requireReceipt ? "text-primary-foreground" : "text-muted-foreground"}
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-semibold text-foreground">Require receipt upload</span>
-                      <div
-                        className={`relative rounded-full transition-colors flex-shrink-0 ${
-                          requireReceipt ? "bg-primary" : "bg-muted"
-                        }`}
-                        style={{ height: "22px", width: "40px" }}
-                      >
-                        <div
-                          className={`absolute top-0.5 w-[18px] h-[18px] bg-white rounded-full shadow transition-all ${
-                            requireReceipt ? "left-[18px]" : "left-0.5"
-                          }`}
-                        />
-                      </div>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Members must upload a receipt after each withdrawal
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {requireReceipt && (
-                <div className="space-y-3">
-                  <div className="space-y-1.5">
-                    <Label className="flex items-center gap-1.5">
-                      <Clock size={13} className="text-muted-foreground" />
-                      Upload window
-                    </Label>
-                    <div className="flex gap-2">
-                      {[3, 7, 14, 30].map((d) => (
-                        <button
-                          key={d}
-                          type="button"
-                          onClick={() => setReceiptWindowDays(d)}
-                          className={`flex-1 h-9 rounded-lg text-xs font-semibold border transition-all ${
-                            receiptWindowDays === d
-                              ? "bg-primary text-primary-foreground border-primary"
-                              : "bg-card text-foreground border-border hover:border-primary/40"
-                          }`}
-                        >
-                          {d}d
-                        </button>
-                      ))}
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Members have {receiptWindowDays} days to submit a receipt
-                    </p>
-                  </div>
-
-                  <div className="bg-secondary rounded-xl p-3 space-y-1.5 text-xs text-muted-foreground">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-warning flex-shrink-0" />
-                      Receipt Pending — waiting for upload
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
-                      Submitted — awaiting creator review
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-success flex-shrink-0" />
-                      Approved by creator
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-destructive flex-shrink-0" />
-                      Rejected / Expired
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <div className="flex gap-3">
-                <Button variant="outline" className="flex-1 h-11 rounded-xl" onClick={() => setStep(3)} type="button">
-                  Back
-                </Button>
-                <Button className="flex-1 h-11 rounded-xl" onClick={handleCreate} disabled={creating} type="button">
-                  {creating ? "Creating…" : "Create Pot 🎉"}
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {/* STEP 5 — Initial deposit */}
-          {step === 5 && (
             <div className="space-y-5">
               <p className="text-sm text-muted-foreground">
                 Your pot is ready! 🎉 Add an initial deposit to kickstart your savings, or skip for now.
