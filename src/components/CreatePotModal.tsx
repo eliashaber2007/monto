@@ -95,7 +95,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
       .from("pots")
       .insert({
         name: potName.trim(),
-        creator_id: userId,
+        created_by: userId,
         visual_style: visualStyle,
         currency,
         goal_amount: goalAmount ? parseFloat(goalAmount) : null,
