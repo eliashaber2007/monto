@@ -392,14 +392,14 @@ export default function PotDetail() {
 
       {/* Invite Modal */}
       <Dialog open={showInviteModal} onOpenChange={setShowInviteModal}>
-        <DialogContent className="max-w-xs rounded-2xl border-primary/30">
-          <DialogHeader>
-            <DialogTitle className="text-center text-lg">{pot.name}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 mt-1">
-            <p className="text-sm text-muted-foreground text-center">Share this invite</p>
-            <div className="rounded-xl border border-primary/30 bg-accent/50 px-4 py-3 text-sm text-foreground text-center font-mono truncate">
-              {window.location.host}/join/{id?.slice(0, 8)}…
+        <DialogContent className="max-w-[320px] rounded-2xl p-6 gap-0">
+          <div className="flex flex-col items-center gap-5">
+            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <Users size={22} className="text-primary" />
+            </div>
+            <div className="text-center space-y-1">
+              <h3 className="text-base font-bold text-foreground">Invite to {pot.name}</h3>
+              <p className="text-xs text-muted-foreground">Anyone with this link can join your pot</p>
             </div>
             <Button
               className="w-full h-11 rounded-xl font-semibold"
