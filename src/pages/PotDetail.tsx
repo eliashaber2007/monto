@@ -206,21 +206,10 @@ export default function PotDetail() {
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button className="flex items-center gap-1.5 text-xs text-primary font-semibold border border-primary/30 rounded-full px-3 py-1.5 hover:bg-accent transition-colors">
+          <button className="flex items-center gap-1.5 text-xs text-primary font-semibold border border-primary/30 rounded-full px-3 py-1.5 hover:bg-accent transition-colors">
               <Users size={13} />
               Invite
             </button>
-            {isCreator && (
-              <button
-                onClick={() => setShowCloseDialog(true)}
-                className="flex items-center gap-1.5 text-xs text-destructive font-semibold border border-destructive/30 rounded-full px-3 py-1.5 hover:bg-destructive/10 transition-colors"
-              >
-                <X size={13} />
-                Close
-              </button>
-            )}
-          </div>
         </div>
       </div>
 
@@ -245,10 +234,7 @@ export default function PotDetail() {
 
         {/* Action row */}
         <div className="flex gap-3">
-          <Button variant="outline" className="flex-1 h-12 rounded-xl font-semibold">
-            Request Withdrawal
-          </Button>
-          <Button className="h-12 px-6 rounded-xl font-semibold" onClick={() => setShowAddFunds(true)}>
+          <Button className="flex-1 h-12 rounded-xl font-semibold" onClick={() => setShowAddFunds(true)}>
             <Plus size={16} className="mr-1" />
             Add Funds
           </Button>
@@ -356,9 +342,21 @@ export default function PotDetail() {
           </TabsContent>
         </Tabs>
 
-        {/* Leave Pot button for non-creators */}
-        {!isCreator && (
-          <div className="pt-4">
+        {/* Bottom action buttons */}
+        <div className="pt-4 space-y-3">
+          <Button variant="outline" className="w-full h-12 rounded-xl font-semibold text-base">
+            Request Withdrawal
+          </Button>
+          {isCreator ? (
+            <Button
+              variant="destructive"
+              className="w-full h-12 rounded-xl font-semibold text-base"
+              onClick={() => setShowCloseDialog(true)}
+            >
+              <X size={16} className="mr-2" />
+              Close Pot
+            </Button>
+          ) : (
             <Button
               variant="destructive"
               className="w-full h-12 rounded-xl font-semibold text-base"
@@ -367,8 +365,8 @@ export default function PotDetail() {
               <LogOut size={16} className="mr-2" />
               Leave Pot
             </Button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Leave Pot Dialog */}
