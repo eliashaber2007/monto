@@ -93,7 +93,7 @@ function ProgressRing({ balance, goal, currency }: { balance: number; goal?: num
         <div className="text-xs text-muted-foreground mt-1">balance</div>
         {goal && goal > 0 && (
           <div className="text-xs text-primary font-medium mt-0.5">
-            {Math.round(pct * 100)}% of {formatCurrency(goal, currency)}
+            {Math.round(pct * 100)}% left
           </div>
         )}
       </div>
@@ -242,11 +242,7 @@ export default function PotDetail() {
         {/* Ring + balance */}
         <div className="bg-card rounded-2xl shadow-sm border border-border p-8 text-center">
           <ProgressRing balance={pot.balance ?? 0} goal={pot.goal_amount} currency={currency} />
-          {pot.goal_amount ? (
-            <p className="text-sm text-muted-foreground mt-4">
-              {Math.round((pot.balance ?? 0) / pot.goal_amount * 100)}% of {formatCurrency(pot.goal_amount, currency)}
-            </p>
-          ) : (
+          {!pot.goal_amount && (
             <p className="text-sm text-muted-foreground mt-4">No goal set — save as much as you like! 🎯</p>
           )}
           {pot.require_receipt && (
