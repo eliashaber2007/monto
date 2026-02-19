@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          pot_id: string
+          read: boolean
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          pot_id: string
+          read?: boolean
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          pot_id?: string
+          read?: boolean
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_pot_id_fkey"
+            columns: ["pot_id"]
+            isOneToOne: false
+            referencedRelation: "pots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pot_members: {
         Row: {
           created_at: string
