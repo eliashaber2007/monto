@@ -27,6 +27,7 @@ import {
 import AddFundsModal from '@/components/AddFundsModal';
 import ReceiptUploadModal from '@/components/ReceiptUploadModal';
 import ReceiptReviewModal from '@/components/ReceiptReviewModal';
+import WithdrawalModal from '@/components/WithdrawalModal';
 
 function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat('en-IE', {
@@ -111,6 +112,7 @@ export default function PotDetail() {
   const [receipts, setReceipts] = useState<any[]>([]);
   const [showUpload, setShowUpload] = useState<string | null>(null);
   const [showReview, setShowReview] = useState<any | null>(null);
+  const [showWithdrawal, setShowWithdrawal] = useState(false);
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showCloseDialog, setShowCloseDialog] = useState(false);
   const [showConnectBankDialog, setShowConnectBankDialog] = useState(false);
@@ -338,7 +340,7 @@ export default function PotDetail() {
 
         {/* Action row */}
         <div className="flex gap-3">
-          <Button variant="outline" className="flex-1 h-12 rounded-xl font-semibold border-primary text-primary hover:bg-primary/10">
+          <Button variant="outline" className="flex-1 h-12 rounded-xl font-semibold border-primary text-primary hover:bg-primary/10" onClick={() => setShowWithdrawal(true)}>
             Request Withdrawal
           </Button>
           <Button variant="secondary" className="flex-1 h-12 rounded-xl font-semibold bg-muted text-foreground hover:bg-muted/80" onClick={() => setShowAddFunds(true)}>
@@ -567,6 +569,18 @@ export default function PotDetail() {
       </AlertDialog>
 
       {/* Modals */}
+      <WithdrawalModal
+        open={showWithdrawal}
+        onOpenChange={setShowWithdrawal}
+        potId={id!}
+        potBalance={pot.balance ?? 0}
+        currency={currency}
+        withdrawalRule={pot.withdrawal_rule ?? 'auto_approve'}
+        withdrawalPassword={pot.withdrawal_password}
+        potName={pot.name}
+        createdBy={pot.created_by}
+      />
+
       <AddFundsModal
         open={showAddFunds}
         onOpenChange={setShowAddFunds}
