@@ -30,11 +30,7 @@ export default function Login() {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary mb-4 shadow-pill">
-            <span className="text-primary-foreground font-bold text-xl">M</span>
-          </div>
-          <h1 className="text-2xl font-bold text-foreground">Welcome back</h1>
-          <p className="text-muted-foreground text-sm mt-1">Sign in to your Monto account</p>
+          <h1 className="text-3xl font-bold text-foreground">Monto</h1>
         </div>
 
         {/* Card */}
