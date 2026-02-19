@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Users, Plus, CheckCircle2, Image as ImageIcon, Upload, X, LogOut, Copy, Check } from 'lucide-react';
+import { ArrowLeft, Users, Plus, CheckCircle2, Image as ImageIcon, Upload, X, LogOut, Copy, Check, Landmark } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePotDetail } from '@/hooks/usePots';
@@ -113,10 +113,12 @@ export default function PotDetail() {
   const [showReview, setShowReview] = useState<any | null>(null);
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showCloseDialog, setShowCloseDialog] = useState(false);
+  const [showConnectBankDialog, setShowConnectBankDialog] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [copied, setCopied] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [closing, setClosing] = useState(false);
+  const [connectingBank, setConnectingBank] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -176,20 +178,101 @@ export default function PotDetail() {
     navigate('/');
   };
 
+  const handleConnectBank = async () => {
+    setConnectingBank(true);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-connect-account`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+        }
+      );
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Failed to start onboarding');
+
+      window.location.href = result.url;
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+      setConnectingBank(false);
+    }
+  };
+
   const handleClosePot = async () => {
+    if (!user || !data) return;
     setClosing(true);
-    const { error } = await supabase
-      .from('pots')
-      .update({ status: 'closed' })
-      .eq('id', id!);
-    setClosing(false);
-    if (error) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+
+    // Check if creator has completed Stripe onboarding
+    const { data: creatorProfile } = await supabase
+      .from('profiles')
+      .select('stripe_onboarding_complete')
+      .eq('id', user.id)
+      .single();
+
+    if (!(creatorProfile as any)?.stripe_onboarding_complete) {
+      setClosing(false);
+      setShowCloseDialog(false);
+      setShowConnectBankDialog(true);
       return;
     }
-    queryClient.invalidateQueries({ queryKey: ['pots'] });
-    toast({ title: 'Pot closed', description: 'The pot has been closed and the remaining funds are being transferred to your account.' });
-    navigate('/');
+
+    const pot = data.pot;
+    const currency = pot.currency ?? 'EUR';
+    const balance = pot.balance ?? 0;
+
+    try {
+      if (balance > 0) {
+        // Call create-payout
+        const { data: sessionData } = await supabase.auth.getSession();
+        const token = sessionData?.session?.access_token;
+
+        const response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-payout`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+              apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            },
+            body: JSON.stringify({
+              pot_id: id,
+              amount: balance,
+              currency: currency.toLowerCase(),
+              recipient_user_id: user.id,
+            }),
+          }
+        );
+
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Payout failed');
+      }
+
+      // Set pot status to closed
+      const { error } = await supabase.from('pots').update({ status: 'closed' }).eq('id', id!);
+      if (error) throw error;
+
+      queryClient.invalidateQueries({ queryKey: ['pots'] });
+      toast({
+        title: 'Pot closed 🎉',
+        description: balance > 0
+          ? `${formatCurrency(balance, currency)} has been transferred to your bank account. Funds arrive within 1-3 business days.`
+          : 'The pot has been closed.',
+      });
+      navigate('/');
+    } catch (err: any) {
+      toast({ title: 'Error closing pot', description: err.message, variant: 'destructive' });
+    } finally {
+      setClosing(false);
+    }
   };
 
   if (isLoading || !data) {
@@ -292,11 +375,11 @@ export default function PotDetail() {
                 <div key={tx.id} className="bg-card rounded-xl border border-border p-4">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-full bg-success/10 flex items-center justify-center flex-shrink-0">
-                      <span className="text-base">💳</span>
+                      <span className="text-base">{Number(tx.amount) < 0 ? '💸' : '💳'}</span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-foreground">
-                        Added {formatCurrency(tx.amount, currency)}
+                        {Number(tx.amount) < 0 ? 'Withdrawal' : 'Added'} {formatCurrency(Math.abs(Number(tx.amount)), currency)}
                       </p>
                       <p className="text-xs text-muted-foreground">{formatDate(tx.created_at)}</p>
                       {receipt && (
@@ -306,7 +389,9 @@ export default function PotDetail() {
                       )}
                     </div>
                     <div className="flex flex-col items-end gap-1.5">
-                      <span className="text-success font-bold text-sm">+{formatCurrency(tx.amount, currency)}</span>
+                      <span className={`font-bold text-sm ${Number(tx.amount) < 0 ? 'text-destructive' : 'text-success'}`}>
+                        {Number(tx.amount) < 0 ? '' : '+'}{formatCurrency(Number(tx.amount), currency)}
+                      </span>
                       {needsReceipt && (
                         <button
                           onClick={() => setShowUpload(tx.id)}
@@ -443,7 +528,7 @@ export default function PotDetail() {
           <AlertDialogHeader>
             <AlertDialogTitle>Close this pot?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently close "{pot.name}". The remaining funds of {formatCurrency(pot.balance ?? 0, currency)} will be transferred to your account. The pot will no longer appear for any members.
+              This will permanently close "{pot.name}". The remaining funds of {formatCurrency(pot.balance ?? 0, currency)} will be transferred to your bank account. Funds arrive within 1-3 business days.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -453,7 +538,29 @@ export default function PotDetail() {
               disabled={closing}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {closing ? 'Closing…' : 'Close Pot'}
+              {closing ? 'Processing…' : 'Close Pot'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Connect Bank Account Dialog */}
+      <AlertDialog open={showConnectBankDialog} onOpenChange={setShowConnectBankDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Bank account required</AlertDialogTitle>
+            <AlertDialogDescription>
+              You need to connect your bank account before closing a pot. This is required to receive your funds.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConnectBank}
+              disabled={connectingBank}
+            >
+              <Landmark size={15} className="mr-1.5" />
+              {connectingBank ? 'Redirecting…' : 'Connect Bank Account'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
