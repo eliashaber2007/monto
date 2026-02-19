@@ -154,6 +154,8 @@ export type Database = {
           created_at: string
           first_name: string
           id: string
+          stripe_account_id: string | null
+          stripe_onboarding_complete: boolean
         }
         Insert: {
           avatar_color?: string | null
@@ -161,6 +163,8 @@ export type Database = {
           created_at?: string
           first_name: string
           id: string
+          stripe_account_id?: string | null
+          stripe_onboarding_complete?: boolean
         }
         Update: {
           avatar_color?: string | null
@@ -168,6 +172,8 @@ export type Database = {
           created_at?: string
           first_name?: string
           id?: string
+          stripe_account_id?: string | null
+          stripe_onboarding_complete?: boolean
         }
         Relationships: []
       }

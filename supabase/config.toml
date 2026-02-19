@@ -5,3 +5,12 @@ verify_jwt = false
 
 [functions.stripe-webhook]
 verify_jwt = false
+
+[functions.create-connect-account]
+verify_jwt = false
+
+[functions.create-payout]
+verify_jwt = false
+
+[functions.stripe-connect-webhook]
+verify_jwt = false

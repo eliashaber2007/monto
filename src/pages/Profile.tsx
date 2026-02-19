@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Camera, Save, Eye, EyeOff } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { ArrowLeft, Camera, Save, Eye, EyeOff, Landmark, CheckCircle2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/usePots';
@@ -22,6 +22,7 @@ function formatCurrency(amount: number) {
 
 export default function Profile() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
   const { data: profile, isLoading } = useProfile();
   const queryClient = useQueryClient();
@@ -49,6 +50,24 @@ export default function Profile() {
   const [totalDeposits, setTotalDeposits] = useState(0);
   const [totalWithdrawals, setTotalWithdrawals] = useState(0);
 
+  // Stripe Connect
+  const [connectingBank, setConnectingBank] = useState(false);
+  const stripeOnboardingComplete = (profile as any)?.stripe_onboarding_complete ?? false;
+
+  // Handle connect query params
+  useEffect(() => {
+    const connectStatus = searchParams.get('connect');
+    if (connectStatus === 'success') {
+      toast({ title: 'Bank account connected successfully 🎉' });
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      setSearchParams({}, { replace: true });
+    } else if (connectStatus === 'refresh') {
+      // Auto-restart onboarding
+      setSearchParams({}, { replace: true });
+      handleConnectBank();
+    }
+  }, [searchParams]);
+
   useEffect(() => {
     if (profile) {
       setDisplayName(profile.first_name ?? '');
@@ -72,8 +91,36 @@ export default function Profile() {
         const total = (data ?? []).reduce((sum, t) => sum + Number(t.amount), 0);
         setTotalDeposits(total);
       });
-    // No withdrawals table yet, keep at 0
   }, [user]);
+
+  const handleConnectBank = async () => {
+    setConnectingBank(true);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-connect-account`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+        }
+      );
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Failed to start onboarding');
+
+      // Redirect to Stripe onboarding
+      window.location.href = result.url;
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+      setConnectingBank(false);
+    }
+  };
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -113,11 +160,7 @@ export default function Profile() {
   const handleSaveInfo = async () => {
     if (!user) return;
     setSavingInfo(true);
-
-    // Update display name
     await supabase.from('profiles').update({ first_name: displayName }).eq('id', user.id);
-
-    // Update email if changed
     if (email !== user.email) {
       const { error } = await supabase.auth.updateUser({ email });
       if (error) {
@@ -126,7 +169,6 @@ export default function Profile() {
         return;
       }
     }
-
     queryClient.invalidateQueries({ queryKey: ['profile'] });
     toast({ title: 'Profile updated! ✅' });
     setSavingInfo(false);
@@ -215,7 +257,6 @@ export default function Profile() {
           <p className="mt-3 font-bold text-foreground text-lg">{displayName}</p>
           <p className="text-sm text-muted-foreground">{email}</p>
 
-          {/* Color picker (only when no photo) */}
           {!avatarUrl && (
             <div className="mt-4">
               <p className="text-xs text-muted-foreground mb-2">Avatar color</p>
@@ -233,33 +274,43 @@ export default function Profile() {
           )}
         </div>
 
+        {/* Payout Account */}
+        <div className="bg-card rounded-2xl border border-border p-6 space-y-4">
+          <h2 className="font-bold text-foreground text-base">Payout Account</h2>
+          {stripeOnboardingComplete ? (
+            <div className="flex items-center gap-2 text-success font-semibold">
+              <CheckCircle2 size={18} />
+              Bank account connected ✅
+            </div>
+          ) : (
+            <>
+              <p className="text-sm text-muted-foreground">
+                Connect your bank account to receive payouts when pots are closed or withdrawals are approved.
+              </p>
+              <Button
+                onClick={handleConnectBank}
+                disabled={connectingBank}
+                className="w-full h-11 rounded-xl font-semibold"
+              >
+                <Landmark size={15} className="mr-1.5" />
+                {connectingBank ? 'Redirecting…' : 'Connect your bank account'}
+              </Button>
+            </>
+          )}
+        </div>
+
         {/* Personal Info */}
         <div className="bg-card rounded-2xl border border-border p-6 space-y-4">
           <h2 className="font-bold text-foreground text-base">Personal Info</h2>
           <div className="space-y-2">
             <Label htmlFor="name" className="text-sm">Display Name</Label>
-            <Input
-              id="name"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              className="rounded-xl"
-            />
+            <Input id="name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="rounded-xl" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="email" className="text-sm">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="rounded-xl"
-            />
+            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="rounded-xl" />
           </div>
-          <Button
-            onClick={handleSaveInfo}
-            disabled={savingInfo}
-            className="w-full h-11 rounded-xl font-semibold"
-          >
+          <Button onClick={handleSaveInfo} disabled={savingInfo} className="w-full h-11 rounded-xl font-semibold">
             <Save size={15} className="mr-1.5" />
             {savingInfo ? 'Saving…' : 'Save Changes'}
           </Button>
@@ -275,31 +326,13 @@ export default function Profile() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="new-pw" className="text-sm">New Password</Label>
-            <Input
-              id="new-pw"
-              type={showPasswords ? 'text' : 'password'}
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="Enter new password"
-              className="rounded-xl"
-            />
+            <Input id="new-pw" type={showPasswords ? 'text' : 'password'} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Enter new password" className="rounded-xl" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="confirm-pw" className="text-sm">Confirm New Password</Label>
-            <Input
-              id="confirm-pw"
-              type={showPasswords ? 'text' : 'password'}
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Confirm new password"
-              className="rounded-xl"
-            />
+            <Input id="confirm-pw" type={showPasswords ? 'text' : 'password'} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirm new password" className="rounded-xl" />
           </div>
-          <Button
-            onClick={handleChangePassword}
-            disabled={savingPassword || !newPassword || !confirmPassword}
-            className="w-full h-11 rounded-xl font-semibold"
-          >
+          <Button onClick={handleChangePassword} disabled={savingPassword || !newPassword || !confirmPassword} className="w-full h-11 rounded-xl font-semibold">
             {savingPassword ? 'Updating…' : 'Update Password'}
           </Button>
         </div>
