@@ -46,6 +46,9 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
   const [requireReceipt, setRequireReceipt] = useState(false);
   const [receiptWindowDays, setReceiptWindowDays] = useState(7);
   const [creating, setCreating] = useState(false);
+  // Step 5: initial deposit when no goal amount is set
+  const [initialDeposit, setInitialDeposit] = useState("");
+  const [createdPotId, setCreatedPotId] = useState<string | null>(null);
 
   const reset = () => {
     setStep(1);
@@ -57,11 +60,21 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
     setWithdrawalPassword("");
     setRequireReceipt(false);
     setReceiptWindowDays(7);
+    setInitialDeposit("");
   };
 
   const handleClose = (val: boolean) => {
     if (!val) reset();
     onOpenChange(val);
+  };
+
+  const redirectToCheckout = async (potId: string, amountEuros: number) => {
+    const res = await supabase.functions.invoke("create-checkout-session", {
+      body: { pot_id: potId, amount_cents: Math.round(amountEuros * 100) },
+    });
+    if (res.error) throw res.error;
+    const { url } = res.data as { url: string };
+    if (url) window.location.href = url;
   };
 
   const handleCreate = async () => {
@@ -119,16 +132,13 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
       return;
     }
 
-    const pot = { id: potId, name: potName.trim() };
-
     // Add creator as member first — this enables SELECT access via RLS
     const { error: memberError } = await supabase
       .from("pot_members")
-      .insert({ pot_id: pot.id, user_id: userId, role: "creator" });
-
-    setCreating(false);
+      .insert({ pot_id: potId, user_id: userId, role: "creator" });
 
     if (memberError) {
+      setCreating(false);
       toast({
         title: "Pot created but member setup failed",
         description: memberError.message,
@@ -137,11 +147,47 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
       return;
     }
 
+    queryClient.invalidateQueries({ queryKey: ["pots"] });
+
+    // If a goal amount was set, use it as the initial deposit amount
+    if (goalAmount && parseFloat(goalAmount) > 0) {
+      try {
+        await redirectToCheckout(potId, parseFloat(goalAmount));
+        // page navigates away; no need to reset
+      } catch (err: any) {
+        setCreating(false);
+        toast({ title: "Checkout error", description: err.message ?? "Could not start checkout.", variant: "destructive" });
+      }
+      return;
+    }
+
+    // No goal amount — move to step 5 to ask for an initial deposit
+    setCreating(false);
+    // Store the created pot id so step 5 can use it
+    setCreatedPotId(potId);
+    setStep(5);
+  };
+
+  const handleInitialDeposit = async () => {
+    const amount = parseFloat(initialDeposit);
+    if (!amount || amount <= 0) {
+      toast({ title: "Invalid amount", description: "Please enter an amount greater than 0.", variant: "destructive" });
+      return;
+    }
+    setCreating(true);
+    try {
+      await redirectToCheckout(createdPotId!, amount);
+    } catch (err: any) {
+      setCreating(false);
+      toast({ title: "Checkout error", description: err.message ?? "Could not start checkout.", variant: "destructive" });
+    }
+  };
+
+  const handleSkipDeposit = () => {
     reset();
     onOpenChange(false);
-    queryClient.invalidateQueries({ queryKey: ["pots"] });
-    toast({ title: "Pot created!", description: `"${pot.name}" is ready.` });
-    navigate(`/pots/${pot.id}`);
+    toast({ title: "Pot created!", description: `"${potName}" is ready.` });
+    navigate(`/pots/${createdPotId}`);
   };
 
   const totalSteps = 4;
@@ -152,14 +198,14 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
         <div className="h-1 bg-muted">
           <div
             className="h-full bg-primary transition-all duration-300 ease-out"
-            style={{ width: `${(step / totalSteps) * 100}%` }}
+            style={{ width: `${(Math.min(step, totalSteps) / totalSteps) * 100}%` }}
           />
         </div>
 
         <div className="p-6">
           <DialogHeader className="mb-5">
             <div className="flex items-center gap-2">
-              {step > 1 && (
+              {step > 1 && step <= 4 && (
                 <button
                   onClick={() => setStep((s) => s - 1)}
                   className="w-7 h-7 rounded-full flex items-center justify-center text-muted-foreground hover:bg-secondary transition-colors -ml-1"
@@ -173,10 +219,13 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
                 {step === 2 && "Set initial details"}
                 {step === 3 && "Withdrawal rules"}
                 {step === 4 && "Spending verification"}
+                {step === 5 && "Make an initial deposit"}
               </DialogTitle>
-              <span className="ml-auto text-xs text-muted-foreground font-medium">
-                {step}/{totalSteps}
-              </span>
+              {step <= 4 && (
+                <span className="ml-auto text-xs text-muted-foreground font-medium">
+                  {step}/{totalSteps}
+                </span>
+              )}
             </div>
           </DialogHeader>
 
@@ -435,8 +484,60 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
               </div>
             </div>
           )}
+
+          {/* STEP 5 — Initial deposit (only shown when no goal amount was set) */}
+          {step === 5 && (
+            <div className="space-y-5">
+              <p className="text-sm text-muted-foreground">
+                Your pot is ready! Add an initial deposit to get things started, or skip for now.
+              </p>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="initialDeposit">
+                  Deposit amount ({currency === "EUR" ? "€" : currency === "GBP" ? "£" : "$"})
+                </Label>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground font-medium text-sm select-none">
+                    {currency === "EUR" ? "€" : currency === "GBP" ? "£" : "$"}
+                  </span>
+                  <Input
+                    id="initialDeposit"
+                    type="number"
+                    min="1"
+                    step="0.01"
+                    placeholder="e.g. 50"
+                    value={initialDeposit}
+                    onChange={(e) => setInitialDeposit(e.target.value)}
+                    autoFocus
+                    className="h-11 pl-9"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  className="flex-1 h-11 rounded-xl"
+                  onClick={handleSkipDeposit}
+                  type="button"
+                  disabled={creating}
+                >
+                  Skip
+                </Button>
+                <Button
+                  className="flex-1 h-11 rounded-xl"
+                  onClick={handleInitialDeposit}
+                  disabled={creating || !initialDeposit || parseFloat(initialDeposit) <= 0}
+                  type="button"
+                >
+                  {creating ? "Redirecting…" : "Pay with Stripe"}
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
   );
 }
+
