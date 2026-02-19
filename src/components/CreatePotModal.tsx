@@ -10,7 +10,27 @@ import { Label } from "@/components/ui/label";
 import { Droplets, CircleDot, PieChart, Fuel, Plane, ChevronLeft, Receipt, Clock } from "lucide-react";
 
 type VisualStyle = "liquid_bubble" | "progress_ring" | "cake_slice" | "fuel_tank" | "flight_progress";
+
 type WithdrawalRule = "auto_approve" | "requires_approval" | "requires_password";
+
+const VISUAL_STYLES: {
+  id: VisualStyle;
+  label: string;
+  Icon: React.ElementType;
+  desc: string;
+}[] = [
+  { id: "liquid_bubble", label: "Liquid Bubble", Icon: Droplets, desc: "Fluid animated fill" },
+  { id: "progress_ring", label: "Progress Ring", Icon: CircleDot, desc: "Classic circular ring" },
+  { id: "cake_slice", label: "Cake Slice", Icon: PieChart, desc: "Pie chart progress" },
+  { id: "fuel_tank", label: "Fuel Tank", Icon: Fuel, desc: "Gauge-style fill" },
+  { id: "flight_progress", label: "Flight Progress", Icon: Plane, desc: "Journey tracker" },
+];
+
+const WITHDRAWAL_RULES: { id: WithdrawalRule; label: string; desc: string }[] = [
+  { id: "auto_approve", label: "Auto-approve", desc: "Withdrawals are instant" },
+  { id: "requires_approval", label: "Requires Approval", desc: "Creator must approve each withdrawal" },
+  { id: "requires_password", label: "Requires Password", desc: "Members enter a password to withdraw" },
+];
 
 interface Props {
   open: boolean;
@@ -51,9 +71,19 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
   };
 
   const handleCreate = async () => {
+    // Basic validation
+    if (!potName.trim()) {
+      toast({
+        title: "Missing pot name",
+        description: "Please enter a name for your pot.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setCreating(true);
 
-    // 🔥 Guarantee authenticated user at insert time
+    // ✅ Ensure we have an authenticated user at the moment of insert
     const { data: userData, error: userError } = await supabase.auth.getUser();
     const authedUser = userData?.user;
 
@@ -67,11 +97,12 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
       return;
     }
 
+    // ✅ Insert pot with correct owner column: creator_id
     const { data: pot, error } = await supabase
       .from("pots")
       .insert({
         name: potName.trim(),
-        creator_id: authedUser.id, // ✅ Correct column name
+        creator_id: authedUser.id, // 🔥 FIX: must match your DB/RLS expectations
         visual_style: visualStyle,
         currency,
         goal_amount: goalAmount ? parseFloat(goalAmount) : null,
@@ -93,6 +124,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
       return;
     }
 
+    // Add creator as member
     const { error: memberError } = await supabase
       .from("pot_members")
       .insert({ pot_id: pot.id, user_id: authedUser.id, role: "creator" });
@@ -120,6 +152,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-sm rounded-2xl p-0 overflow-hidden gap-0">
+        {/* Progress bar */}
         <div className="h-1 bg-muted">
           <div
             className="h-full bg-primary transition-all duration-300 ease-out"
@@ -129,14 +162,29 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
 
         <div className="p-6">
           <DialogHeader className="mb-5">
-            <DialogTitle className="text-base">
-              {step === 1 && "Choose a visual style"}
-              {step === 2 && "Set initial details"}
-              {step === 3 && "Withdrawal rules"}
-              {step === 4 && "Spending verification"}
-            </DialogTitle>
+            <div className="flex items-center gap-2">
+              {step > 1 && (
+                <button
+                  onClick={() => setStep((s) => s - 1)}
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-muted-foreground hover:bg-secondary transition-colors -ml-1"
+                  type="button"
+                >
+                  <ChevronLeft size={16} />
+                </button>
+              )}
+              <DialogTitle className="text-base">
+                {step === 1 && "Choose a visual style"}
+                {step === 2 && "Set initial details"}
+                {step === 3 && "Withdrawal rules"}
+                {step === 4 && "Spending verification"}
+              </DialogTitle>
+              <span className="ml-auto text-xs text-muted-foreground font-medium">
+                {step}/{totalSteps}
+              </span>
+            </div>
           </DialogHeader>
 
+          {/* ── STEP 1: Visual Style ── */}
           {step === 1 && (
             <div className="space-y-4">
               <div className="space-y-1.5">
@@ -151,17 +199,245 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
                 />
               </div>
 
+              <div>
+                <Label className="mb-2 block">Visual style</Label>
+                <div className="space-y-2">
+                  {VISUAL_STYLES.map(({ id, label, Icon, desc }) => (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => setVisualStyle(id)}
+                      className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${
+                        visualStyle === id
+                          ? "border-primary bg-accent"
+                          : "border-border bg-card hover:border-primary/40"
+                      }`}
+                    >
+                      <div
+                        className={`w-9 h-9 rounded-lg flex items-center justify-center ${
+                          visualStyle === id ? "bg-primary" : "bg-secondary"
+                        }`}
+                      >
+                        <Icon
+                          size={18}
+                          className={visualStyle === id ? "text-primary-foreground" : "text-muted-foreground"}
+                        />
+                      </div>
+                      <div>
+                        <div className="text-sm font-semibold text-foreground">{label}</div>
+                        <div className="text-xs text-muted-foreground">{desc}</div>
+                      </div>
+                      {visualStyle === id && (
+                        <div className="ml-auto w-4 h-4 rounded-full bg-primary flex items-center justify-center">
+                          <div className="w-2 h-2 rounded-full bg-white" />
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <Button className="w-full h-11 rounded-xl" disabled={!potName.trim()} onClick={() => setStep(2)}>
                 Next
               </Button>
             </div>
           )}
 
-          {step === 4 && (
-            <div className="flex gap-3">
-              <Button className="flex-1 h-11 rounded-xl" onClick={handleCreate} disabled={creating}>
-                {creating ? "Creating…" : "Create Pot"}
+          {/* ── STEP 2: Balance & Currency ── */}
+          {step === 2 && (
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <Label>Currency</Label>
+                <select
+                  value={currency}
+                  onChange={(e) => setCurrency(e.target.value)}
+                  className="w-full h-11 rounded-xl border border-border bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                >
+                  <option value="EUR">EUR — Euro (€)</option>
+                  <option value="GBP">GBP — British Pound (£)</option>
+                  <option value="USD">USD — US Dollar ($)</option>
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="goalAmount">Savings goal (optional)</Label>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground font-medium text-sm select-none">
+                    {currency === "EUR" ? "€" : currency === "GBP" ? "£" : "$"}
+                  </span>
+                  <Input
+                    id="goalAmount"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="e.g. 1000"
+                    value={goalAmount}
+                    onChange={(e) => setGoalAmount(e.target.value)}
+                    className="h-11 pl-9"
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">Leave blank for an open-ended pot</p>
+              </div>
+
+              <Button className="w-full h-11 rounded-xl" onClick={() => setStep(3)}>
+                Next
               </Button>
+            </div>
+          )}
+
+          {/* ── STEP 3: Withdrawal Rules ── */}
+          {step === 3 && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                {WITHDRAWAL_RULES.map(({ id, label, desc }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setWithdrawalRule(id)}
+                    className={`w-full flex items-center gap-3 p-3.5 rounded-xl border transition-all text-left ${
+                      withdrawalRule === id
+                        ? "border-primary bg-accent"
+                        : "border-border bg-card hover:border-primary/40"
+                    }`}
+                  >
+                    <div>
+                      <div className="text-sm font-semibold text-foreground">{label}</div>
+                      <div className="text-xs text-muted-foreground">{desc}</div>
+                    </div>
+                    {withdrawalRule === id && (
+                      <div className="ml-auto w-4 h-4 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                        <div className="w-2 h-2 rounded-full bg-white" />
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              {withdrawalRule === "requires_password" && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="wdPw">Withdrawal password</Label>
+                  <Input
+                    id="wdPw"
+                    type="password"
+                    placeholder="Set a password for withdrawals"
+                    value={withdrawalPassword}
+                    onChange={(e) => setWithdrawalPassword(e.target.value)}
+                    className="h-11"
+                  />
+                </div>
+              )}
+
+              <Button
+                className="w-full h-11 rounded-xl"
+                disabled={withdrawalRule === "requires_password" && !withdrawalPassword.trim()}
+                onClick={() => setStep(4)}
+              >
+                Next
+              </Button>
+            </div>
+          )}
+
+          {/* ── STEP 4: Receipt Requirement ── */}
+          {step === 4 && (
+            <div className="space-y-5">
+              <div
+                className={`rounded-xl border p-4 cursor-pointer transition-all ${
+                  requireReceipt ? "border-primary bg-accent" : "border-border bg-card"
+                }`}
+                onClick={() => setRequireReceipt((r) => !r)}
+              >
+                <div className="flex items-start gap-3">
+                  <div
+                    className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                      requireReceipt ? "bg-primary" : "bg-secondary"
+                    }`}
+                  >
+                    <Receipt
+                      size={18}
+                      className={requireReceipt ? "text-primary-foreground" : "text-muted-foreground"}
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-semibold text-foreground">Require receipt upload</span>
+                      <div
+                        className={`relative w-10 h-5.5 rounded-full transition-colors flex-shrink-0 ${
+                          requireReceipt ? "bg-primary" : "bg-muted"
+                        }`}
+                        style={{ height: "22px", width: "40px" }}
+                      >
+                        <div
+                          className={`absolute top-0.5 w-[18px] h-[18px] bg-white rounded-full shadow transition-all ${
+                            requireReceipt ? "left-[18px]" : "left-0.5"
+                          }`}
+                        />
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Members must upload a receipt after each withdrawal
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {requireReceipt && (
+                <div className="space-y-3 animate-fade-in">
+                  <div className="space-y-1.5">
+                    <Label className="flex items-center gap-1.5">
+                      <Clock size={13} className="text-muted-foreground" />
+                      Upload window
+                    </Label>
+                    <div className="flex gap-2">
+                      {[3, 7, 14, 30].map((d) => (
+                        <button
+                          key={d}
+                          type="button"
+                          onClick={() => setReceiptWindowDays(d)}
+                          className={`flex-1 h-9 rounded-lg text-xs font-semibold border transition-all ${
+                            receiptWindowDays === d
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : "bg-card text-foreground border-border hover:border-primary/40"
+                          }`}
+                        >
+                          {d}d
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Members have {receiptWindowDays} days to submit a receipt
+                    </p>
+                  </div>
+
+                  <div className="bg-secondary rounded-xl p-3 space-y-1.5 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-warning flex-shrink-0" />
+                      Receipt Pending — waiting for upload
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
+                      Submitted — awaiting creator review
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-success flex-shrink-0" />
+                      Approved by creator
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-destructive flex-shrink-0" />
+                      Rejected / Expired
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex gap-3">
+                <Button variant="outline" className="flex-1 h-11 rounded-xl" onClick={() => setStep(3)} type="button">
+                  Back
+                </Button>
+
+                <Button className="flex-1 h-11 rounded-xl" onClick={handleCreate} disabled={creating} type="button">
+                  {creating ? "Creating…" : "Create Pot"}
+                </Button>
+              </div>
             </div>
           )}
         </div>
