@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import SocialLoginButtons from '@/components/SocialLoginButtons';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -28,13 +29,13 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
-        {/* Logo */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-foreground">Monto</h1>
         </div>
 
-        {/* Card */}
         <div className="bg-card rounded-2xl shadow-card p-6 border border-border space-y-4">
+          <SocialLoginButtons />
+
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="email">Email</Label>
