@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import SocialLoginButtons from "@/components/SocialLoginButtons";
 
 export default function Signup() {
   const [firstName, setFirstName] = useState("");
@@ -65,6 +66,8 @@ export default function Signup() {
         </div>
 
         <div className="bg-card rounded-2xl shadow-card p-6 border border-border space-y-4">
+          <SocialLoginButtons />
+
           <form onSubmit={handleSignup} className="space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="firstName">First name</Label>
