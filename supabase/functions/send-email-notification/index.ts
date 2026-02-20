@@ -1,0 +1,173 @@
+import { Resend } from 'npm:resend@4.0.0';
+import { createClient } from 'npm:@supabase/supabase-js@2';
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
+};
+
+const resend = new Resend(Deno.env.get('RESEND_API_KEY')!);
+
+const supabaseAdmin = createClient(
+  Deno.env.get('SUPABASE_URL')!,
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+);
+
+async function getUserEmail(userId: string): Promise<string | null> {
+  const { data, error } = await supabaseAdmin.auth.admin.getUserById(userId);
+  if (error || !data?.user?.email) return null;
+  return data.user.email;
+}
+
+async function getProfile(userId: string) {
+  const { data } = await supabaseAdmin.from('profiles').select('first_name').eq('id', userId).single();
+  return data;
+}
+
+async function getPot(potId: string) {
+  const { data } = await supabaseAdmin.from('pots').select('name, created_by, balance, currency').eq('id', potId).single();
+  return data;
+}
+
+async function getPotMemberCount(potId: string): Promise<number> {
+  const { count } = await supabaseAdmin.from('pot_members').select('id', { count: 'exact', head: true }).eq('pot_id', potId);
+  return count ?? 0;
+}
+
+async function getPotMemberUserIds(potId: string): Promise<string[]> {
+  const { data } = await supabaseAdmin.from('pot_members').select('user_id').eq('pot_id', potId);
+  return data?.map((m: any) => m.user_id) ?? [];
+}
+
+function formatCurrency(amount: number, currency = 'EUR') {
+  return new Intl.NumberFormat('en-IE', { style: 'currency', currency, minimumFractionDigits: 2 }).format(amount);
+}
+
+interface EmailPayload {
+  type: 'member_joined' | 'withdrawal_requested' | 'withdrawal_approved' | 'funds_added' | 'pot_closed';
+  pot_id: string;
+  user_id?: string;       // the actor (who joined, who deposited, etc.)
+  amount?: number;
+  currency?: string;
+}
+
+async function sendEmail(to: string, subject: string, body: string) {
+  try {
+    const { error } = await resend.emails.send({
+      from: 'Monto <notifications@resend.dev>',
+      to: [to],
+      subject,
+      html: `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px;">
+          <h2 style="color: #1a1a1a; margin-bottom: 16px;">${subject}</h2>
+          <p style="color: #333; font-size: 15px; line-height: 1.6;">${body}</p>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
+          <p style="color: #999; font-size: 12px;">Sent by Monto</p>
+        </div>
+      `,
+    });
+    if (error) {
+      console.error('Resend error:', error);
+    }
+  } catch (err) {
+    console.error('Email send failed:', err);
+  }
+}
+
+async function handleNotification(payload: EmailPayload) {
+  const pot = await getPot(payload.pot_id);
+  if (!pot) { console.error('Pot not found:', payload.pot_id); return; }
+
+  const currency = payload.currency || pot.currency || 'EUR';
+
+  switch (payload.type) {
+    case 'member_joined': {
+      const profile = payload.user_id ? await getProfile(payload.user_id) : null;
+      const name = profile?.first_name || 'Someone';
+      const creatorEmail = await getUserEmail(pot.created_by);
+      if (!creatorEmail) break;
+      const memberCount = await getPotMemberCount(payload.pot_id);
+      await sendEmail(
+        creatorEmail,
+        `${name} joined your pot ${pot.name}`,
+        `${name} has just joined your pot <strong>${pot.name}</strong>. You now have <strong>${memberCount}</strong> members.`,
+      );
+      break;
+    }
+
+    case 'withdrawal_requested': {
+      const profile = payload.user_id ? await getProfile(payload.user_id) : null;
+      const name = profile?.first_name || 'Someone';
+      const creatorEmail = await getUserEmail(pot.created_by);
+      if (!creatorEmail) break;
+      await sendEmail(
+        creatorEmail,
+        `Withdrawal request in ${pot.name}`,
+        `${name} has requested a withdrawal of <strong>${formatCurrency(payload.amount ?? 0, currency)}</strong> from <strong>${pot.name}</strong>. Log in to approve or reject it.`,
+      );
+      break;
+    }
+
+    case 'withdrawal_approved': {
+      if (!payload.user_id) break;
+      const recipientEmail = await getUserEmail(payload.user_id);
+      if (!recipientEmail) break;
+      await sendEmail(
+        recipientEmail,
+        'Your withdrawal has been approved',
+        `Your withdrawal of <strong>${formatCurrency(payload.amount ?? 0, currency)}</strong> from <strong>${pot.name}</strong> has been approved. Funds will arrive within 1-3 business days.`,
+      );
+      break;
+    }
+
+    case 'funds_added': {
+      const profile = payload.user_id ? await getProfile(payload.user_id) : null;
+      const name = profile?.first_name || 'Someone';
+      const creatorEmail = await getUserEmail(pot.created_by);
+      if (!creatorEmail) break;
+      await sendEmail(
+        creatorEmail,
+        `${name} added ${formatCurrency(payload.amount ?? 0, currency)} to ${pot.name}`,
+        `${name} added <strong>${formatCurrency(payload.amount ?? 0, currency)}</strong> to your pot <strong>${pot.name}</strong>. The new balance is <strong>${formatCurrency(pot.balance, currency)}</strong>.`,
+      );
+      break;
+    }
+
+    case 'pot_closed': {
+      const memberIds = await getPotMemberUserIds(payload.pot_id);
+      for (const memberId of memberIds) {
+        const email = await getUserEmail(memberId);
+        if (!email) continue;
+        await sendEmail(
+          email,
+          `${pot.name} has been closed`,
+          `The pot <strong>${pot.name}</strong> has been closed by the creator. Your share of the funds will be processed shortly.`,
+        );
+      }
+      break;
+    }
+  }
+}
+
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const payload: EmailPayload = await req.json();
+    // Fire and forget — don't block the caller
+    handleNotification(payload).catch((err) => console.error('Notification handler error:', err));
+
+    return new Response(JSON.stringify({ success: true }), {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  } catch (err: any) {
+    console.error('send-email-notification error:', err);
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+});

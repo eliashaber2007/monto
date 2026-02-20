@@ -118,6 +118,26 @@ Deno.serve(async (req) => {
       message: `You received €${amount.toFixed(2)} from "${pot.name}".${simulated ? ' (Test mode – simulated)' : ' Funds arrive within 1-3 business days.'}`,
     });
 
+    // Send withdrawal approved email
+    try {
+      await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email-notification`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+        },
+        body: JSON.stringify({
+          type: 'withdrawal_approved',
+          pot_id,
+          user_id: recipient_user_id,
+          amount,
+          currency,
+        }),
+      });
+    } catch (emailErr) {
+      console.error('Email notification failed:', emailErr);
+    }
+
     return new Response(JSON.stringify({ 
       success: true, 
       transfer_id: transferId,
