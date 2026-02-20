@@ -28,13 +28,10 @@ export default function Signup() {
 
     setLoading(true);
 
-    // ✅ Do NOT insert into `profiles` from the client.
-    // The database trigger creates the profiles row when auth.users is created.
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        // Store first name in Auth metadata (raw_user_meta_data)
         data: { first_name: firstName },
         emailRedirectTo: window.location.origin,
       },
@@ -48,13 +45,9 @@ export default function Signup() {
 
     setLoading(false);
 
-    // Depending on your Supabase email confirmation setting,
-    // data.user may exist but session may be null.
     toast({
       title: "Account created!",
-      description: data.session
-        ? "You’re signed up. You can now sign in."
-        : "Check your email to verify your account, then sign in.",
+      description: "Log back in with your credentials.",
     });
 
     navigate("/login");
