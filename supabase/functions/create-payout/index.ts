@@ -71,12 +71,29 @@ Deno.serve(async (req) => {
 
     // Create transfer to connected account
     const amountCents = Math.round(amount * 100);
-    const transfer = await stripe.transfers.create({
-      amount: amountCents,
-      currency: currency.toLowerCase(),
-      destination: recipientProfile.stripe_account_id,
-      metadata: { pot_id, recipient_user_id },
-    });
+    const stripeKey = Deno.env.get('STRIPE_SECRET_KEY')!;
+    const isTestMode = stripeKey.startsWith('sk_test_');
+    let transferId = '';
+    let simulated = false;
+
+    try {
+      const transfer = await stripe.transfers.create({
+        amount: amountCents,
+        currency: currency.toLowerCase(),
+        destination: recipientProfile.stripe_account_id,
+        metadata: { pot_id, recipient_user_id },
+      });
+      transferId = transfer.id;
+    } catch (transferErr: any) {
+      if (isTestMode && transferErr.message?.includes('nsufficient')) {
+        // Simulate success in test mode when balance is insufficient
+        transferId = `simulated_${crypto.randomUUID()}`;
+        simulated = true;
+        console.log('TEST MODE: Simulating successful payout due to insufficient Stripe balance');
+      } else {
+        throw transferErr;
+      }
+    }
 
     // Deduct from pot balance
     await supabaseAdmin.rpc('increment_pot_balance', {
@@ -90,7 +107,7 @@ Deno.serve(async (req) => {
       user_id: recipient_user_id,
       amount: -amount,
       status: 'completed',
-      stripe_session_id: transfer.id,
+      stripe_session_id: transferId,
     });
 
     // Send notification to recipient
@@ -98,13 +115,14 @@ Deno.serve(async (req) => {
       user_id: recipient_user_id,
       pot_id,
       type: 'payout',
-      message: `You received €${amount.toFixed(2)} from "${pot.name}". Funds arrive within 1-3 business days.`,
+      message: `You received €${amount.toFixed(2)} from "${pot.name}".${simulated ? ' (Test mode – simulated)' : ' Funds arrive within 1-3 business days.'}`,
     });
 
     return new Response(JSON.stringify({ 
       success: true, 
-      transfer_id: transfer.id,
+      transfer_id: transferId,
       recipient_name: recipientProfile.first_name,
+      simulated,
     }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
