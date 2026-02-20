@@ -65,36 +65,41 @@ function ProgressRing({ balance, goal, currency }: { balance: number; goal?: num
   const stroke = 10;
   const norm = radius - stroke / 2;
   const circ = 2 * Math.PI * norm;
-  const pct = goal && goal > 0 ? Math.min(balance / goal, 1) : 0;
+  const hasGoal = goal != null && goal > 0;
+  const pct = hasGoal ? Math.min(balance / goal!, 1) : 0;
 
   return (
     <div className="relative flex items-center justify-center w-52 h-52 mx-auto">
       <svg className="absolute" width={208} height={208} viewBox="0 0 208 208">
-        <defs>
-          <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="hsl(221,83%,68%)" />
-            <stop offset="100%" stopColor="hsl(221,83%,45%)" />
-          </linearGradient>
-        </defs>
+        {hasGoal && (
+          <defs>
+            <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="hsl(221,83%,68%)" />
+              <stop offset="100%" stopColor="hsl(221,83%,45%)" />
+            </linearGradient>
+          </defs>
+        )}
         <circle cx={104} cy={104} r={norm} fill="none" stroke="hsl(214,32%,91%)" strokeWidth={stroke} />
-        <circle
-          cx={104} cy={104} r={norm}
-          fill="none"
-          stroke="url(#ringGrad)"
-          strokeWidth={stroke}
-          strokeLinecap="round"
-          strokeDasharray={circ}
-          strokeDashoffset={circ * (1 - pct)}
-          transform="rotate(-90 104 104)"
-          style={{ transition: 'stroke-dashoffset 0.6s ease' }}
-        />
+        {hasGoal && (
+          <circle
+            cx={104} cy={104} r={norm}
+            fill="none"
+            stroke="url(#ringGrad)"
+            strokeWidth={stroke}
+            strokeLinecap="round"
+            strokeDasharray={circ}
+            strokeDashoffset={circ * (1 - pct)}
+            transform="rotate(-90 104 104)"
+            style={{ transition: 'stroke-dashoffset 0.6s ease' }}
+          />
+        )}
       </svg>
       <div className="text-center z-10">
         <div className="text-3xl font-bold text-foreground">{formatCurrency(balance, currency)}</div>
         <div className="text-xs text-muted-foreground mt-1">balance</div>
-        {goal && goal > 0 && (
+        {hasGoal && (
           <div className="text-xs text-primary font-medium mt-0.5">
-            {Math.round(pct * 100)}% left
+            {Math.round(pct * 100)}% of {formatCurrency(goal!, currency)}
           </div>
         )}
       </div>
