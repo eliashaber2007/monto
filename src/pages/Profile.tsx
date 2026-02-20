@@ -204,7 +204,7 @@ export default function Profile() {
     );
   }
 
-  const initial = displayName?.[0]?.toUpperCase() ?? 'U';
+  const initial = displayName?.[0]?.toUpperCase() ?? user?.email?.split('@')[0]?.[0]?.toUpperCase() ?? 'U';
 
   return (
     <div className="min-h-screen bg-background pb-20">
