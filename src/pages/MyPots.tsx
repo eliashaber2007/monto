@@ -96,13 +96,13 @@ export default function MyPots() {
         {/* Welcome heading */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-foreground">
-            Hey {profile?.first_name ?? '…'}! 👋
+            Hey {profile?.first_name ?? user?.user_metadata?.first_name ?? '…'}! 👋
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {activePots.length > 0
-              ? `💰 You've got ${activePots.length} active ${activePots.length === 1 ? 'pot' : 'pots'}`
-              : "Let's start your savings journey! 💪"}
-          </p>
+          {activePots.length > 0 && (
+            <p className="text-sm text-muted-foreground mt-1">
+              💰 You've got {activePots.length} active {activePots.length === 1 ? 'pot' : 'pots'}
+            </p>
+          )}
         </div>
 
         {isLoading ? (
