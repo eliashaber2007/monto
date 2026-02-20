@@ -111,12 +111,9 @@ export default function MyPots() {
           </div>
         ) : activePots.length === 0 ? (
           <div className="bg-card rounded-2xl border border-border p-12 text-center shadow-sm">
-            <div className="w-20 h-20 rounded-full bg-accent flex items-center justify-center mx-auto mb-5">
-              <span className="text-4xl">🐷</span>
-            </div>
-            <h2 className="font-bold text-foreground text-lg mb-2">Your piggy bank is empty!</h2>
+            <h2 className="font-bold text-foreground text-lg mb-2">No pots yet!</h2>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xs mx-auto">
-              Start saving with friends by creating your first pot. It only takes a minute! ✨
+              Create your first pot with your friends. It only takes a minute! ✨
             </p>
             <button
               onClick={() => setShowCreate(true)}
