@@ -56,6 +56,8 @@ export default function MyPots() {
   const [showCreate, setShowCreate] = useState(false);
   const navigate = useNavigate();
 
+  const displayName = profile?.first_name || user?.user_metadata?.first_name || user?.email?.split('@')[0] || '';
+
   // Filter out closed pots
   const activePots = (pots ?? []).filter((p: any) => p.status !== 'closed');
 
@@ -74,7 +76,7 @@ export default function MyPots() {
                   <img src={(profile as any).avatar_url} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
                   <span className="text-white font-bold text-sm">
-                    {profile?.first_name?.[0]?.toUpperCase() ?? user?.user_metadata?.first_name?.[0]?.toUpperCase() ?? '?'}
+                    {displayName?.[0]?.toUpperCase() ?? '?'}
                   </span>
                 )}
               </button>
@@ -96,7 +98,7 @@ export default function MyPots() {
         {/* Welcome heading */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-foreground">
-            Welcome back {profile?.first_name ?? user?.user_metadata?.first_name ?? '…'}! 👋
+            Welcome back {displayName || '…'}! 👋
           </h1>
           {activePots.length > 0 && (
             <p className="text-sm text-muted-foreground mt-1">
