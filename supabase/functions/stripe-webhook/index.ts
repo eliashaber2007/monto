@@ -80,6 +80,25 @@ Deno.serve(async (req) => {
     }
 
     console.log(`Processed payment: pot=${pot_id} user=${user_id} amount=€${amountEur}`);
+
+    // Send email notification for funds added
+    try {
+      await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email-notification`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+        },
+        body: JSON.stringify({
+          type: 'funds_added',
+          pot_id,
+          user_id,
+          amount: amountEur,
+        }),
+      });
+    } catch (emailErr) {
+      console.error('Email notification failed:', emailErr);
+    }
   }
 
   return new Response(JSON.stringify({ received: true }), {
