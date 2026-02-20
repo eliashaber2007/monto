@@ -50,7 +50,7 @@ function LiquidBubble({ balance, goal }: { balance: number; goal?: number | null
 }
 
 export default function MyPots() {
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
   const { data: profile } = useProfile();
   const { data: pots, isLoading } = usePots();
   const [showCreate, setShowCreate] = useState(false);
@@ -74,7 +74,7 @@ export default function MyPots() {
                   <img src={(profile as any).avatar_url} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
                   <span className="text-white font-bold text-sm">
-                    {profile?.first_name?.[0]?.toUpperCase() ?? 'M'}
+                    {profile?.first_name?.[0]?.toUpperCase() ?? user?.user_metadata?.first_name?.[0]?.toUpperCase() ?? '?'}
                   </span>
                 )}
               </button>
