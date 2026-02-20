@@ -68,6 +68,8 @@ function ProgressRing({ balance, goal, currency }: { balance: number; goal?: num
   const hasGoal = goal != null && goal > 0;
   const pct = hasGoal ? Math.min(balance / goal!, 1) : 0;
 
+  console.log('[ProgressRing] balance:', balance, 'goal_amount:', goal, 'percentage:', hasGoal ? Math.round((balance / goal!) * 100) : 'N/A (no goal)');
+
   return (
     <div className="relative flex items-center justify-center w-52 h-52 mx-auto">
       <svg className="absolute" width={208} height={208} viewBox="0 0 208 208">
@@ -99,7 +101,9 @@ function ProgressRing({ balance, goal, currency }: { balance: number; goal?: num
         <div className="text-xs text-muted-foreground mt-1">balance</div>
         {hasGoal && (
           <div className="text-xs text-primary font-medium mt-0.5">
-            {pct >= 1 ? 'Goal reached! 🎉' : `${Math.round(pct * 100)}% of ${formatCurrency(goal!, currency)}`}
+            {pct >= 1
+              ? `Goal reached! 🎉 (${formatCurrency(goal!, currency)})`
+              : `${Math.round(pct * 100)}% of ${formatCurrency(goal!, currency)}`}
           </div>
         )}
       </div>
