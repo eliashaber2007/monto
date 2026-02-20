@@ -54,6 +54,8 @@ Deno.serve(async (req) => {
       const account = await stripe.accounts.create({
         type: 'express',
         email: userEmail,
+        country: 'FR',
+        business_type: 'individual',
         capabilities: {
           transfers: { requested: true },
         },
@@ -76,6 +78,7 @@ Deno.serve(async (req) => {
       return_url: `${origin}/profile?connect=success`,
       refresh_url: `${origin}/profile?connect=refresh`,
       type: 'account_onboarding',
+      collection_options: { fields: 'eventually_due' },
     });
 
     return new Response(JSON.stringify({ url: accountLink.url }), {
