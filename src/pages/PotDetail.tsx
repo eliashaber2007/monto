@@ -99,7 +99,7 @@ function ProgressRing({ balance, goal, currency }: { balance: number; goal?: num
         <div className="text-xs text-muted-foreground mt-1">balance</div>
         {hasGoal && (
           <div className="text-xs text-primary font-medium mt-0.5">
-            {Math.round(pct * 100)}% of {formatCurrency(goal!, currency)}
+            {pct >= 1 ? 'Goal reached! 🎉' : `${Math.round(pct * 100)}% of ${formatCurrency(goal!, currency)}`}
           </div>
         )}
       </div>
@@ -158,6 +158,7 @@ export default function PotDetail() {
     const channel = supabase
       .channel(`pot-${id}`)
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'pots', filter: `id=eq.${id}` }, () => refetch())
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'transactions', filter: `pot_id=eq.${id}` }, () => refetch())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [id, refetch]);
