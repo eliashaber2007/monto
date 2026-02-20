@@ -96,7 +96,7 @@ export default function MyPots() {
         {/* Welcome heading */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-foreground">
-            Hey {profile?.first_name ?? user?.user_metadata?.first_name ?? '…'}! 👋
+            Welcome back {profile?.first_name ?? user?.user_metadata?.first_name ?? '…'}! 👋
           </h1>
           {activePots.length > 0 && (
             <p className="text-sm text-muted-foreground mt-1">
