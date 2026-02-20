@@ -571,7 +571,13 @@ export default function PotDetail() {
       {/* Modals */}
       <WithdrawalModal
         open={showWithdrawal}
-        onOpenChange={setShowWithdrawal}
+        onOpenChange={(v) => {
+          setShowWithdrawal(v);
+          if (!v) {
+            // Refetch pot data when modal closes to update balance/ring/percentage
+            refetch();
+          }
+        }}
         potId={id!}
         potBalance={pot.balance ?? 0}
         currency={currency}
@@ -583,7 +589,12 @@ export default function PotDetail() {
 
       <AddFundsModal
         open={showAddFunds}
-        onOpenChange={setShowAddFunds}
+        onOpenChange={(v) => {
+          setShowAddFunds(v);
+          if (!v) {
+            refetch();
+          }
+        }}
         potId={id!}
         potName={pot.name}
         currency={currency}
