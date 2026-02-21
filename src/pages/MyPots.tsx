@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight, Droplets, Sparkles, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile, usePots } from '@/hooks/usePots';
+import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
 import CreatePotModal from '@/components/CreatePotModal';
 import NotificationBell from '@/components/NotificationBell';
 
@@ -55,8 +57,25 @@ export default function MyPots() {
   const { data: pots, isLoading } = usePots();
   const [showCreate, setShowCreate] = useState(false);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const hasMarkedLogin = useRef(false);
 
   const displayName = profile?.first_name || user?.user_metadata?.first_name || user?.email?.split('@')[0] || '';
+  const isFirstLogin = profile?.has_logged_in_before === false;
+
+  // Mark first login as done
+  useEffect(() => {
+    if (isFirstLogin && user && !hasMarkedLogin.current) {
+      hasMarkedLogin.current = true;
+      supabase
+        .from('profiles')
+        .update({ has_logged_in_before: true })
+        .eq('id', user.id)
+        .then(() => {
+          queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
+        });
+    }
+  }, [isFirstLogin, user, queryClient]);
 
   // Filter out closed pots
   const activePots = (pots ?? []).filter((p: any) => p.status !== 'closed');
@@ -98,7 +117,7 @@ export default function MyPots() {
         {/* Welcome heading */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-foreground">
-            Welcome back {displayName || '…'}! 👋
+            {isFirstLogin ? `Welcome, ${displayName || '…'}! 👋` : `Welcome back, ${displayName || '…'}! 👋`}
           </h1>
           {activePots.length > 0 && (
             <p className="text-sm text-muted-foreground mt-1">
