@@ -153,6 +153,7 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           first_name: string
+          has_logged_in_before: boolean
           id: string
           stripe_account_id: string | null
           stripe_onboarding_complete: boolean
@@ -162,6 +163,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           first_name: string
+          has_logged_in_before?: boolean
           id: string
           stripe_account_id?: string | null
           stripe_onboarding_complete?: boolean
@@ -171,6 +173,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           first_name?: string
+          has_logged_in_before?: boolean
           id?: string
           stripe_account_id?: string | null
           stripe_onboarding_complete?: boolean

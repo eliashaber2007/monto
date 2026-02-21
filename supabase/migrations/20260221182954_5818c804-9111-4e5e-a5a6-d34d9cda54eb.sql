@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN has_logged_in_before boolean NOT NULL DEFAULT false;
