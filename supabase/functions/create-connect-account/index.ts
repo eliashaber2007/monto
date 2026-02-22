@@ -59,6 +59,13 @@ Deno.serve(async (req) => {
         capabilities: {
           transfers: { requested: true },
         },
+        settings: {
+          payouts: {
+            schedule: {
+              interval: 'manual',
+            },
+          },
+        },
       });
       accountId = account.id;
 
