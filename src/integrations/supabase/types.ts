@@ -152,6 +152,7 @@ export type Database = {
           avatar_color: string | null
           avatar_url: string | null
           created_at: string
+          dark_mode: boolean
           first_name: string
           has_logged_in_before: boolean
           id: string
@@ -162,6 +163,7 @@ export type Database = {
           avatar_color?: string | null
           avatar_url?: string | null
           created_at?: string
+          dark_mode?: boolean
           first_name: string
           has_logged_in_before?: boolean
           id: string
@@ -172,6 +174,7 @@ export type Database = {
           avatar_color?: string | null
           avatar_url?: string | null
           created_at?: string
+          dark_mode?: boolean
           first_name?: string
           has_logged_in_before?: boolean
           id?: string

@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN dark_mode boolean NOT NULL DEFAULT false;

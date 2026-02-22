@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Camera, Save, Eye, EyeOff, Landmark, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Camera, Save, Eye, EyeOff, Landmark, CheckCircle2, Moon, Sun } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/usePots';
@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useDarkMode } from '@/contexts/DarkModeContext';
 
 const AVATAR_COLORS = [
   '#3b82f6', '#8b5cf6', '#ec4899', '#ef4444',
@@ -18,6 +19,33 @@ const AVATAR_COLORS = [
 
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 }).format(amount);
+}
+
+function DarkModeToggle() {
+  const { darkMode, setDarkMode } = useDarkMode();
+
+  return (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        {darkMode ? <Moon size={18} className="text-muted-foreground" /> : <Sun size={18} className="text-muted-foreground" />}
+        <span className="text-sm font-medium text-foreground">Dark Mode</span>
+      </div>
+      <button
+        role="switch"
+        aria-checked={darkMode}
+        onClick={() => setDarkMode(!darkMode)}
+        className={`relative inline-flex h-[31px] w-[51px] shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+          darkMode ? 'bg-primary' : 'bg-muted'
+        }`}
+      >
+        <span
+          className={`pointer-events-none inline-block h-[27px] w-[27px] rounded-full bg-white shadow-lg ring-0 transition-transform duration-200 ease-in-out ${
+            darkMode ? 'translate-x-[22px]' : 'translate-x-[2px]'
+          } mt-[2px]`}
+        />
+      </button>
+    </div>
+  );
 }
 
 export default function Profile() {
@@ -272,6 +300,12 @@ export default function Profile() {
               </div>
             </div>
           )}
+        </div>
+
+        {/* Appearance */}
+        <div className="bg-card rounded-2xl border border-border p-6 space-y-4">
+          <h2 className="font-bold text-foreground text-base">Appearance</h2>
+          <DarkModeToggle />
         </div>
 
         {/* Payout Account */}
