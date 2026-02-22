@@ -360,9 +360,9 @@ export default function PotDetail() {
         {/* Tabs */}
         <Tabs defaultValue="activity">
           <TabsList className="w-full bg-secondary rounded-xl p-1 h-11">
-            <TabsTrigger value="activity" className="flex-1 rounded-lg text-sm data-[state=inactive]:text-muted-foreground dark:data-[state=inactive]:text-[#9BA3B8]">Activity</TabsTrigger>
-            <TabsTrigger value="leaderboard" className="flex-1 rounded-lg text-sm data-[state=inactive]:text-muted-foreground dark:data-[state=inactive]:text-[#9BA3B8]">Leaderboard</TabsTrigger>
-            <TabsTrigger value="members" className="flex-1 rounded-lg text-sm data-[state=inactive]:text-muted-foreground dark:data-[state=inactive]:text-[#9BA3B8]">Members</TabsTrigger>
+            <TabsTrigger value="activity" className="flex-1 rounded-lg text-sm data-[state=inactive]:text-muted-foreground dark:data-[state=inactive]:text-[#B0B8C9]">Activity</TabsTrigger>
+            <TabsTrigger value="leaderboard" className="flex-1 rounded-lg text-sm data-[state=inactive]:text-muted-foreground dark:data-[state=inactive]:text-[#B0B8C9]">Leaderboard</TabsTrigger>
+            <TabsTrigger value="members" className="flex-1 rounded-lg text-sm data-[state=inactive]:text-muted-foreground dark:data-[state=inactive]:text-[#B0B8C9]">Members</TabsTrigger>
           </TabsList>
 
           <TabsContent value="activity" className="mt-5 space-y-3">
