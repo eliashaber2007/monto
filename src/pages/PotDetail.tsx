@@ -101,9 +101,7 @@ function ProgressRing({ balance, goal, currency }: { balance: number; goal?: num
         <div className="text-xs text-muted-foreground mt-1">balance</div>
         {hasGoal && (
           <div className="text-xs text-primary font-medium mt-0.5">
-            {pct >= 1
-              ? `Goal reached! 🎉 (${formatCurrency(goal!, currency)})`
-              : `${Math.round(pct * 100)}% of ${formatCurrency(goal!, currency)}`}
+            {Math.min(Math.round((balance / goal!) * 100), 100)}% of {formatCurrency(goal!, currency)}
           </div>
         )}
       </div>
@@ -362,9 +360,9 @@ export default function PotDetail() {
         {/* Tabs */}
         <Tabs defaultValue="activity">
           <TabsList className="w-full bg-secondary rounded-xl p-1 h-11">
-            <TabsTrigger value="activity" className="flex-1 rounded-lg text-sm">Activity</TabsTrigger>
-            <TabsTrigger value="leaderboard" className="flex-1 rounded-lg text-sm">Leaderboard</TabsTrigger>
-            <TabsTrigger value="members" className="flex-1 rounded-lg text-sm">Members</TabsTrigger>
+            <TabsTrigger value="activity" className="flex-1 rounded-lg text-sm data-[state=inactive]:text-muted-foreground dark:data-[state=inactive]:text-[#9BA3B8]">Activity</TabsTrigger>
+            <TabsTrigger value="leaderboard" className="flex-1 rounded-lg text-sm data-[state=inactive]:text-muted-foreground dark:data-[state=inactive]:text-[#9BA3B8]">Leaderboard</TabsTrigger>
+            <TabsTrigger value="members" className="flex-1 rounded-lg text-sm data-[state=inactive]:text-muted-foreground dark:data-[state=inactive]:text-[#9BA3B8]">Members</TabsTrigger>
           </TabsList>
 
           <TabsContent value="activity" className="mt-5 space-y-3">
