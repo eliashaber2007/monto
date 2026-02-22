@@ -133,7 +133,7 @@ export default function PotDetail() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const inviteLink = `${window.location.origin}/join/${id}`;
+  const inviteLink = `https://preview--pot-pal-finance.lovable.app/join/${id}`;
 
   const handleCopyLink = async () => {
     try {
