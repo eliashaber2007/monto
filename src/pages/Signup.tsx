@@ -51,6 +51,7 @@ export default function Signup() {
       description: "Log back in with your credentials.",
     });
 
+    // Navigate to login — pending join pot id stays in localStorage
     navigate("/login");
   };
 
