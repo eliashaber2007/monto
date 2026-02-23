@@ -102,7 +102,7 @@ function ProgressRing({ balance, goal, currency }: { balance: number; goal?: num
         </div>
       </div>
       {hasGoal && (
-        <div className="text-xs text-muted-foreground text-center mt-2">
+        <div className="text-xs text-center mt-2 text-[#4B5563] dark:text-[#CBD5E1]">
           {Math.min(Math.round((balance / goal!) * 100), 100)}% of {formatCurrency(goal!, currency)}
         </div>
       )}
