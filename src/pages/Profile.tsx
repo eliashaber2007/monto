@@ -87,10 +87,17 @@ export default function Profile() {
     const connectStatus = searchParams.get('connect');
     if (connectStatus === 'success') {
       toast({ title: 'Bank account connected successfully 🎉' });
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      // Poll profile a few times to catch webhook update
+      const poll = async (attempts = 0) => {
+        await queryClient.invalidateQueries({ queryKey: ['profile'] });
+        await queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
+        if (attempts < 3) {
+          setTimeout(() => poll(attempts + 1), 2000);
+        }
+      };
+      poll();
       setSearchParams({}, { replace: true });
     } else if (connectStatus === 'refresh') {
-      // Auto-restart onboarding
       setSearchParams({}, { replace: true });
       handleConnectBank();
     }
