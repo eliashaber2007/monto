@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Users, Plus, CheckCircle2, Image as ImageIcon, Upload, X, LogOut, Copy, Check, Landmark } from 'lucide-react';
+import { ArrowLeft, Users, Plus, CheckCircle2, Image as ImageIcon, Upload, X, LogOut, Copy, Check, Landmark, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePotDetail } from '@/hooks/usePots';
@@ -129,6 +129,8 @@ export default function PotDetail() {
   const [leaving, setLeaving] = useState(false);
   const [closing, setClosing] = useState(false);
   const [connectingBank, setConnectingBank] = useState(false);
+  const [withdrawals, setWithdrawals] = useState<any[]>([]);
+  const [processingWithdrawal, setProcessingWithdrawal] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -166,11 +168,82 @@ export default function PotDetail() {
     return () => { supabase.removeChannel(channel); };
   }, [id, refetch]);
 
-  useEffect(() => {
+  const fetchReceipts = () => {
     if (!id) return;
     supabase.from('receipts').select('*').eq('pot_id', id).order('created_at', { ascending: false })
       .then(({ data }) => setReceipts(data ?? []));
+  };
+
+  const fetchWithdrawals = () => {
+    if (!id) return;
+    supabase.from('withdrawals').select('*').eq('pot_id', id).order('created_at', { ascending: false })
+      .then(({ data }) => setWithdrawals(data ?? []));
+  };
+
+  useEffect(() => {
+    fetchReceipts();
+    fetchWithdrawals();
   }, [id]);
+
+  const handleApproveWithdrawal = async (withdrawal: any) => {
+    setProcessingWithdrawal(withdrawal.id);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-payout`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify({
+            pot_id: id,
+            amount: withdrawal.amount,
+            currency: (data?.pot.currency ?? 'EUR').toLowerCase(),
+            recipient_user_id: withdrawal.user_id,
+          }),
+        }
+      );
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Payout failed');
+
+      await supabase.from('withdrawals').update({ status: 'approved', processed_at: new Date().toISOString() }).eq('id', withdrawal.id);
+
+      toast({ title: 'Withdrawal approved ✅' });
+      refetch();
+      fetchWithdrawals();
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    } finally {
+      setProcessingWithdrawal(null);
+    }
+  };
+
+  const handleRejectWithdrawal = async (withdrawal: any) => {
+    setProcessingWithdrawal(withdrawal.id);
+    try {
+      // Refund balance
+      await supabase.rpc('increment_pot_balance', {
+        p_pot_id: id!,
+        p_amount: withdrawal.amount,
+      });
+
+      await supabase.from('withdrawals').update({ status: 'rejected', processed_at: new Date().toISOString() }).eq('id', withdrawal.id);
+
+      toast({ title: 'Withdrawal rejected ❌', description: 'Funds returned to pot.' });
+      refetch();
+      fetchWithdrawals();
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    } finally {
+      setProcessingWithdrawal(null);
+    }
+  };
 
   const handleLeavePot = async () => {
     setLeaving(true);
@@ -367,6 +440,86 @@ export default function PotDetail() {
           </TabsList>
 
           <TabsContent value="activity" className="mt-5 space-y-3">
+            {/* Pending withdrawal requests (visible to all, actionable by creator) */}
+            {withdrawals.filter((w) => w.status === 'pending').map((w) => {
+              const memberData = members.find((m) => m.user_id === w.user_id);
+              const profile = (memberData as any)?.profiles;
+              const requesterName = profile?.first_name || 'Member';
+              const isMyRequest = w.user_id === user?.id;
+
+              return (
+                <div key={w.id} className="bg-warning/5 rounded-xl border border-warning/30 p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-warning/10 flex items-center justify-center flex-shrink-0">
+                      <span className="text-base">⏳</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-foreground">
+                        {isMyRequest ? 'Your withdrawal request' : `${requesterName} requested withdrawal`}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatCurrency(w.amount, currency)} • {formatDate(w.created_at)}
+                      </p>
+                      {w.note && <p className="text-xs text-muted-foreground mt-1 italic">"{w.note}"</p>}
+                    </div>
+                    <div className="flex-shrink-0">
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-warning/10 text-warning border border-warning/20 font-semibold">
+                        Pending
+                      </span>
+                    </div>
+                  </div>
+                  {isCreator && !isMyRequest && (
+                    <div className="flex gap-2 mt-3 ml-12">
+                      <button
+                        onClick={() => handleApproveWithdrawal(w)}
+                        disabled={processingWithdrawal === w.id}
+                        className="flex-1 text-xs font-semibold py-2 rounded-lg bg-success/10 text-success border border-success/20 hover:bg-success/20 transition-colors disabled:opacity-50"
+                      >
+                        {processingWithdrawal === w.id ? 'Processing…' : 'Approve ✅'}
+                      </button>
+                      <button
+                        onClick={() => handleRejectWithdrawal(w)}
+                        disabled={processingWithdrawal === w.id}
+                        className="flex-1 text-xs font-semibold py-2 rounded-lg bg-destructive/10 text-destructive border border-destructive/20 hover:bg-destructive/20 transition-colors disabled:opacity-50"
+                      >
+                        Reject ❌
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
+            {/* Resolved withdrawal requests */}
+            {withdrawals.filter((w) => w.status !== 'pending').map((w) => {
+              const isMyRequest = w.user_id === user?.id;
+              const memberData = members.find((m) => m.user_id === w.user_id);
+              const profile = (memberData as any)?.profiles;
+              const requesterName = profile?.first_name || 'Member';
+              const statusLabel = w.status === 'approved' ? 'Approved' : 'Rejected';
+              const statusColor = w.status === 'approved' ? 'text-success bg-success/10 border-success/20' : 'text-destructive bg-destructive/10 border-destructive/20';
+
+              return (
+                <div key={w.id} className="bg-card rounded-xl border border-border p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                      <span className="text-base">{w.status === 'approved' ? '✅' : '❌'}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-foreground">
+                        {isMyRequest ? 'Your withdrawal' : `${requesterName}'s withdrawal`} — {formatCurrency(w.amount, currency)}
+                      </p>
+                      <p className="text-xs text-muted-foreground">{formatDate(w.processed_at || w.created_at)}</p>
+                      {w.note && <p className="text-xs text-muted-foreground mt-0.5 italic">"{w.note}"</p>}
+                    </div>
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full border font-semibold ${statusColor}`}>
+                      {statusLabel}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+
             <div className="bg-card rounded-xl border border-border p-4 flex items-center gap-3">
               <div className="w-9 h-9 rounded-full bg-accent flex items-center justify-center flex-shrink-0">
                 <span className="text-base">🎉</span>
@@ -678,8 +831,8 @@ export default function PotDetail() {
         onOpenChange={(v) => {
           setShowWithdrawal(v);
           if (!v) {
-            // Refetch pot data when modal closes to update balance/ring/percentage
             refetch();
+            fetchWithdrawals();
           }
         }}
         potId={id!}
@@ -713,8 +866,7 @@ export default function PotDetail() {
           windowDays={pot.receipt_window_days ?? 7}
           onUploaded={() => {
             setShowUpload(null);
-            supabase.from('receipts').select('*').eq('pot_id', id!).order('created_at', { ascending: false })
-              .then(({ data }) => setReceipts(data ?? []));
+            fetchReceipts();
           }}
         />
       )}
@@ -727,8 +879,7 @@ export default function PotDetail() {
           potId={id!}
           onReviewed={() => {
             setShowReview(null);
-            supabase.from('receipts').select('*').eq('pot_id', id!).order('created_at', { ascending: false })
-              .then(({ data }) => setReceipts(data ?? []));
+            fetchReceipts();
           }}
         />
       )}
