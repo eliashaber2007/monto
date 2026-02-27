@@ -61,11 +61,11 @@ export default function MyPots() {
   const hasMarkedLogin = useRef(false);
 
   const displayName = profile?.first_name || user?.user_metadata?.first_name || user?.email?.split('@')[0] || '';
-  const isFirstLogin = profile?.has_logged_in_before === false;
+  const hasLoggedInBefore = profile?.has_logged_in_before === true;
 
   // Mark first login as done
   useEffect(() => {
-    if (isFirstLogin && user && !hasMarkedLogin.current) {
+    if (!hasLoggedInBefore && user && !hasMarkedLogin.current) {
       hasMarkedLogin.current = true;
       supabase
         .from('profiles')
@@ -75,7 +75,7 @@ export default function MyPots() {
           queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
         });
     }
-  }, [isFirstLogin, user, queryClient]);
+  }, [hasLoggedInBefore, user, queryClient]);
 
   // Filter out closed pots
   const activePots = (pots ?? []).filter((p: any) => p.status !== 'closed');
@@ -117,7 +117,7 @@ export default function MyPots() {
         {/* Welcome heading */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-foreground">
-            {isFirstLogin ? `Welcome, ${displayName || '…'}! 👋` : `Welcome back, ${displayName || '…'}! 👋`}
+            {hasLoggedInBefore ? `Welcome back, ${displayName || '…'}! 👋` : `Welcome, ${displayName || '…'}! 👋`}
           </h1>
           {activePots.length > 0 && (
             <p className="text-sm text-muted-foreground mt-1">

@@ -441,24 +441,39 @@ export default function PotDetail() {
           </TabsContent>
 
           <TabsContent value="members" className="mt-5 space-y-3">
-            {members.map((m) => (
-              <div key={m.id} className="bg-card rounded-xl border border-border p-4 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center flex-shrink-0 text-primary font-bold text-sm">
-                  {m.user_id === user?.id ? '🙋' : '👤'}
+            {members.map((m) => {
+              const memberProfile = (m as any).profiles;
+              const memberName = memberProfile?.first_name || 'Member';
+              const memberAvatar = memberProfile?.avatar_url;
+              const memberColor = memberProfile?.avatar_color || '#3b82f6';
+              const initial = memberName[0]?.toUpperCase() || '?';
+
+              return (
+                <div key={m.id} className="bg-card rounded-xl border border-border p-4 flex items-center gap-3">
+                  <div
+                    className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden"
+                    style={{ backgroundColor: memberAvatar ? undefined : memberColor }}
+                  >
+                    {memberAvatar ? (
+                      <img src={memberAvatar} alt={memberName} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-white font-bold text-sm">{initial}</span>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-foreground">
+                      {m.user_id === user?.id ? `${memberName} (You)` : memberName}
+                    </p>
+                    <p className="text-xs text-muted-foreground capitalize">{m.role}</p>
+                  </div>
+                  {m.role === 'creator' && (
+                    <span className="text-[11px] px-2 py-0.5 rounded-full bg-accent text-primary border border-primary/20 font-semibold">
+                      👑 Creator
+                    </span>
+                  )}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground">
-                    {m.user_id === user?.id ? 'You' : 'Member'}
-                  </p>
-                  <p className="text-xs text-muted-foreground capitalize">{m.role}</p>
-                </div>
-                {m.role === 'creator' && (
-                  <span className="text-[11px] px-2 py-0.5 rounded-full bg-accent text-primary border border-primary/20 font-semibold">
-                    👑 Creator
-                  </span>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </TabsContent>
         </Tabs>
 
