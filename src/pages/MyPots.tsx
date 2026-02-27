@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight, Droplets, Sparkles, LogOut } from 'lucide-react';
+import { ChevronRight, Droplets, Sparkles, LogOut, Archive } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile, usePots } from '@/hooks/usePots';
 import { supabase } from '@/integrations/supabase/client';
@@ -103,6 +103,13 @@ export default function MyPots() {
           </div>
           <div className="flex items-center gap-1">
             <NotificationBell />
+            <button
+              onClick={() => navigate('/archive')}
+              className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:bg-secondary transition-colors"
+              aria-label="Pot archive"
+            >
+              <Archive size={18} />
+            </button>
             <button
               onClick={signOut}
               className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:bg-secondary transition-colors"
