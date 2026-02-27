@@ -188,7 +188,12 @@ export default function Profile() {
   const handleSaveInfo = async () => {
     if (!user) return;
     setSavingInfo(true);
-    await supabase.from('profiles').update({ first_name: displayName }).eq('id', user.id);
+    const { error: updateError } = await supabase.from('profiles').update({ first_name: displayName }).eq('id', user.id);
+    if (updateError) {
+      toast({ title: 'Save failed', description: updateError.message, variant: 'destructive' });
+      setSavingInfo(false);
+      return;
+    }
     if (email !== user.email) {
       const { error } = await supabase.auth.updateUser({ email });
       if (error) {
@@ -197,7 +202,8 @@ export default function Profile() {
         return;
       }
     }
-    queryClient.invalidateQueries({ queryKey: ['profile'] });
+    await queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
+    await queryClient.invalidateQueries({ queryKey: ['profile'] });
     toast({ title: 'Profile updated! ✅' });
     setSavingInfo(false);
   };

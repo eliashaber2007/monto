@@ -210,7 +210,7 @@ export default function WithdrawalModal({
 
           <div>
             <Label htmlFor="withdrawal-note" className="text-sm font-medium">
-              Note (optional)
+              Reason for withdrawal <span className="text-destructive">*</span>
             </Label>
             <Textarea
               id="withdrawal-note"
@@ -220,6 +220,9 @@ export default function WithdrawalModal({
               rows={2}
               className="mt-1 resize-none"
             />
+            {!note.trim() && amount && (
+              <p className="text-xs text-destructive mt-1">A reason is required</p>
+            )}
           </div>
 
           {withdrawalRule === 'requires_password' && (
@@ -252,7 +255,7 @@ export default function WithdrawalModal({
 
           <Button
             onClick={handleSubmit}
-            disabled={loading || !amount}
+            disabled={loading || !amount || !note.trim()}
             className="w-full h-11 rounded-xl font-semibold"
           >
             {loading ? 'Processing…' : 'Confirm Withdrawal'}
