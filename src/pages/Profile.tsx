@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Camera, Save, Eye, EyeOff, Landmark, CheckCircle2, Moon, Sun } from 'lucide-react';
+import StripeOnboardingForm from '@/components/StripeOnboardingForm';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/usePots';
@@ -79,6 +80,7 @@ export default function Profile() {
   const [totalWithdrawals, setTotalWithdrawals] = useState(0);
 
   // Stripe Connect
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [connectingBank, setConnectingBank] = useState(false);
   const stripeOnboardingComplete = (profile as any)?.stripe_onboarding_complete ?? false;
 
@@ -329,18 +331,26 @@ export default function Profile() {
               <CheckCircle2 size={18} />
               Bank account connected ✅
             </div>
+          ) : showOnboarding ? (
+            <StripeOnboardingForm
+              onComplete={() => {
+                setShowOnboarding(false);
+                queryClient.invalidateQueries({ queryKey: ['profile'] });
+                queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
+              }}
+              onCancel={() => setShowOnboarding(false)}
+            />
           ) : (
             <>
               <p className="text-sm text-muted-foreground">
                 Connect your bank account to receive payouts when pots are closed or withdrawals are approved.
               </p>
               <Button
-                onClick={handleConnectBank}
-                disabled={connectingBank}
+                onClick={() => setShowOnboarding(true)}
                 className="w-full h-11 rounded-xl font-semibold"
               >
                 <Landmark size={15} className="mr-1.5" />
-                {connectingBank ? 'Redirecting…' : 'Connect your bank account'}
+                Connect your bank account
               </Button>
             </>
           )}

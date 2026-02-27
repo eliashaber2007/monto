@@ -19,6 +19,8 @@ interface WithdrawalModalProps {
   withdrawalPassword?: string | null;
   potName: string;
   createdBy: string;
+  maxWithdrawalAmount?: number | null;
+  maxWithdrawalsPerDay?: number | null;
 }
 
 export default function WithdrawalModal({
@@ -31,6 +33,8 @@ export default function WithdrawalModal({
   withdrawalPassword,
   potName,
   createdBy,
+  maxWithdrawalAmount,
+  maxWithdrawalsPerDay,
 }: WithdrawalModalProps) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -67,6 +71,26 @@ export default function WithdrawalModal({
     if (numAmount > potBalance) {
       toast({ title: 'Amount exceeds pot balance', variant: 'destructive' });
       return;
+    }
+    if (maxWithdrawalAmount && numAmount > maxWithdrawalAmount) {
+      toast({ title: `Maximum withdrawal is ${formatCurrency(maxWithdrawalAmount)}`, variant: 'destructive' });
+      return;
+    }
+
+    // Check daily withdrawal limit
+    if (maxWithdrawalsPerDay) {
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const { count } = await supabase
+        .from('withdrawals')
+        .select('id', { count: 'exact', head: true })
+        .eq('pot_id', potId)
+        .eq('user_id', user.id)
+        .gte('created_at', todayStart.toISOString());
+      if ((count ?? 0) >= maxWithdrawalsPerDay) {
+        toast({ title: `You've reached the daily limit of ${maxWithdrawalsPerDay} withdrawals`, variant: 'destructive' });
+        return;
+      }
     }
 
     // Check Stripe onboarding
