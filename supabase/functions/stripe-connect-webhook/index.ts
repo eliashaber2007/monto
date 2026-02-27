@@ -29,24 +29,34 @@ Deno.serve(async (req) => {
     });
   }
 
+  console.log(`Received event: ${event.type}`);
+
   if (event.type === 'account.updated') {
     const account = event.data.object as Stripe.Account;
     
-    if (account.charges_enabled && account.payouts_enabled) {
-      const supabaseAdmin = createClient(
-        Deno.env.get('SUPABASE_URL')!,
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-      );
+    console.log(`Account ${account.id}: charges_enabled=${account.charges_enabled}, payouts_enabled=${account.payouts_enabled}, details_submitted=${account.details_submitted}`);
 
-      const { error } = await supabaseAdmin
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+    );
+
+    // Mark onboarding complete if charges OR details_submitted (Express accounts with eventually_due may not have charges_enabled immediately)
+    const isComplete = (account.charges_enabled && account.payouts_enabled) || account.details_submitted;
+
+    if (isComplete) {
+      const { data: updateData, error } = await supabaseAdmin
         .from('profiles')
         .update({ stripe_onboarding_complete: true })
-        .eq('stripe_account_id', account.id);
+        .eq('stripe_account_id', account.id)
+        .select('id');
 
       if (error) {
         console.error('Failed to update onboarding status:', error);
+      } else if (!updateData || updateData.length === 0) {
+        console.error(`No profile found with stripe_account_id=${account.id}`);
       } else {
-        console.log(`Stripe Connect onboarding complete for account ${account.id}`);
+        console.log(`Stripe Connect onboarding complete for account ${account.id}, profile ${updateData[0].id}`);
       }
     }
   }

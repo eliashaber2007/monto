@@ -380,28 +380,41 @@ export default function PotDetail() {
             {transactions.map((tx) => {
               const receipt = receiptByTx[tx.id];
               const myTx = tx.user_id === user?.id;
-              const needsReceipt = pot.require_receipt && !receipt && myTx;
+              const isWithdrawal = Number(tx.amount) < 0;
+              const needsReceipt = pot.require_receipt && !receipt && myTx && !isWithdrawal;
 
               return (
                 <div key={tx.id} className="bg-card rounded-xl border border-border p-4">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-full bg-success/10 flex items-center justify-center flex-shrink-0">
-                      <span className="text-base">{Number(tx.amount) < 0 ? '💸' : '💳'}</span>
+                      <span className="text-base">{isWithdrawal ? '💸' : '💳'}</span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-foreground">
-                        {Number(tx.amount) < 0 ? 'Withdrawal' : 'Added'} {formatCurrency(Math.abs(Number(tx.amount)), currency)}
+                        {isWithdrawal ? 'Withdrawal' : 'Added'} {formatCurrency(Math.abs(Number(tx.amount)), currency)}
                       </p>
                       <p className="text-xs text-muted-foreground">{formatDate(tx.created_at)}</p>
                       {receipt && (
                         <div className="mt-1.5">
-                          <ReceiptStatusBadge status={receipt.status} />
+                          {receipt.image_url ? (
+                            <a
+                              href={receipt.image_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[10px] inline-flex items-center gap-1 text-primary font-semibold bg-accent border border-primary/20 px-2 py-0.5 rounded-full hover:bg-primary/10 transition-colors"
+                            >
+                              <ImageIcon size={9} />
+                              View receipt
+                            </a>
+                          ) : (
+                            <ReceiptStatusBadge status={receipt.status} />
+                          )}
                         </div>
                       )}
                     </div>
                     <div className="flex flex-col items-end gap-1.5">
-                      <span className={`font-bold text-sm ${Number(tx.amount) < 0 ? 'text-destructive' : 'text-success'}`}>
-                        {Number(tx.amount) < 0 ? '' : '+'}{formatCurrency(Number(tx.amount), currency)}
+                      <span className={`font-bold text-sm ${isWithdrawal ? 'text-destructive' : 'text-success'}`}>
+                        {isWithdrawal ? '' : '+'}{formatCurrency(Number(tx.amount), currency)}
                       </span>
                       {needsReceipt && (
                         <button
@@ -434,10 +447,76 @@ export default function PotDetail() {
             )}
           </TabsContent>
 
-          <TabsContent value="leaderboard" className="mt-5">
-            <div className="bg-card rounded-xl border border-border p-10 text-center">
-              <p className="text-muted-foreground text-sm">Leaderboard coming soon 🏆</p>
-            </div>
+          <TabsContent value="leaderboard" className="mt-5 space-y-3">
+            {(() => {
+              // Build leaderboard from transactions (positive amounts = deposits)
+              const depositsByUser: Record<string, number> = {};
+              transactions.forEach((tx) => {
+                const amt = Number(tx.amount);
+                if (amt > 0) {
+                  depositsByUser[tx.user_id] = (depositsByUser[tx.user_id] || 0) + amt;
+                }
+              });
+
+              // Also include members with 0 contributions
+              members.forEach((m) => {
+                if (!(m.user_id in depositsByUser)) {
+                  depositsByUser[m.user_id] = 0;
+                }
+              });
+
+              const ranked = Object.entries(depositsByUser)
+                .sort((a, b) => b[1] - a[1])
+                .map(([userId, total], index) => {
+                  const member = members.find((m) => m.user_id === userId);
+                  const profile = (member as any)?.profiles;
+                  return { userId, total, rank: index + 1, profile, member };
+                });
+
+              const trophies: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
+
+              if (ranked.length === 0) {
+                return (
+                  <div className="bg-card rounded-xl border border-border p-10 text-center">
+                    <p className="text-sm text-muted-foreground">No contributions yet. Add funds to get started! 💰</p>
+                  </div>
+                );
+              }
+
+              return ranked.map(({ userId, total, rank, profile }) => {
+                const name = profile?.first_name || 'Member';
+                const avatarUrl = profile?.avatar_url;
+                const avatarColor = profile?.avatar_color || '#3b82f6';
+                const initial = name[0]?.toUpperCase() || '?';
+                const trophy = trophies[rank] || '';
+
+                return (
+                  <div key={userId} className="bg-card rounded-xl border border-border p-4 flex items-center gap-3">
+                    <div className="w-8 text-center font-bold text-lg flex-shrink-0">
+                      {trophy || <span className="text-muted-foreground text-sm">#{rank}</span>}
+                    </div>
+                    <div
+                      className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden"
+                      style={{ backgroundColor: avatarUrl ? undefined : avatarColor }}
+                    >
+                      {avatarUrl ? (
+                        <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-white font-bold text-sm">{initial}</span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-foreground truncate">
+                        {userId === user?.id ? `${name} (You)` : name}
+                      </p>
+                    </div>
+                    <span className="font-bold text-sm text-success flex-shrink-0">
+                      {formatCurrency(total, currency)}
+                    </span>
+                  </div>
+                );
+              });
+            })()}
           </TabsContent>
 
           <TabsContent value="members" className="mt-5 space-y-3">
