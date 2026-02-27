@@ -115,7 +115,7 @@ Deno.serve(async (req) => {
       user_id: recipient_user_id,
       pot_id,
       type: 'payout',
-      message: `You received €${amount.toFixed(2)} from "${pot.name}".${simulated ? ' (Test mode – simulated)' : ' Funds arrive within 1-3 business days.'}`,
+      message: `You withdrew €${amount.toFixed(2)} from "${pot.name}". Funds arrive within 1-3 business days.`,
     });
 
     // Send withdrawal approved email
