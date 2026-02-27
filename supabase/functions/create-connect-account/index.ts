@@ -12,7 +12,6 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Authenticate user
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
@@ -38,7 +37,6 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     );
 
-    // Check if user already has a Stripe account
     const { data: profile } = await supabaseAdmin
       .from('profiles')
       .select('stripe_account_id')
@@ -47,10 +45,107 @@ Deno.serve(async (req) => {
 
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, { apiVersion: '2024-06-20' });
 
+    const body = await req.json().catch(() => ({}));
+
+    // If body contains personal details, this is a custom onboarding submission
+    if (body.first_name && body.last_name && body.dob && body.address && body.iban) {
+      let accountId = profile?.stripe_account_id;
+
+      if (!accountId) {
+        // Create a Custom account
+        const account = await stripe.accounts.create({
+          type: 'custom',
+          country: body.address.country || 'FR',
+          email: userEmail,
+          business_type: 'individual',
+          capabilities: {
+            transfers: { requested: true },
+          },
+          individual: {
+            first_name: body.first_name,
+            last_name: body.last_name,
+            email: userEmail,
+            dob: {
+              day: body.dob.day,
+              month: body.dob.month,
+              year: body.dob.year,
+            },
+            address: {
+              line1: body.address.line1,
+              city: body.address.city,
+              postal_code: body.address.postal_code,
+              country: body.address.country || 'FR',
+            },
+          },
+          external_account: {
+            object: 'bank_account',
+            country: body.address.country || 'FR',
+            currency: 'eur',
+            account_number: body.iban,
+          },
+          tos_acceptance: {
+            date: Math.floor(Date.now() / 1000),
+            ip: req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || '0.0.0.0',
+          },
+          settings: {
+            payouts: {
+              schedule: { interval: 'manual' },
+            },
+          },
+        } as any);
+
+        accountId = account.id;
+
+        await supabaseAdmin
+          .from('profiles')
+          .update({ stripe_account_id: accountId, stripe_onboarding_complete: true })
+          .eq('id', userId);
+      } else {
+        // Update existing account
+        await stripe.accounts.update(accountId, {
+          individual: {
+            first_name: body.first_name,
+            last_name: body.last_name,
+            dob: {
+              day: body.dob.day,
+              month: body.dob.month,
+              year: body.dob.year,
+            },
+            address: {
+              line1: body.address.line1,
+              city: body.address.city,
+              postal_code: body.address.postal_code,
+              country: body.address.country || 'FR',
+            },
+          },
+          external_account: {
+            object: 'bank_account',
+            country: body.address.country || 'FR',
+            currency: 'eur',
+            account_number: body.iban,
+          } as any,
+          tos_acceptance: {
+            date: Math.floor(Date.now() / 1000),
+            ip: req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || '0.0.0.0',
+          },
+        } as any);
+
+        await supabaseAdmin
+          .from('profiles')
+          .update({ stripe_onboarding_complete: true })
+          .eq('id', userId);
+      }
+
+      return new Response(JSON.stringify({ success: true, account_id: accountId }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Legacy: Express onboarding flow (fallback)
     let accountId = profile?.stripe_account_id;
 
     if (!accountId) {
-      // Create new Connect Express account
       const account = await stripe.accounts.create({
         type: 'express',
         email: userEmail,
@@ -61,25 +156,20 @@ Deno.serve(async (req) => {
         },
         settings: {
           payouts: {
-            schedule: {
-              interval: 'manual',
-            },
+            schedule: { interval: 'manual' },
           },
         },
       });
       accountId = account.id;
 
-      // Save to profile
       await supabaseAdmin
         .from('profiles')
         .update({ stripe_account_id: accountId })
         .eq('id', userId);
     }
 
-    // Parse the origin from the request or use a fallback
     const origin = req.headers.get('origin') || req.headers.get('referer')?.replace(/\/$/, '') || 'https://id-preview--59da60b6-faa4-4fa4-890f-0b571d3b5fa7.lovable.app';
 
-    // Create account link for onboarding
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
       return_url: `${origin}/profile?connect=success`,

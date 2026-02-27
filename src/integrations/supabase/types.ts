@@ -99,6 +99,8 @@ export type Database = {
           currency: string
           goal_amount: number | null
           id: string
+          max_withdrawal_amount: number | null
+          max_withdrawals_per_day: number | null
           name: string
           receipt_window_days: number
           require_receipt: boolean
@@ -114,6 +116,8 @@ export type Database = {
           currency?: string
           goal_amount?: number | null
           id?: string
+          max_withdrawal_amount?: number | null
+          max_withdrawals_per_day?: number | null
           name: string
           receipt_window_days?: number
           require_receipt?: boolean
@@ -129,6 +133,8 @@ export type Database = {
           currency?: string
           goal_amount?: number | null
           id?: string
+          max_withdrawal_amount?: number | null
+          max_withdrawals_per_day?: number | null
           name?: string
           receipt_window_days?: number
           require_receipt?: boolean

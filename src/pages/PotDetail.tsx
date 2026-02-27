@@ -842,6 +842,8 @@ export default function PotDetail() {
         withdrawalPassword={pot.withdrawal_password}
         potName={pot.name}
         createdBy={pot.created_by}
+        maxWithdrawalAmount={(pot as any).max_withdrawal_amount}
+        maxWithdrawalsPerDay={(pot as any).max_withdrawals_per_day}
       />
 
       <AddFundsModal

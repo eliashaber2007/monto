@@ -104,6 +104,9 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
   const [creating, setCreating] = useState(false);
   const [initialDeposit, setInitialDeposit] = useState("");
   const [createdPotId, setCreatedPotId] = useState<string | null>(null);
+  const [requireReceipt, setRequireReceipt] = useState(false);
+  const [maxWithdrawalAmount, setMaxWithdrawalAmount] = useState("");
+  const [maxWithdrawalsPerDay, setMaxWithdrawalsPerDay] = useState("");
 
   const reset = () => {
     setStep(1);
@@ -114,6 +117,9 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
     setWithdrawalRule("auto_approve");
     setWithdrawalPassword("");
     setInitialDeposit("");
+    setRequireReceipt(false);
+    setMaxWithdrawalAmount("");
+    setMaxWithdrawalsPerDay("");
   };
 
   const handleClose = (val: boolean) => {
@@ -161,7 +167,10 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
         goal_amount: goalAmount ? parseFloat(goalAmount) : null,
         withdrawal_rule: withdrawalRule,
         withdrawal_password: withdrawalRule === "requires_password" ? withdrawalPassword : null,
-      });
+        require_receipt: requireReceipt,
+        max_withdrawal_amount: maxWithdrawalAmount ? parseFloat(maxWithdrawalAmount) : null,
+        max_withdrawals_per_day: maxWithdrawalsPerDay ? parseInt(maxWithdrawalsPerDay) : null,
+      } as any);
 
     if (potError) {
       setCreating(false);
@@ -390,6 +399,62 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
                   />
                 </div>
               )}
+
+              {/* Receipt verification toggle */}
+              <div className="flex items-center justify-between p-3.5 rounded-xl border border-border bg-card">
+                <div>
+                  <div className="text-sm font-semibold text-foreground">Require receipt for withdrawals</div>
+                  <div className="text-xs text-muted-foreground">Members must upload proof after withdrawing</div>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={requireReceipt}
+                  onClick={() => setRequireReceipt(!requireReceipt)}
+                  className={`relative inline-flex h-[28px] w-[48px] shrink-0 cursor-pointer rounded-full transition-colors duration-200 ${
+                    requireReceipt ? 'bg-primary' : 'bg-muted'
+                  }`}
+                >
+                  <span className={`pointer-events-none inline-block h-[24px] w-[24px] rounded-full bg-white shadow-lg transition-transform duration-200 ${
+                    requireReceipt ? 'translate-x-[22px]' : 'translate-x-[2px]'
+                  } mt-[2px]`} />
+                </button>
+              </div>
+
+              {/* Max withdrawal amount */}
+              <div className="space-y-1.5">
+                <Label htmlFor="maxWdAmount">Max withdrawal amount (optional)</Label>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground font-medium text-sm select-none">
+                    {currencySymbol}
+                  </span>
+                  <Input
+                    id="maxWdAmount"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="No limit"
+                    value={maxWithdrawalAmount}
+                    onChange={(e) => setMaxWithdrawalAmount(e.target.value)}
+                    className="h-11 pl-9"
+                  />
+                </div>
+              </div>
+
+              {/* Max withdrawals per day */}
+              <div className="space-y-1.5">
+                <Label htmlFor="maxWdDay">Max withdrawals per day (optional)</Label>
+                <Input
+                  id="maxWdDay"
+                  type="number"
+                  min="1"
+                  step="1"
+                  placeholder="No limit"
+                  value={maxWithdrawalsPerDay}
+                  onChange={(e) => setMaxWithdrawalsPerDay(e.target.value)}
+                  className="h-11"
+                />
+              </div>
 
               <Button
                 className="w-full h-11 rounded-xl"
