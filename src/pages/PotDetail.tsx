@@ -381,7 +381,8 @@ export default function PotDetail() {
               const receipt = receiptByTx[tx.id];
               const myTx = tx.user_id === user?.id;
               const isWithdrawal = Number(tx.amount) < 0;
-              const needsReceipt = pot.require_receipt && !receipt && myTx && !isWithdrawal;
+              const needsReceipt = !receipt && myTx && !isWithdrawal && pot.require_receipt;
+              const needsWithdrawalReceipt = isWithdrawal && !receipt && myTx;
 
               return (
                 <div key={tx.id} className="bg-card rounded-xl border border-border p-4">
@@ -416,7 +417,7 @@ export default function PotDetail() {
                       <span className={`font-bold text-sm ${isWithdrawal ? 'text-destructive' : 'text-success'}`}>
                         {isWithdrawal ? '' : '+'}{formatCurrency(Number(tx.amount), currency)}
                       </span>
-                      {needsReceipt && (
+                      {(needsReceipt || needsWithdrawalReceipt) && (
                         <button
                           onClick={() => setShowUpload(tx.id)}
                           className="text-[10px] flex items-center gap-1 text-warning font-semibold bg-warning/10 border border-warning/20 px-2 py-0.5 rounded-full hover:bg-warning/20 transition-colors"
