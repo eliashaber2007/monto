@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { loadStripe } from '@stripe/stripe-js';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,6 +9,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { ChevronLeft, ChevronRight, Landmark, User, MapPin, CreditCard } from 'lucide-react';
+
+const stripePromise = loadStripe('pk_test_51T2Gy27r0WrOyS8mTChm4L1Ch8L9OyugbWjtHJIQmZJ2WeFlkYPGVW3OOnX9CVtbhOb8FG1zYcSe2fIHToHcJY4D00fqmrkkix');
 
 const COUNTRIES = [
   { code: 'FR', label: 'France' },
@@ -66,8 +69,36 @@ export default function StripeOnboardingForm({ onComplete, onCancel }: Props) {
     setSubmitting(true);
 
     try {
+      const stripe = await stripePromise;
+      if (!stripe) throw new Error('Failed to load payment processor');
+
+      // 1. Create account token via Stripe.js
+      const { token: accountToken, error: tokenError } = await stripe.createToken('account' as any, {
+        business_type: 'individual',
+        individual: {
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          dob: {
+            day: parseInt(dobDay),
+            month: parseInt(dobMonth),
+            year: parseInt(dobYear),
+          },
+          address: {
+            line1: line1.trim(),
+            city: city.trim(),
+            postal_code: postalCode.trim(),
+            country,
+          },
+        },
+        tos_shown_and_accepted: true,
+      } as any);
+
+      if (tokenError) throw new Error(tokenError.message);
+      if (!accountToken) throw new Error('Failed to create account token');
+
+      // 2. Send token + IBAN to edge function
       const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData?.session?.access_token;
+      const accessToken = sessionData?.session?.access_token;
 
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-connect-account`,
@@ -75,24 +106,13 @@ export default function StripeOnboardingForm({ onComplete, onCancel }: Props) {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${accessToken}`,
             apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
           },
           body: JSON.stringify({
-            first_name: firstName.trim(),
-            last_name: lastName.trim(),
-            dob: {
-              day: parseInt(dobDay),
-              month: parseInt(dobMonth),
-              year: parseInt(dobYear),
-            },
-            address: {
-              line1: line1.trim(),
-              city: city.trim(),
-              postal_code: postalCode.trim(),
-              country,
-            },
+            account_token: accountToken.id,
             iban: iban.trim().replace(/\s/g, ''),
+            country,
           }),
         }
       );

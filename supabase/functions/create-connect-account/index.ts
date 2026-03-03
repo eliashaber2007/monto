@@ -7,19 +7,8 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Derive the 2-letter country code from an IBAN string
 function countryFromIban(iban: string): string {
   return iban.replace(/\s/g, "").substring(0, 2).toUpperCase();
-}
-
-function getClientIp(req: Request): string {
-  const raw = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
-    || req.headers.get("cf-connecting-ip")
-    || req.headers.get("x-real-ip");
-  if (raw && /^(\d{1,3}\.){3}\d{1,3}$|^[0-9a-fA-F:]+$/.test(raw)) {
-    return raw;
-  }
-  return "127.0.0.1";
 }
 
 Deno.serve(async (req) => {
@@ -38,7 +27,6 @@ Deno.serve(async (req) => {
 
     const token = authHeader.replace("Bearer ", "");
 
-    // ✅ FIXED: use getUser() instead of getClaims()
     const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
       global: { headers: { Authorization: authHeader } },
     });
@@ -68,48 +56,27 @@ Deno.serve(async (req) => {
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, { apiVersion: "2024-06-20" });
     const body = await req.json().catch(() => ({}));
 
-    // Custom onboarding submission
-    if (body.first_name && body.last_name && body.dob && body.address && body.iban) {
-      // ✅ FIXED: derive bank account country from IBAN prefix, not address country
+    // Account-token based onboarding (preferred)
+    if (body.account_token && body.iban) {
       const ibanCountry = countryFromIban(body.iban);
-      const addressCountry = body.address.country || "FR";
+      const accountCountry = body.country || ibanCountry;
 
       let accountId = profile?.stripe_account_id;
 
       if (!accountId) {
         const account = await stripe.accounts.create({
           type: "custom",
-          country: addressCountry,
+          country: accountCountry,
           email: userEmail,
-          business_type: "individual",
+          account_token: body.account_token,
           capabilities: {
             transfers: { requested: true },
           },
-          individual: {
-            first_name: body.first_name,
-            last_name: body.last_name,
-            email: userEmail,
-            dob: {
-              day: body.dob.day,
-              month: body.dob.month,
-              year: body.dob.year,
-            },
-            address: {
-              line1: body.address.line1,
-              city: body.address.city,
-              postal_code: body.address.postal_code,
-              country: addressCountry,
-            },
-          },
           external_account: {
             object: "bank_account",
-            country: ibanCountry, // ✅ from IBAN, not address
+            country: ibanCountry,
             currency: "eur",
-            account_number: body.iban.replace(/\s/g, ""), // strip spaces
-          },
-          tos_acceptance: {
-            date: Math.floor(Date.now() / 1000),
-            ip: getClientIp(req),
+            account_number: body.iban.replace(/\s/g, ""),
           },
           settings: {
             payouts: { schedule: { interval: "manual" } },
@@ -118,37 +85,17 @@ Deno.serve(async (req) => {
 
         accountId = account.id;
       } else {
-        // Update existing account
         await stripe.accounts.update(accountId, {
-          individual: {
-            first_name: body.first_name,
-            last_name: body.last_name,
-            dob: {
-              day: body.dob.day,
-              month: body.dob.month,
-              year: body.dob.year,
-            },
-            address: {
-              line1: body.address.line1,
-              city: body.address.city,
-              postal_code: body.address.postal_code,
-              country: addressCountry,
-            },
-          },
+          account_token: body.account_token,
           external_account: {
             object: "bank_account",
-            country: ibanCountry, // ✅ from IBAN, not address
+            country: ibanCountry,
             currency: "eur",
             account_number: body.iban.replace(/\s/g, ""),
           } as any,
-          tos_acceptance: {
-            date: Math.floor(Date.now() / 1000),
-            ip: getClientIp(req),
-          },
         } as any);
       }
 
-      // ✅ Always update profile after create or update
       await supabaseAdmin
         .from("profiles")
         .update({ stripe_account_id: accountId, stripe_onboarding_complete: true })
@@ -160,7 +107,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Legacy Express fallback (keep as-is)
+    // Legacy Express fallback
     let accountId = profile?.stripe_account_id;
     if (!accountId) {
       const account = await stripe.accounts.create({
