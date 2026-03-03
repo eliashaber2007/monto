@@ -149,11 +149,15 @@ function ProgressRing({ balance, goal, currency, transactions }: { balance: numb
           <div className="font-bold text-foreground leading-tight" style={{ fontSize }}>{formatted}</div>
         </div>
       </div>
-      {hasGoal && (
-        <div className="text-xs text-center mt-2 text-[#4B5563] dark:text-[#CBD5E1]">
-          {Math.min(Math.round((balance / goal!) * 100), 100)}% of {formatCurrency(goal!, currency)}
-        </div>
-      )}
+      {hasGoal && (() => {
+        const pctVal = Math.min(Math.round((balance / goal!) * 100), 100);
+        const pctColor = pctVal >= 50 ? 'text-green-500' : pctVal >= 20 ? 'text-orange-500' : 'text-red-500';
+        return (
+          <div className={`text-xs text-center mt-2 font-semibold ${pctColor}`}>
+            {pctVal}% of {formatCurrency(goal!, currency)}
+          </div>
+        );
+      })()}
     </>
   );
 }
