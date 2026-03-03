@@ -12,6 +12,16 @@ function countryFromIban(iban: string): string {
   return iban.replace(/\s/g, "").substring(0, 2).toUpperCase();
 }
 
+function getClientIp(req: Request): string {
+  const raw = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+    || req.headers.get("cf-connecting-ip")
+    || req.headers.get("x-real-ip");
+  if (raw && /^(\d{1,3}\.){3}\d{1,3}$|^[0-9a-fA-F:]+$/.test(raw)) {
+    return raw;
+  }
+  return "127.0.0.1";
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -99,7 +109,7 @@ Deno.serve(async (req) => {
           },
           tos_acceptance: {
             date: Math.floor(Date.now() / 1000),
-            ip: req.headers.get("x-forwarded-for") || req.headers.get("cf-connecting-ip") || "0.0.0.0",
+            ip: getClientIp(req),
           },
           settings: {
             payouts: { schedule: { interval: "manual" } },
@@ -133,7 +143,7 @@ Deno.serve(async (req) => {
           } as any,
           tos_acceptance: {
             date: Math.floor(Date.now() / 1000),
-            ip: req.headers.get("x-forwarded-for") || req.headers.get("cf-connecting-ip") || "0.0.0.0",
+            ip: getClientIp(req),
           },
         } as any);
       }
