@@ -69,7 +69,10 @@ function ProgressRing({ balance, goal, currency }: { balance: number; goal?: num
   const hasGoal = goal != null && goal > 0;
   const pct = hasGoal ? Math.min(balance / goal!, 1) : 0;
 
-  console.log('[ProgressRing] balance:', balance, 'goal_amount:', goal, 'percentage:', hasGoal ? Math.round((balance / goal!) * 100) : 'N/A (no goal)');
+  const formatted = formatCurrency(balance, currency);
+  const charCount = formatted.length;
+  // Dynamic font size: shrink as text gets longer, max 30px, min 16px
+  const fontSize = Math.max(16, Math.min(30, 160 / charCount));
 
   return (
     <>
@@ -98,8 +101,8 @@ function ProgressRing({ balance, goal, currency }: { balance: number; goal?: num
             />
           )}
         </svg>
-        <div className="text-center z-10">
-          <div className="text-3xl font-bold text-foreground">{formatCurrency(balance, currency)}</div>
+        <div className="text-center z-10 px-4 max-w-[160px]">
+          <div className="font-bold text-foreground leading-tight" style={{ fontSize }}>{formatted}</div>
         </div>
       </div>
       {hasGoal && (
