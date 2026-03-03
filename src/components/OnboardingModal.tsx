@@ -6,11 +6,11 @@ import { Button } from '@/components/ui/button';
 const screens = [
   {
     title: 'Welcome to Monto',
-    body: "Monto gives your group one place to hold shared money 🍯. The pot owner stays in control — members can request what they need, no awkward messages, no chasing anyone down. Every transaction is logged, and owners can request receipts to keep things clean.",
+    body: "Monto gives your group one place to hold shared money. The pot owner stays in control — members can request what they need, no awkward messages, no chasing anyone down 💸. Every transaction is logged, and owners can request receipts to keep things clean ✅.",
   },
   {
     title: 'How it works',
-    body: "Create a pot, set a goal amount, and share the link 💸. Everyone contributes at their own pace and the pot owner can withdraw when you're ready.",
+    body: "Create a pot, set a goal amount, and share the link 🔗. Everyone contributes at their own pace and the pot owner can withdraw when you're ready.",
   },
   {
     title: 'Connect your bank account',
