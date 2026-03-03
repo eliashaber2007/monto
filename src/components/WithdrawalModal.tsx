@@ -119,32 +119,17 @@ export default function WithdrawalModal({
 
     setLoading(true);
     try {
-      const shouldAutoPayout =
-        withdrawalRule === 'auto_approve' || withdrawalRule === 'requires_password';
-
-      // Deduct balance immediately
-      await supabase.rpc('increment_pot_balance', {
-        p_pot_id: potId,
-        p_amount: -numAmount,
-      });
-
-      // Record transaction
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
 
-      // Insert transaction via edge function or directly — use admin in edge fn
-      // We record the transaction as negative amount
-      // Since transactions table has no INSERT RLS for users, use the create-payout edge fn for auto_approve
-      // For requires_approval, we need a different approach
+      // Creator requesting from a requires_approval pot → auto-approve
+      const isCreator = user.id === createdBy;
+      const shouldAutoPayout =
+        withdrawalRule === 'auto_approve' ||
+        withdrawalRule === 'requires_password' ||
+        (withdrawalRule === 'requires_approval' && isCreator);
 
       if (shouldAutoPayout) {
-        // Call create-payout which handles transaction recording, balance deduction (already done above — but create-payout also deducts, so skip our deduction)
-        // Actually create-payout already deducts balance, so let's undo our deduction and let create-payout handle it
-        await supabase.rpc('increment_pot_balance', {
-          p_pot_id: potId,
-          p_amount: numAmount, // undo
-        });
-
         const response = await fetch(
           `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-payout`,
           {
@@ -170,23 +155,20 @@ export default function WithdrawalModal({
           title: `Withdrawal of ${formatCurrency(numAmount)} is being processed`,
         });
       } else {
-        // requires_approval — balance already deducted, record transaction via service role in a notification
-        // Since we can't insert transactions from client (no RLS INSERT), we need to handle this differently
-        // We'll use a simple approach: the deduction stands, and we notify the creator
-        // For now, let's just notify and keep balance deducted
+        // requires_approval for non-creator — insert a withdrawal record
+        const { error: wErr } = await supabase.from('withdrawals').insert({
+          pot_id: potId,
+          user_id: user.id,
+          amount: numAmount,
+          note: note.trim(),
+          status: 'pending',
+        });
+        if (wErr) throw wErr;
 
-        // Notify creator if requester is not creator
-        if (user.id !== createdBy) {
-          // Notification insert is blocked by RLS (no direct insert). 
-          // The notification trigger only fires on pot_members insert.
-          // We need to use a different approach — let's call a lightweight edge function or just toast
-          // For now, we'll skip notification via DB since RLS blocks it, and just show toast
-        }
-
-        // Undo balance deduction for pending — balance should only deduct on approval
+        // Deduct balance to hold it while pending
         await supabase.rpc('increment_pot_balance', {
           p_pot_id: potId,
-          p_amount: numAmount, // undo
+          p_amount: -numAmount,
         });
 
         toast({
