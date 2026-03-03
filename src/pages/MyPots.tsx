@@ -63,7 +63,7 @@ export default function MyPots() {
     if (!profile?.created_at || !user?.last_sign_in_at) return false;
     const createdAt = new Date(profile.created_at).getTime();
     const lastSignIn = new Date(user.last_sign_in_at).getTime();
-    return Math.abs(createdAt - lastSignIn) <= 60_000;
+    return Math.abs(createdAt - lastSignIn) <= 90_000;
   })();
 
   // Filter out closed pots
