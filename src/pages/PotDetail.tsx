@@ -987,6 +987,7 @@ export default function PotDetail() {
       {showChat && (
         <PotChat
           potId={id!}
+          potName={pot?.name ?? 'the pot'}
           members={members}
           onClose={() => setShowChat(false)}
         />
