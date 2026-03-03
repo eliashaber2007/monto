@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Users } from 'lucide-react';
 
 const PENDING_JOIN_KEY = 'pending_join_pot_id';
+const PENDING_INVITE_URL_KEY = 'pendingInviteUrl';
 
 export function getPendingJoinPotId(): string | null {
   return localStorage.getItem(PENDING_JOIN_KEY);
@@ -13,6 +14,14 @@ export function getPendingJoinPotId(): string | null {
 
 export function clearPendingJoinPotId() {
   localStorage.removeItem(PENDING_JOIN_KEY);
+}
+
+export function getPendingInviteUrl(): string | null {
+  return localStorage.getItem(PENDING_INVITE_URL_KEY);
+}
+
+export function clearPendingInviteUrl() {
+  localStorage.removeItem(PENDING_INVITE_URL_KEY);
 }
 
 export default function JoinPot() {
@@ -26,8 +35,11 @@ export default function JoinPot() {
     if (authLoading) return;
 
     if (!user) {
-      // Save pot id and redirect to login
-      if (potId) localStorage.setItem(PENDING_JOIN_KEY, potId);
+      // Save full invite URL and pot id, then redirect to login
+      if (potId) {
+        localStorage.setItem(PENDING_JOIN_KEY, potId);
+        localStorage.setItem(PENDING_INVITE_URL_KEY, `/join/${potId}`);
+      }
       navigate('/login', { replace: true });
       return;
     }

@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import { useState, useEffect, createContext, useContext, useRef, ReactNode } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -19,12 +19,27 @@ const AuthContext = createContext<AuthContextType>({
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const hasHandledOAuthRedirect = useRef(false);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
         setSession(session);
         setLoading(false);
+
+        // Handle OAuth redirect: if user just signed in and there's a pending invite URL, redirect
+        if (event === 'SIGNED_IN' && session && !hasHandledOAuthRedirect.current) {
+          hasHandledOAuthRedirect.current = true;
+          const pendingUrl = localStorage.getItem('pendingInviteUrl');
+          if (pendingUrl) {
+            localStorage.removeItem('pendingInviteUrl');
+            localStorage.removeItem('pending_join_pot_id');
+            // Use setTimeout to let React render first
+            setTimeout(() => {
+              window.location.href = pendingUrl;
+            }, 0);
+          }
+        }
       }
     );
 

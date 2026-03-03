@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import SocialLoginButtons from '@/components/SocialLoginButtons';
-import { getPendingJoinPotId, clearPendingJoinPotId } from '@/pages/JoinPot';
+import { getPendingJoinPotId, clearPendingJoinPotId, getPendingInviteUrl, clearPendingInviteUrl } from '@/pages/JoinPot';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -23,12 +23,19 @@ export default function Login() {
     if (error) {
       toast({ title: 'Login failed', description: error.message, variant: 'destructive' });
     } else {
-      const pendingPotId = getPendingJoinPotId();
-      if (pendingPotId) {
+      const pendingInviteUrl = getPendingInviteUrl();
+      if (pendingInviteUrl) {
+        clearPendingInviteUrl();
         clearPendingJoinPotId();
-        navigate(`/join/${pendingPotId}`, { replace: true });
+        navigate(pendingInviteUrl, { replace: true });
       } else {
-        navigate('/');
+        const pendingPotId = getPendingJoinPotId();
+        if (pendingPotId) {
+          clearPendingJoinPotId();
+          navigate(`/join/${pendingPotId}`, { replace: true });
+        } else {
+          navigate('/');
+        }
       }
     }
   };
