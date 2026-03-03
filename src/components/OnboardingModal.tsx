@@ -84,7 +84,7 @@ export default function OnboardingModal({ open, onComplete }: OnboardingModalPro
               onClick={() => setStep(step - 1)}
               className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors py-1"
             >
-              ← Back
+              Back
             </button>
           )}
         </div>
