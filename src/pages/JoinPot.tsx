@@ -50,6 +50,18 @@ export default function JoinPot() {
     const joinPot = async () => {
       setJoining(true);
 
+      // If user is the pot creator, just redirect — don't re-join
+      const { data: pot } = await supabase
+        .from('pots')
+        .select('name, created_by')
+        .eq('id', potId)
+        .maybeSingle();
+
+      if (pot?.created_by === user.id) {
+        navigate(`/pots/${potId}`, { replace: true });
+        return;
+      }
+
       // Check if already a member
       const { data: membership } = await supabase
         .from('pot_members')
@@ -72,13 +84,6 @@ export default function JoinPot() {
         navigate('/', { replace: true });
         return;
       }
-
-      // Get pot name for the toast
-      const { data: pot } = await supabase
-        .from('pots')
-        .select('name')
-        .eq('id', potId)
-        .maybeSingle();
 
       toast({ title: `You've joined ${pot?.name ?? 'the pot'}! 🎉` });
       navigate(`/pots/${potId}`, { replace: true });
