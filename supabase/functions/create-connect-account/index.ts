@@ -72,6 +72,10 @@ Deno.serve(async (req) => {
           capabilities: {
             transfers: { requested: true },
           },
+          business_profile: {
+            url: "https://monto.app",
+            mcc: "7372",
+          },
           external_account: {
             object: "bank_account",
             country: ibanCountry,
@@ -87,6 +91,10 @@ Deno.serve(async (req) => {
       } else {
         await stripe.accounts.update(accountId, {
           account_token: body.account_token,
+          business_profile: {
+            url: "https://monto.app",
+            mcc: "7372",
+          },
           external_account: {
             object: "bank_account",
             country: ibanCountry,
