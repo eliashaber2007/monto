@@ -4,7 +4,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface Member {
   user_id: string;
@@ -26,6 +25,7 @@ interface Message {
 
 interface PotChatProps {
   potId: string;
+  potName: string;
   members: Member[];
   onClose: () => void;
 }
@@ -46,7 +46,7 @@ function dateDivider(dateStr: string) {
   return d.toLocaleDateString('en-IE', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-export default function PotChat({ potId, members, onClose }: PotChatProps) {
+export default function PotChat({ potId, potName, members, onClose }: PotChatProps) {
   const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [text, setText] = useState('');
@@ -56,6 +56,7 @@ export default function PotChat({ potId, members, onClose }: PotChatProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const mentionRef = useRef<HTMLDivElement>(null);
 
   const profileMap = useRef<Record<string, Member['profiles']>>({});
   members.forEach((m) => {
@@ -110,7 +111,22 @@ export default function PotChat({ potId, members, onClose }: PotChatProps) {
     upsertRead();
   }, [potId, user, messages.length]);
 
-  // Mention filtering
+  // Close mention popup on outside click
+  useEffect(() => {
+    if (mentionQuery === null) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        mentionRef.current && !mentionRef.current.contains(e.target as Node) &&
+        inputRef.current && !inputRef.current.contains(e.target as Node)
+      ) {
+        setMentionQuery(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [mentionQuery]);
+
+  // Mention filtering — show all members (except self) when query is empty or filter by name
   const otherMembers = members.filter((m) => m.user_id !== user?.id);
   const filteredMentions = mentionQuery !== null
     ? otherMembers.filter((m) =>
@@ -120,12 +136,12 @@ export default function PotChat({ potId, members, onClose }: PotChatProps) {
 
   const handleTextChange = (val: string) => {
     setText(val);
-    // Detect @mention
+    // Detect @mention — match @ followed by optional letters/spaces at end of text before cursor
     const cursorPos = inputRef.current?.selectionStart ?? val.length;
     const textBeforeCursor = val.slice(0, cursorPos);
-    const mentionMatch = textBeforeCursor.match(/@(\w*)$/);
+    const mentionMatch = textBeforeCursor.match(/@([a-zA-Z\s]*)$/);
     if (mentionMatch) {
-      setMentionQuery(mentionMatch[1]);
+      setMentionQuery(mentionMatch[1].trimEnd());
       setMentionIndex(0);
     } else {
       setMentionQuery(null);
@@ -136,7 +152,7 @@ export default function PotChat({ potId, members, onClose }: PotChatProps) {
     const name = member.profiles?.first_name ?? 'User';
     const cursorPos = inputRef.current?.selectionStart ?? text.length;
     const textBeforeCursor = text.slice(0, cursorPos);
-    const mentionMatch = textBeforeCursor.match(/@(\w*)$/);
+    const mentionMatch = textBeforeCursor.match(/@([a-zA-Z\s]*)$/);
     if (mentionMatch) {
       const start = cursorPos - mentionMatch[0].length;
       const newText = text.slice(0, start) + `@${name} ` + text.slice(cursorPos);
@@ -160,20 +176,22 @@ export default function PotChat({ potId, members, onClose }: PotChatProps) {
     if (!error) {
       setText('');
       // Create notifications for mentioned users
-      const mentionRegex = /@(\w+)/g;
+      const mentionRegex = /@([\w\s]+?)(?=\s@|\s[^@]|$)/g;
       let match;
+      const notified = new Set<string>();
       while ((match = mentionRegex.exec(content)) !== null) {
-        const mentionedName = match[1];
+        const mentionedName = match[1].trim();
         const mentionedMember = members.find(
           (m) => m.profiles?.first_name?.toLowerCase() === mentionedName.toLowerCase()
         );
-        if (mentionedMember && mentionedMember.user_id !== user.id) {
+        if (mentionedMember && mentionedMember.user_id !== user.id && !notified.has(mentionedMember.user_id)) {
+          notified.add(mentionedMember.user_id);
           const senderName = profileMap.current[user.id]?.first_name ?? 'Someone';
           await supabase.from('notifications').insert({
             user_id: mentionedMember.user_id,
             pot_id: potId,
             type: 'mention',
-            message: `${senderName} mentioned you in chat`,
+            message: `${senderName} mentioned you in ${potName}`,
           });
         }
       }
@@ -182,6 +200,13 @@ export default function PotChat({ potId, members, onClose }: PotChatProps) {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Escape closes mention popup
+    if (e.key === 'Escape' && mentionQuery !== null) {
+      e.preventDefault();
+      setMentionQuery(null);
+      return;
+    }
+
     if (mentionQuery !== null && filteredMentions.length > 0) {
       if (e.key === 'ArrowDown') {
         e.preventDefault();
@@ -203,7 +228,7 @@ export default function PotChat({ potId, members, onClose }: PotChatProps) {
 
   // Render message content with @mentions highlighted
   const renderContent = (content: string) => {
-    const parts = content.split(/(@\w+)/g);
+    const parts = content.split(/(@[\w\s]+?)(?=\s@|\s[^@]|$)/g);
     return parts.map((part, i) => {
       if (part.startsWith('@')) {
         return (
@@ -298,7 +323,7 @@ export default function PotChat({ potId, members, onClose }: PotChatProps) {
 
       {/* Mention popup */}
       {mentionQuery !== null && filteredMentions.length > 0 && (
-        <div className="px-4 pb-1">
+        <div className="px-4 pb-1" ref={mentionRef}>
           <div className="bg-card border border-border rounded-xl shadow-lg p-1 max-h-40 overflow-y-auto">
             {filteredMentions.map((m, i) => {
               const profile = m.profiles;
