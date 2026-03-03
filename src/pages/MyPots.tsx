@@ -1,9 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight, Droplets, Sparkles, LogOut, Archive } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile, usePots } from '@/hooks/usePots';
+import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
 import CreatePotModal from '@/components/CreatePotModal';
+import OnboardingModal from '@/components/OnboardingModal';
 import NotificationBell from '@/components/NotificationBell';
 
 function formatCurrency(amount: number, currency: string) {
@@ -54,7 +57,9 @@ export default function MyPots() {
   const { data: profile } = useProfile();
   const { data: pots, isLoading } = usePots();
   const [showCreate, setShowCreate] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const displayName = profile?.first_name || user?.user_metadata?.first_name || user?.email?.split('@')[0] || '';
 
@@ -65,6 +70,24 @@ export default function MyPots() {
     const lastSignIn = new Date(user.last_sign_in_at).getTime();
     return Math.abs(createdAt - lastSignIn) <= 90_000;
   })();
+
+  // Show onboarding for first-time users who haven't seen it yet
+  const onboardingTriggered = useRef(false);
+  useEffect(() => {
+    if (isFirstLogin && profile && !(profile as any).has_logged_in_before && !onboardingTriggered.current) {
+      onboardingTriggered.current = true;
+      setShowOnboarding(true);
+    }
+  }, [isFirstLogin, profile]);
+
+  const handleOnboardingComplete = async () => {
+    setShowOnboarding(false);
+    // Mark as seen so it never shows again
+    if (user?.id) {
+      await supabase.from('profiles').update({ has_logged_in_before: true } as any).eq('id', user.id);
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+    }
+  };
 
   // Filter out closed pots
   const activePots = (pots ?? []).filter((p: any) => p.status !== 'closed');
@@ -183,6 +206,7 @@ export default function MyPots() {
       </button>
 
       <CreatePotModal open={showCreate} onOpenChange={setShowCreate} />
+      <OnboardingModal open={showOnboarding} onComplete={handleOnboardingComplete} />
     </div>
   );
 }
