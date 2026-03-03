@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Users, Plus, CheckCircle2, Image as ImageIcon, Upload, X, LogOut, Copy, Check, Landmark, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { ArrowLeft, Users, Plus, CheckCircle2, Image as ImageIcon, Upload, X, LogOut, Copy, Check, Landmark, ThumbsUp, ThumbsDown, MessageCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePotDetail } from '@/hooks/usePots';
@@ -28,6 +28,7 @@ import AddFundsModal from '@/components/AddFundsModal';
 import ReceiptUploadModal from '@/components/ReceiptUploadModal';
 import ReceiptReviewModal from '@/components/ReceiptReviewModal';
 import WithdrawalModal from '@/components/WithdrawalModal';
+import PotChat from '@/components/PotChat';
 
 function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat('en-IE', {
@@ -131,6 +132,8 @@ export default function PotDetail() {
   const [connectingBank, setConnectingBank] = useState(false);
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
   const [processingWithdrawal, setProcessingWithdrawal] = useState<string | null>(null);
+  const [showChat, setShowChat] = useState(false);
+  const [unreadChatCount, setUnreadChatCount] = useState(0);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -184,6 +187,36 @@ export default function PotDetail() {
     fetchReceipts();
     fetchWithdrawals();
   }, [id]);
+
+  // Unread chat count
+  useEffect(() => {
+    if (!id || !user) return;
+    const fetchUnread = async () => {
+      const { data: readData } = await supabase
+        .from('pot_chat_reads')
+        .select('last_read_at')
+        .eq('pot_id', id)
+        .eq('user_id', user.id)
+        .maybeSingle();
+      const lastRead = (readData as any)?.last_read_at ?? '1970-01-01T00:00:00Z';
+      const { count } = await supabase
+        .from('pot_messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('pot_id', id)
+        .gt('created_at', lastRead)
+        .neq('user_id', user.id);
+      setUnreadChatCount(count ?? 0);
+    };
+    fetchUnread();
+    // Also re-check when chat closes
+    const channel = supabase
+      .channel(`pot-chat-unread-${id}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'pot_messages', filter: `pot_id=eq.${id}` }, () => {
+        if (!showChat) fetchUnread();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [id, user, showChat]);
 
   const handleApproveWithdrawal = async (withdrawal: any) => {
     setProcessingWithdrawal(withdrawal.id);
@@ -393,15 +426,28 @@ export default function PotDetail() {
               </span>
             </div>
           </div>
-          {isCreator && (
+          <div className="flex items-center gap-2">
             <button
-              onClick={() => setShowInviteModal(true)}
-              className="flex items-center gap-1.5 text-xs text-primary font-semibold border border-primary/30 rounded-full px-3 py-1.5 hover:bg-accent transition-colors"
+              onClick={() => setShowChat(true)}
+              className="relative w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:bg-secondary transition-colors"
             >
-              <Users size={13} />
-              Invite
+              <MessageCircle size={18} />
+              {unreadChatCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1">
+                  {unreadChatCount > 99 ? '99+' : unreadChatCount}
+                </span>
+              )}
             </button>
-          )}
+            {isCreator && (
+              <button
+                onClick={() => setShowInviteModal(true)}
+                className="flex items-center gap-1.5 text-xs text-primary font-semibold border border-primary/30 rounded-full px-3 py-1.5 hover:bg-accent transition-colors"
+              >
+                <Users size={13} />
+                Invite
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -883,6 +929,14 @@ export default function PotDetail() {
             setShowReview(null);
             fetchReceipts();
           }}
+        />
+      )}
+
+      {showChat && (
+        <PotChat
+          potId={id!}
+          members={members}
+          onClose={() => setShowChat(false)}
         />
       )}
     </div>

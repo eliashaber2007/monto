@@ -52,6 +52,42 @@ export type Database = {
           },
         ]
       }
+      pot_chat_reads: {
+        Row: {
+          id: string
+          last_read_at: string
+          pot_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          last_read_at?: string
+          pot_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          last_read_at?: string
+          pot_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pot_chat_reads_pot_id_fkey"
+            columns: ["pot_id"]
+            isOneToOne: false
+            referencedRelation: "pots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pot_chat_reads_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pot_members: {
         Row: {
           created_at: string
@@ -84,6 +120,45 @@ export type Database = {
           },
           {
             foreignKeyName: "pot_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pot_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          pot_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          pot_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          pot_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pot_messages_pot_id_fkey"
+            columns: ["pot_id"]
+            isOneToOne: false
+            referencedRelation: "pots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pot_messages_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
