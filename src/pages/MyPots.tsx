@@ -1,10 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight, Droplets, Sparkles, LogOut, Archive } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile, usePots } from '@/hooks/usePots';
-import { supabase } from '@/integrations/supabase/client';
-import { useQueryClient } from '@tanstack/react-query';
 import CreatePotModal from '@/components/CreatePotModal';
 import NotificationBell from '@/components/NotificationBell';
 
@@ -57,25 +55,16 @@ export default function MyPots() {
   const { data: pots, isLoading } = usePots();
   const [showCreate, setShowCreate] = useState(false);
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const hasMarkedLogin = useRef(false);
 
   const displayName = profile?.first_name || user?.user_metadata?.first_name || user?.email?.split('@')[0] || '';
-  const hasLoggedInBefore = profile?.has_logged_in_before === true;
 
-  // Mark first login as done
-  useEffect(() => {
-    if (!hasLoggedInBefore && user && !hasMarkedLogin.current) {
-      hasMarkedLogin.current = true;
-      supabase
-        .from('profiles')
-        .update({ has_logged_in_before: true })
-        .eq('id', user.id)
-        .then(() => {
-          queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
-        });
-    }
-  }, [hasLoggedInBefore, user, queryClient]);
+  // Determine if first login by comparing profile.created_at with session last_sign_in_at
+  const isFirstLogin = (() => {
+    if (!profile?.created_at || !user?.last_sign_in_at) return false;
+    const createdAt = new Date(profile.created_at).getTime();
+    const lastSignIn = new Date(user.last_sign_in_at).getTime();
+    return Math.abs(createdAt - lastSignIn) <= 60_000;
+  })();
 
   // Filter out closed pots
   const activePots = (pots ?? []).filter((p: any) => p.status !== 'closed');
@@ -124,7 +113,7 @@ export default function MyPots() {
         {/* Welcome heading */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-foreground">
-            {hasLoggedInBefore ? `Welcome back, ${displayName || '…'}! 👋` : `Welcome, ${displayName || '…'}! 👋`}
+            {isFirstLogin ? `Welcome, ${displayName || '…'}! 👋` : `Welcome back, ${displayName || '…'}! 👋`}
           </h1>
           {activePots.length > 0 && (
             <p className="text-sm text-muted-foreground mt-1">
