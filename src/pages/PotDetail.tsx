@@ -116,7 +116,7 @@ function ProgressRing({ balance, goal, currency, transactions }: { balance: numb
 
   const formatted = formatCurrency(balance, currency);
   const fontSize = getBalanceFontSize(formatted);
-  const streak = computeStreak(transactions ?? []);
+  
 
   return (
     <>
@@ -152,11 +152,6 @@ function ProgressRing({ balance, goal, currency, transactions }: { balance: numb
       {hasGoal && (
         <div className="text-xs text-center mt-2 text-[#4B5563] dark:text-[#CBD5E1]">
           {Math.min(Math.round((balance / goal!) * 100), 100)}% of {formatCurrency(goal!, currency)}
-        </div>
-      )}
-      {streak > 0 && (
-        <div className="text-xs text-center mt-2 font-semibold text-foreground/80">
-          {streak} day streak 🔥
         </div>
       )}
     </>
