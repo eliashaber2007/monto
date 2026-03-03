@@ -5,19 +5,16 @@ import { Button } from '@/components/ui/button';
 
 const screens = [
   {
-    emoji: '🍯',
     title: 'Welcome to Monto',
-    body: "Monto gives your group one place to hold shared money. The pot owner stays in control — members can request what they need, no awkward messages, no chasing anyone down. Every transaction is logged, and owners can request receipts to keep things clean.",
+    body: "Monto gives your group one place to hold shared money 🍯. The pot owner stays in control — members can request what they need, no awkward messages, no chasing anyone down. Every transaction is logged, and owners can request receipts to keep things clean.",
   },
   {
-    emoji: '💸',
     title: 'How it works',
-    body: "Create a pot, set a goal amount, and share the link. Everyone contributes at their own pace and the pot owner can withdraw when you're ready.",
+    body: "Create a pot, set a goal amount, and share the link 💸. Everyone contributes at their own pace and the pot owner can withdraw when you're ready.",
   },
   {
-    emoji: '🏦',
     title: 'Connect your bank account',
-    body: "To receive withdrawals, you'll need to connect your bank account first. It only takes a minute and you can do it anytime from your Profile page.",
+    body: "To receive withdrawals, you'll need to connect your bank account first 🏦. It only takes a minute and you can do it anytime from your Profile page.",
   },
 ];
 
@@ -36,7 +33,7 @@ export default function OnboardingModal({ open, onComplete }: OnboardingModalPro
     <Dialog open={open} onOpenChange={(o) => { if (!o) onComplete(); }}>
       <DialogContent className="max-w-sm rounded-2xl p-0 gap-0 [&>button]:hidden">
         <div className="px-6 pt-8 pb-6 text-center">
-          <div className="text-5xl mb-4">{screen.emoji}</div>
+          <h2 className="text-xl font-bold text-foreground mb-3">{screen.title}</h2>
           <h2 className="text-xl font-bold text-foreground mb-3">{screen.title}</h2>
           <p className="text-sm text-muted-foreground leading-relaxed">{screen.body}</p>
         </div>
