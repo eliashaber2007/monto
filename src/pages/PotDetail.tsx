@@ -61,7 +61,52 @@ function ReceiptStatusBadge({ status }: { status: string }) {
   );
 }
 
-function ProgressRing({ balance, goal, currency }: { balance: number; goal?: number | null; currency: string }) {
+function getBalanceFontSize(text: string): number {
+  const len = text.length;
+  if (len <= 4) return 32;
+  if (len <= 6) return 28;
+  if (len <= 8) return 24;
+  if (len <= 10) return 20;
+  if (len <= 12) return 18;
+  return 16;
+}
+
+function computeStreak(transactions: { created_at: string; amount: number }[]): number {
+  if (!transactions.length) return 0;
+  // Get unique dates with deposits (positive amounts)
+  const depositDates = new Set(
+    transactions
+      .filter((t) => t.amount > 0)
+      .map((t) => new Date(t.created_at).toDateString())
+  );
+  if (depositDates.size === 0) return 0;
+
+  let streak = 0;
+  const today = new Date();
+  const check = new Date(today);
+
+  // Start from today, go backwards
+  while (true) {
+    if (depositDates.has(check.toDateString())) {
+      streak++;
+      check.setDate(check.getDate() - 1);
+    } else if (streak === 0) {
+      // If today has no contribution, try starting from yesterday
+      check.setDate(check.getDate() - 1);
+      if (depositDates.has(check.toDateString())) {
+        streak++;
+        check.setDate(check.getDate() - 1);
+      } else {
+        break;
+      }
+    } else {
+      break;
+    }
+  }
+  return streak;
+}
+
+function ProgressRing({ balance, goal, currency, transactions }: { balance: number; goal?: number | null; currency: string; transactions?: { created_at: string; amount: number }[] }) {
   const radius = 88;
   const stroke = 10;
   const norm = radius - stroke / 2;
@@ -70,9 +115,8 @@ function ProgressRing({ balance, goal, currency }: { balance: number; goal?: num
   const pct = hasGoal ? Math.min(balance / goal!, 1) : 0;
 
   const formatted = formatCurrency(balance, currency);
-  const charCount = formatted.length;
-  // Dynamic font size: shrink as text gets longer, max 30px, min 16px
-  const fontSize = Math.max(16, Math.min(30, 160 / charCount));
+  const fontSize = getBalanceFontSize(formatted);
+  const streak = computeStreak(transactions ?? []);
 
   return (
     <>
@@ -101,13 +145,18 @@ function ProgressRing({ balance, goal, currency }: { balance: number; goal?: num
             />
           )}
         </svg>
-        <div className="text-center z-10 px-4 max-w-[160px]">
+        <div className="text-center z-10 px-3 max-w-[164px]">
           <div className="font-bold text-foreground leading-tight" style={{ fontSize }}>{formatted}</div>
         </div>
       </div>
       {hasGoal && (
         <div className="text-xs text-center mt-2 text-[#4B5563] dark:text-[#CBD5E1]">
           {Math.min(Math.round((balance / goal!) * 100), 100)}% of {formatCurrency(goal!, currency)}
+        </div>
+      )}
+      {streak > 0 && (
+        <div className="text-xs text-center mt-2 font-semibold text-foreground/80">
+          {streak} day streak 🔥
         </div>
       )}
     </>
@@ -458,7 +507,7 @@ export default function PotDetail() {
       <div className="max-w-lg mx-auto px-5 py-8 space-y-6">
         {/* Ring + balance */}
         <div className="bg-card rounded-2xl shadow-sm border border-border p-8 text-center">
-          <ProgressRing balance={pot.balance ?? 0} goal={pot.goal_amount} currency={currency} />
+          <ProgressRing balance={pot.balance ?? 0} goal={pot.goal_amount} currency={currency} transactions={transactions} />
           {!pot.goal_amount && (
             <p className="text-sm text-muted-foreground mt-4">No goal set — save as much as you like! 🎯</p>
           )}
