@@ -62,6 +62,12 @@ export default function OnboardingModal({ open, onComplete }: OnboardingModalPro
               >
                 Do it later
               </button>
+              <button
+                onClick={() => setStep(step - 1)}
+                className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors py-1"
+              >
+                Back
+              </button>
             </>
           ) : (
             <>
@@ -71,6 +77,14 @@ export default function OnboardingModal({ open, onComplete }: OnboardingModalPro
               >
                 Next
               </Button>
+              {step > 0 && (
+                <button
+                  onClick={() => setStep(step - 1)}
+                  className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors py-1"
+                >
+                  Back
+                </button>
+              )}
               <button
                 onClick={onComplete}
                 className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
@@ -78,14 +92,6 @@ export default function OnboardingModal({ open, onComplete }: OnboardingModalPro
                 Skip
               </button>
             </>
-          )}
-          {step > 0 && (
-            <button
-              onClick={() => setStep(step - 1)}
-              className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors py-1"
-            >
-              Back
-            </button>
           )}
         </div>
       </DialogContent>
