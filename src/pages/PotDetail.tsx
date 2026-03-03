@@ -429,11 +429,12 @@ export default function PotDetail() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowChat(true)}
-              className="relative w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:bg-secondary transition-colors"
+              className="relative flex items-center gap-1.5 text-xs text-primary font-semibold border border-primary/30 rounded-full px-3 py-1.5 hover:bg-accent transition-colors"
             >
-              <MessageCircle size={18} />
+              <MessageCircle size={13} />
+              Chat
               {unreadChatCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1">
+                <span className="min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1 ml-0.5">
                   {unreadChatCount > 99 ? '99+' : unreadChatCount}
                 </span>
               )}
