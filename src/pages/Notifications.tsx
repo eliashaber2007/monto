@@ -75,6 +75,17 @@ export default function Notifications() {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 
+  const clearAll = async () => {
+    const allIds = notifications.map((n) => n.id);
+    if (allIds.length === 0) return;
+    // Mark all as read first, then remove from visible list
+    const unreadIds = notifications.filter((n) => !n.read).map((n) => n.id);
+    if (unreadIds.length > 0) {
+      await supabase.from('notifications').update({ read: true }).in('id', unreadIds);
+    }
+    setNotifications([]);
+  };
+
   const handleClick = async (n: Notification) => {
     if (!n.read) {
       await supabase.from('notifications').update({ read: true }).eq('id', n.id);
