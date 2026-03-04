@@ -44,6 +44,10 @@ export default function Signup() {
       return;
     }
 
+    // Auto-confirm creates a session automatically — sign out so
+    // the user must log in manually (preserves pendingInviteUrl in localStorage)
+    await supabase.auth.signOut();
+
     setLoading(false);
 
     toast({
@@ -51,7 +55,7 @@ export default function Signup() {
       description: "Log back in with your credentials.",
     });
 
-    // Navigate to login — pending join pot id stays in localStorage
+    // Navigate to login — pending invite URL stays in localStorage
     navigate("/login");
   };
 
