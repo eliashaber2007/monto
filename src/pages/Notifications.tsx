@@ -104,15 +104,25 @@ export default function Notifications() {
             <ArrowLeft size={20} />
           </button>
           <h1 className="font-bold text-foreground text-lg flex-1">Notifications</h1>
-          {unreadCount > 0 && (
-            <button
-              onClick={markAllRead}
-              className="text-xs text-primary font-semibold flex items-center gap-1 hover:underline"
-            >
-              <CheckCheck size={14} />
-              Mark all read
-            </button>
-          )}
+          <div className="flex items-center gap-3">
+            {unreadCount > 0 && (
+              <button
+                onClick={markAllRead}
+                className="text-xs text-primary font-semibold flex items-center gap-1 hover:underline"
+              >
+                <CheckCheck size={14} />
+                Mark all read
+              </button>
+            )}
+            {notifications.length > 0 && (
+              <button
+                onClick={clearAll}
+                className="text-xs text-muted-foreground font-medium hover:text-foreground hover:underline transition-colors"
+              >
+                Clear all
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
