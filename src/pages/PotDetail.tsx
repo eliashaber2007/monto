@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Users, Plus, CheckCircle2, Image as ImageIcon, Upload, X, LogOut, Copy, Check, Landmark, ThumbsUp, ThumbsDown, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Users, Plus, CheckCircle2, Image as ImageIcon, Upload, X, LogOut, Copy, Check, Landmark, ThumbsUp, ThumbsDown, MessageCircle, KeyRound } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePotDetail } from '@/hooks/usePots';
@@ -29,6 +29,7 @@ import ReceiptUploadModal from '@/components/ReceiptUploadModal';
 import ReceiptReviewModal from '@/components/ReceiptReviewModal';
 import WithdrawalModal from '@/components/WithdrawalModal';
 import PotChat from '@/components/PotChat';
+import ChangePasswordModal from '@/components/ChangePasswordModal';
 
 function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat('en-IE', {
@@ -184,6 +185,7 @@ export default function PotDetail() {
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
   const [processingWithdrawal, setProcessingWithdrawal] = useState<string | null>(null);
   const [showChat, setShowChat] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
   const [unreadChatCount, setUnreadChatCount] = useState(0);
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -809,7 +811,18 @@ export default function PotDetail() {
         </Tabs>
 
         {/* Bottom action buttons */}
-        <div className="pt-4">
+        <div className="pt-4 space-y-3">
+          {isCreator && pot.withdrawal_rule === 'requires_password' && (
+            <Button
+              variant="outline"
+              className="w-full h-11 rounded-xl font-semibold text-sm"
+              onClick={() => setShowChangePassword(true)}
+            >
+              <KeyRound size={15} className="mr-2" />
+              Change Withdrawal Password
+            </Button>
+          )}
+
           {isCreator ? (
             <Button
               variant="destructive"
@@ -992,6 +1005,14 @@ export default function PotDetail() {
           onClose={() => setShowChat(false)}
         />
       )}
+
+      <ChangePasswordModal
+        open={showChangePassword}
+        onOpenChange={setShowChangePassword}
+        potId={id!}
+        currentPassword={pot.withdrawal_password ?? null}
+        onChanged={() => refetch()}
+      />
     </div>
   );
 }
