@@ -46,6 +46,7 @@ const App = () => (
               }
             />
             <Route path="/join/:potId" element={<JoinPot />} />
+            <Route path="/invite/:potId" element={<JoinPot />} />
             <Route
               path="/notifications"
               element={
