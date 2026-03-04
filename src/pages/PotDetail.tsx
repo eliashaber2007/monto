@@ -1005,6 +1005,14 @@ export default function PotDetail() {
           onClose={() => setShowChat(false)}
         />
       )}
+
+      <ChangePasswordModal
+        open={showChangePassword}
+        onOpenChange={setShowChangePassword}
+        potId={id!}
+        currentPassword={pot.withdrawal_password ?? null}
+        onChanged={() => refetch()}
+      />
     </div>
   );
 }
