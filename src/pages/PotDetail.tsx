@@ -811,7 +811,18 @@ export default function PotDetail() {
         </Tabs>
 
         {/* Bottom action buttons */}
-        <div className="pt-4">
+        <div className="pt-4 space-y-3">
+          {isCreator && pot.withdrawal_rule === 'requires_password' && (
+            <Button
+              variant="outline"
+              className="w-full h-11 rounded-xl font-semibold text-sm"
+              onClick={() => setShowChangePassword(true)}
+            >
+              <KeyRound size={15} className="mr-2" />
+              Change Withdrawal Password
+            </Button>
+          )}
+
           {isCreator ? (
             <Button
               variant="destructive"
