@@ -35,11 +35,12 @@ Deno.serve(async (req) => {
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session;
-    const { pot_id, user_id } = session.metadata ?? {};
+    const metadata = session.metadata ?? {};
+    const { pot_id, user_id } = metadata;
     const amountTotal = session.amount_total ?? 0; // cents
 
     if (!pot_id || !user_id) {
-      console.error('Missing metadata:', session.metadata);
+      console.error('Missing metadata:', metadata);
       return new Response('Missing metadata', { status: 400, headers: corsHeaders });
     }
 
@@ -49,6 +50,53 @@ Deno.serve(async (req) => {
     );
 
     const amountEur = amountTotal / 100;
+
+    // If this is a new pot creation, create the pot first
+    if (metadata.is_new_pot === 'true') {
+      // Check if pot already exists (idempotency)
+      const { data: existingPot } = await supabaseAdmin
+        .from('pots')
+        .select('id')
+        .eq('id', pot_id)
+        .maybeSingle();
+
+      if (!existingPot) {
+        const goalAmount = metadata.pot_goal_amount ? parseFloat(metadata.pot_goal_amount) : null;
+        const maxWdAmount = metadata.pot_max_withdrawal_amount ? parseFloat(metadata.pot_max_withdrawal_amount) : null;
+        const maxWdPerDay = metadata.pot_max_withdrawals_per_day ? parseInt(metadata.pot_max_withdrawals_per_day) : null;
+
+        const { error: potError } = await supabaseAdmin.from('pots').insert({
+          id: pot_id,
+          name: metadata.pot_name || 'Untitled Pot',
+          created_by: user_id,
+          visual_style: 'progress_ring',
+          currency: metadata.pot_currency || 'EUR',
+          goal_amount: isNaN(goalAmount as number) ? null : goalAmount,
+          withdrawal_rule: metadata.pot_withdrawal_rule || 'auto_approve',
+          withdrawal_password: metadata.pot_withdrawal_password || null,
+          require_receipt: metadata.pot_require_receipt === 'true',
+          max_withdrawal_amount: isNaN(maxWdAmount as number) ? null : maxWdAmount,
+          max_withdrawals_per_day: isNaN(maxWdPerDay as number) ? null : maxWdPerDay,
+        });
+
+        if (potError) {
+          console.error('Error creating pot in webhook:', potError);
+          return new Response(JSON.stringify({ error: potError.message }), {
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        // Add creator as pot member
+        await supabaseAdmin.from('pot_members').insert({
+          pot_id,
+          user_id,
+          role: 'creator',
+        });
+
+        console.log(`Created new pot ${pot_id} via webhook`);
+      }
+    }
 
     // Insert transaction
     const { error: txError } = await supabaseAdmin.from('transactions').insert({
