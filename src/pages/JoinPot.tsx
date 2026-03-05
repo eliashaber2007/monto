@@ -62,12 +62,21 @@ export default function JoinPot() {
         return;
       }
 
+      const { data: existing } = await supabase
+        .from('pot_members')
+        .select('id')
+        .eq('pot_id', potId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (existing) {
+        navigate(`/pots/${potId}`, { replace: true });
+        return;
+      }
+
       const { error } = await supabase
         .from('pot_members')
-        .upsert(
-          { pot_id: potId, user_id: user.id, role: 'member' },
-          { onConflict: 'pot_id,user_id', ignoreDuplicates: true }
-        );
+        .insert({ pot_id: potId, user_id: user.id, role: 'member' });
 
       if (error) {
         toast({ title: 'Error joining pot', description: error.message, variant: 'destructive' });
