@@ -186,6 +186,8 @@ export default function PotDetail() {
   const [showChat, setShowChat] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [unreadChatCount, setUnreadChatCount] = useState(0);
+  const [fundsOpen, setFundsOpen] = useState(false);
+  const [withdrawalsOpen, setWithdrawalsOpen] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
