@@ -33,20 +33,10 @@ export default function Login() {
 
       if (potId && userId) {
         // Check if already a member
-        const { data: existing } = await supabase
-          .from('pot_members')
-          .select('id')
-          .eq('pot_id', potId)
-          .eq('user_id', userId)
-          .maybeSingle();
-
-        if (!existing) {
-          await supabase.from('pot_members').insert({
-            pot_id: potId,
-            user_id: userId,
-            role: 'member',
-          });
-        }
+        await supabase.from('pot_members').upsert(
+          { pot_id: potId, user_id: userId, role: 'member' },
+          { onConflict: 'pot_id,user_id', ignoreDuplicates: true }
+        );
 
         localStorage.removeItem('pendingInviteUrl');
         localStorage.removeItem('pending_join_pot_id');
