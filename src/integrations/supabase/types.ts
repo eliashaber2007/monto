@@ -177,6 +177,7 @@ export type Database = {
           max_withdrawal_amount: number | null
           max_withdrawals_per_day: number | null
           name: string
+          peak_balance: number
           receipt_window_days: number
           require_receipt: boolean
           status: string
@@ -194,6 +195,7 @@ export type Database = {
           max_withdrawal_amount?: number | null
           max_withdrawals_per_day?: number | null
           name: string
+          peak_balance?: number
           receipt_window_days?: number
           require_receipt?: boolean
           status?: string
@@ -211,6 +213,7 @@ export type Database = {
           max_withdrawal_amount?: number | null
           max_withdrawals_per_day?: number | null
           name?: string
+          peak_balance?: number
           receipt_window_days?: number
           require_receipt?: boolean
           status?: string
