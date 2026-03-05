@@ -74,14 +74,18 @@ export default function JoinPot() {
         return;
       }
 
-      const { error } = await supabase
-        .from('pot_members')
-        .insert({ pot_id: potId, user_id: user.id, role: 'member' });
+      try {
+        const { error: insertError } = await supabase
+          .from('pot_members')
+          .insert({ pot_id: potId, user_id: user.id, role: 'member' });
 
-      if (error) {
-        toast({ title: 'Error joining pot', description: error.message, variant: 'destructive' });
-        navigate('/', { replace: true });
-        return;
+        if (insertError) throw insertError;
+      } catch (err: any) {
+        if (err?.code !== '23505') {
+          toast({ title: 'Error joining pot', description: err.message, variant: 'destructive' });
+          navigate('/', { replace: true });
+          return;
+        }
       }
 
       toast({ title: `You've joined ${pot?.name ?? 'the pot'}! 🎉` });

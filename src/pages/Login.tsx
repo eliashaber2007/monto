@@ -40,11 +40,19 @@ export default function Login() {
           .maybeSingle();
 
         if (!existing) {
-          await supabase.from('pot_members').insert({
-            pot_id: potId,
-            user_id: userId,
-            role: 'member',
-          });
+          try {
+            const { error: insertError } = await supabase.from('pot_members').insert({
+              pot_id: potId,
+              user_id: userId,
+              role: 'member',
+            });
+
+            if (insertError) throw insertError;
+          } catch (err: any) {
+            if (err?.code !== '23505') {
+              console.error('Error joining pot after login:', err);
+            }
+          }
         }
 
         localStorage.removeItem('pendingInviteUrl');
