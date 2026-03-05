@@ -70,6 +70,9 @@ export default function PotSuccess() {
       // Clear pending data
       localStorage.removeItem('pendingPotData');
 
+      // Invalidate pots list so home screen shows correct balance
+      queryClient.invalidateQueries({ queryKey: ['pots'] });
+
       toast({ title: '🎉 Pot created!', description: 'Your payment was successful.' });
       navigate(`/pots/${potId}?payment=success`, { replace: true });
     };
