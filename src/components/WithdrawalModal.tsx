@@ -155,7 +155,7 @@ export default function WithdrawalModal({
           title: `Withdrawal of ${formatCurrency(numAmount)} is being processed`,
         });
       } else {
-        // requires_approval for non-creator — insert a withdrawal record
+        // requires_approval for non-creator — insert a pending withdrawal record only (no balance deduction)
         const { error: wErr } = await supabase.from('withdrawals').insert({
           pot_id: potId,
           user_id: user.id,
@@ -164,12 +164,6 @@ export default function WithdrawalModal({
           status: 'pending',
         });
         if (wErr) throw wErr;
-
-        // Deduct balance to hold it while pending
-        await supabase.rpc('increment_pot_balance', {
-          p_pot_id: potId,
-          p_amount: -numAmount,
-        });
 
         toast({
           title: 'Withdrawal request sent to the pot creator',

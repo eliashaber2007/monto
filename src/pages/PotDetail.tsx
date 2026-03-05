@@ -274,6 +274,13 @@ export default function PotDetail() {
   const handleApproveWithdrawal = async (withdrawal: any) => {
     setProcessingWithdrawal(withdrawal.id);
     try {
+      // 1. Deduct balance from the pot
+      await supabase.rpc('increment_pot_balance', {
+        p_pot_id: id!,
+        p_amount: -withdrawal.amount,
+      });
+
+      // 2. Call create-payout to trigger bank transfer
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
 
@@ -298,6 +305,7 @@ export default function PotDetail() {
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || 'Payout failed');
 
+      // 3. Mark withdrawal as approved
       await supabase.from('withdrawals').update({ status: 'approved', processed_at: new Date().toISOString() }).eq('id', withdrawal.id);
 
       toast({ title: 'Withdrawal approved ✅' });
@@ -313,12 +321,7 @@ export default function PotDetail() {
   const handleRejectWithdrawal = async (withdrawal: any) => {
     setProcessingWithdrawal(withdrawal.id);
     try {
-      // Refund balance
-      await supabase.rpc('increment_pot_balance', {
-        p_pot_id: id!,
-        p_amount: withdrawal.amount,
-      });
-
+      // No balance refund needed since balance was never deducted on request
       await supabase.from('withdrawals').update({ status: 'rejected', processed_at: new Date().toISOString() }).eq('id', withdrawal.id);
 
       toast({ title: 'Withdrawal rejected ❌', description: 'Funds returned to pot.' });
