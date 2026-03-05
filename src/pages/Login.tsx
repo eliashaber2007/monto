@@ -64,12 +64,8 @@ export default function Login() {
           }
         }
 
-        localStorage.removeItem('pendingInviteUrl');
-        localStorage.removeItem('pending_join_pot_id');
         navigate(`/pots/${potId}`, { replace: true });
       } else {
-        localStorage.removeItem('pendingInviteUrl');
-        localStorage.removeItem('pending_join_pot_id');
         navigate('/', { replace: true });
       }
     } else {
