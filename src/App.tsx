@@ -53,6 +53,14 @@ const App = () => (
             <Route path="/join/:potId" element={<JoinPot />} />
             <Route path="/invite/:potId" element={<JoinPot />} />
             <Route
+              path="/pot-success"
+              element={
+                <ProtectedRoute>
+                  <PotSuccess />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/notifications"
               element={
                 <ProtectedRoute>
