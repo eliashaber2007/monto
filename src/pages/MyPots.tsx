@@ -59,7 +59,16 @@ export default function MyPots() {
   const [showCreate, setShowCreate] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
+
+  // Handle cancelled pot creation redirect
+  useEffect(() => {
+    if (searchParams.get('pot_cancelled') === 'true') {
+      localStorage.removeItem('pendingPotData');
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams]);
 
   const displayName = profile?.first_name || user?.user_metadata?.first_name || user?.email?.split('@')[0] || '';
 
