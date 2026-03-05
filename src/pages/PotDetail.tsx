@@ -107,23 +107,22 @@ function computeStreak(transactions: { created_at: string; amount: number }[]): 
   return streak;
 }
 
-function ProgressRing({ balance, goal, currency, transactions }: { balance: number; goal?: number | null; currency: string; transactions?: { created_at: string; amount: number }[] }) {
+function ProgressRing({ balance, peakBalance, currency }: { balance: number; peakBalance: number; currency: string }) {
   const radius = 88;
   const stroke = 10;
   const norm = radius - stroke / 2;
   const circ = 2 * Math.PI * norm;
-  const hasGoal = goal != null && goal > 0;
-  const pct = hasGoal ? Math.min(balance / goal!, 1) : 0;
+  const hasPeak = peakBalance > 0;
+  const pct = hasPeak ? Math.min(balance / peakBalance, 1) : 0;
 
   const formatted = formatCurrency(balance, currency);
   const fontSize = getBalanceFontSize(formatted);
-  
 
   return (
     <>
       <div className="relative flex items-center justify-center w-52 h-52 mx-auto">
         <svg className="absolute" width={208} height={208} viewBox="0 0 208 208">
-          {hasGoal && (
+          {hasPeak && (
             <defs>
               <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor="hsl(221,83%,68%)" />
@@ -132,7 +131,7 @@ function ProgressRing({ balance, goal, currency, transactions }: { balance: numb
             </defs>
           )}
           <circle cx={104} cy={104} r={norm} fill="none" stroke="hsl(214,32%,91%)" strokeWidth={stroke} />
-          {hasGoal && (
+          {hasPeak && (
             <circle
               cx={104} cy={104} r={norm}
               fill="none"
@@ -150,12 +149,12 @@ function ProgressRing({ balance, goal, currency, transactions }: { balance: numb
           <div className="font-bold text-foreground leading-tight" style={{ fontSize }}>{formatted}</div>
         </div>
       </div>
-      {hasGoal && (() => {
-        const pctVal = Math.min(Math.round((balance / goal!) * 100), 100);
+      {hasPeak && (() => {
+        const pctVal = Math.round(pct * 100);
         const pctColor = pctVal >= 50 ? 'text-emerald-400' : pctVal >= 20 ? 'text-amber-400' : 'text-red-500';
         return (
           <div className={`text-xs text-center mt-2 font-semibold ${pctColor}`}>
-            {pctVal}% of {formatCurrency(goal!, currency)}
+            {pctVal}% of {formatCurrency(peakBalance, currency)}
           </div>
         );
       })()}
