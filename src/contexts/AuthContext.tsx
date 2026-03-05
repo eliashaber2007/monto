@@ -27,6 +27,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(session);
         setLoading(false);
 
+        if (event === 'SIGNED_IN') {
+          // Mark that user explicitly logged in during this browser tab session
+          sessionStorage.setItem('auth_active', 'true');
+        }
+
+        if (event === 'SIGNED_OUT') {
+          sessionStorage.removeItem('auth_active');
+        }
+
         // Handle OAuth redirect: if user just signed in and there's a pending invite URL, redirect
         if (event === 'SIGNED_IN' && session && !hasHandledOAuthRedirect.current) {
           hasHandledOAuthRedirect.current = true;
@@ -34,7 +43,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (pendingUrl) {
             localStorage.removeItem('pendingInviteUrl');
             localStorage.removeItem('pending_join_pot_id');
-            // Use setTimeout to let React render first
             setTimeout(() => {
               window.location.href = pendingUrl;
             }, 0);
@@ -43,10 +51,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setLoading(false);
-    });
+    // If no explicit login happened in this tab, clear any persisted session
+    const wasExplicitlyLoggedIn = sessionStorage.getItem('auth_active');
+    if (!wasExplicitlyLoggedIn) {
+      supabase.auth.signOut().then(() => {
+        setSession(null);
+        setLoading(false);
+      });
+    } else {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        setSession(session);
+        setLoading(false);
+      });
+    }
 
     return () => subscription.unsubscribe();
   }, []);
