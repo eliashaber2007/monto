@@ -51,9 +51,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
+    // Detect OAuth redirect (URL contains hash fragments or query params from OAuth flow)
+    const isOAuthRedirect = window.location.hash.includes('access_token') ||
+      window.location.search.includes('code=') ||
+      window.location.pathname.includes('~oauth');
+
     // If no explicit login happened in this tab, clear any persisted session
+    // BUT skip if this is an OAuth redirect — the session is being established
     const wasExplicitlyLoggedIn = sessionStorage.getItem('auth_active');
-    if (!wasExplicitlyLoggedIn) {
+    if (!wasExplicitlyLoggedIn && !isOAuthRedirect) {
       supabase.auth.signOut().then(() => {
         setSession(null);
         setLoading(false);
