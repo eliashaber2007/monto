@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 
 export default function PotSuccess() {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  const queryClient = useQueryClient();
   const { toast } = useToast();
   const [processing, setProcessing] = useState(true);
 
@@ -68,6 +69,9 @@ export default function PotSuccess() {
 
       // Clear pending data
       localStorage.removeItem('pendingPotData');
+
+      // Invalidate pots list so home screen shows correct balance
+      queryClient.invalidateQueries({ queryKey: ['pots'] });
 
       toast({ title: '🎉 Pot created!', description: 'Your payment was successful.' });
       navigate(`/pots/${potId}?payment=success`, { replace: true });
