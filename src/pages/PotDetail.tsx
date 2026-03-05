@@ -628,7 +628,6 @@ export default function PotDetail() {
               const receipt = receiptByTx[tx.id];
               const myTx = tx.user_id === user?.id;
               const isWithdrawal = Number(tx.amount) < 0;
-              const needsReceipt = !receipt && myTx && !isWithdrawal && pot.require_receipt;
               const needsWithdrawalReceipt = isWithdrawal && !receipt && myTx;
 
               return (
