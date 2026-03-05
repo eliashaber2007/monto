@@ -16,6 +16,7 @@ import JoinPot from "./pages/JoinPot";
 import Notifications from "./pages/Notifications";
 import Profile from "./pages/Profile";
 import PotArchive from "./pages/PotArchive";
+import PotSuccess from "./pages/PotSuccess";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -51,6 +52,14 @@ const App = () => (
             />
             <Route path="/join/:potId" element={<JoinPot />} />
             <Route path="/invite/:potId" element={<JoinPot />} />
+            <Route
+              path="/pot-success"
+              element={
+                <ProtectedRoute>
+                  <PotSuccess />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/notifications"
               element={

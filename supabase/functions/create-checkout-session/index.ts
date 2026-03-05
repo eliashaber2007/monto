@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
 
     const userId = claimsData.claims.sub;
 
-    const { pot_id, amount_cents } = await req.json();
+    const { pot_id, amount_cents, is_new_pot, pot_config } = await req.json();
 
     if (!pot_id || !amount_cents || amount_cents < 100) {
       return new Response(JSON.stringify({ error: 'Invalid params' }), {
@@ -53,24 +53,48 @@ Deno.serve(async (req) => {
 
     const origin = req.headers.get('origin') ?? 'https://id-preview--59da60b6-faa4-4fa4-890f-0b571d3b5fa7.lovable.app';
 
+    // Build metadata
+    const metadata: Record<string, string> = {
+      pot_id,
+      user_id: userId,
+    };
+
+    // If this is a new pot creation, store pot config in metadata
+    if (is_new_pot && pot_config) {
+      metadata.is_new_pot = 'true';
+      metadata.pot_name = pot_config.name || '';
+      metadata.pot_currency = pot_config.currency || 'EUR';
+      metadata.pot_goal_amount = String(pot_config.goal_amount ?? '');
+      metadata.pot_withdrawal_rule = pot_config.withdrawal_rule || 'auto_approve';
+      metadata.pot_withdrawal_password = pot_config.withdrawal_password || '';
+      metadata.pot_require_receipt = String(pot_config.require_receipt ?? false);
+      metadata.pot_max_withdrawal_amount = String(pot_config.max_withdrawal_amount ?? '');
+      metadata.pot_max_withdrawals_per_day = String(pot_config.max_withdrawals_per_day ?? '');
+    }
+
+    // Set success/cancel URLs based on whether this is a new pot
+    const successUrl = is_new_pot
+      ? `${origin}/pot-success?session_id={CHECKOUT_SESSION_ID}`
+      : `${origin}/pots/${pot_id}?payment=success`;
+    const cancelUrl = is_new_pot
+      ? `${origin}/?pot_cancelled=true`
+      : `${origin}/pots/${pot_id}?payment=cancelled`;
+
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       line_items: [
         {
           price_data: {
-            currency: 'eur',
+            currency: (pot_config?.currency || 'eur').toLowerCase(),
             unit_amount: amount_cents,
-            product_data: { name: 'Monto Pot Contribution' },
+            product_data: { name: is_new_pot ? 'Monto Pot Initial Deposit' : 'Monto Pot Contribution' },
           },
           quantity: 1,
         },
       ],
-      metadata: {
-        pot_id,
-        user_id: userId,
-      },
-      success_url: `${origin}/pots/${pot_id}?payment=success`,
-      cancel_url: `${origin}/pots/${pot_id}?payment=cancelled`,
+      metadata,
+      success_url: successUrl,
+      cancel_url: cancelUrl,
     });
 
     return new Response(JSON.stringify({ url: session.url }), {

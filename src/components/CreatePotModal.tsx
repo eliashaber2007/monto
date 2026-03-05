@@ -59,9 +59,38 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
     onOpenChange(val);
   };
 
-  const redirectToCheckout = async (potId: string, amountEuros: number) => {
+  const buildPotConfig = () => ({
+    id: crypto.randomUUID(),
+    name: potName.trim(),
+    currency,
+    goal_amount: goalAmount ? parseFloat(goalAmount) : null,
+    withdrawal_rule: withdrawalRule,
+    withdrawal_password: withdrawalRule === "requires_password" ? withdrawalPassword : null,
+    require_receipt: requireReceipt,
+    max_withdrawal_amount: maxWithdrawalAmount ? parseFloat(maxWithdrawalAmount) : null,
+    max_withdrawals_per_day: maxWithdrawalsPerDay ? parseInt(maxWithdrawalsPerDay) : null,
+  });
+
+  const redirectToCheckout = async (potConfig: ReturnType<typeof buildPotConfig>, amountEuros: number) => {
+    // Store pending pot data in localStorage
+    localStorage.setItem('pendingPotData', JSON.stringify(potConfig));
+
     const res = await supabase.functions.invoke("create-checkout-session", {
-      body: { pot_id: potId, amount_cents: Math.round(amountEuros * 100) },
+      body: {
+        pot_id: potConfig.id,
+        amount_cents: Math.round(amountEuros * 100),
+        is_new_pot: true,
+        pot_config: {
+          name: potConfig.name,
+          currency: potConfig.currency,
+          goal_amount: potConfig.goal_amount,
+          withdrawal_rule: potConfig.withdrawal_rule,
+          withdrawal_password: potConfig.withdrawal_password,
+          require_receipt: potConfig.require_receipt,
+          max_withdrawal_amount: potConfig.max_withdrawal_amount,
+          max_withdrawals_per_day: potConfig.max_withdrawals_per_day,
+        },
+      },
     });
     if (res.error) throw res.error;
     const { url } = res.data as { url: string };
@@ -85,46 +114,11 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
       return;
     }
 
-    const userId = session.user.id;
-    const potId = crypto.randomUUID();
-
-    const { error: potError } = await supabase
-      .from("pots")
-      .insert({
-        id: potId,
-        name: potName.trim(),
-        created_by: userId,
-        visual_style: "progress_ring",
-        currency,
-        goal_amount: goalAmount ? parseFloat(goalAmount) : null,
-        withdrawal_rule: withdrawalRule,
-        withdrawal_password: withdrawalRule === "requires_password" ? withdrawalPassword : null,
-        require_receipt: requireReceipt,
-        max_withdrawal_amount: maxWithdrawalAmount ? parseFloat(maxWithdrawalAmount) : null,
-        max_withdrawals_per_day: maxWithdrawalsPerDay ? parseInt(maxWithdrawalsPerDay) : null,
-      } as any);
-
-    if (potError) {
-      setCreating(false);
-      toast({ title: "Error creating pot", description: potError?.message ?? "Could not create pot.", variant: "destructive" });
-      return;
-    }
-
-    const { error: memberError } = await supabase
-      .from("pot_members")
-      .insert({ pot_id: potId, user_id: userId, role: "creator" });
-
-    if (memberError) {
-      setCreating(false);
-      toast({ title: "Pot created but member setup failed", description: memberError.message, variant: "destructive" });
-      return;
-    }
-
-    queryClient.invalidateQueries({ queryKey: ["pots"] });
-
+    // If goal amount is set, go straight to Stripe checkout (pot created after payment)
     if (goalAmount && parseFloat(goalAmount) > 0) {
+      const potConfig = buildPotConfig();
       try {
-        await redirectToCheckout(potId, parseFloat(goalAmount));
+        await redirectToCheckout(potConfig, parseFloat(goalAmount));
       } catch (err: any) {
         setCreating(false);
         toast({ title: "Checkout error", description: err.message ?? "Could not start checkout.", variant: "destructive" });
@@ -132,8 +126,14 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
       return;
     }
 
-    setCreatedPotId(potId);
+    // No goal amount — show step 3 for optional initial deposit
+    // Generate pot config but don't create in DB yet
+    const potConfig = buildPotConfig();
+    setCreatedPotId(potConfig.id);
+    // Store config temporarily for step 3
+    localStorage.setItem('pendingPotData', JSON.stringify(potConfig));
     setStep(3);
+    setCreating(false);
   };
 
   const handleInitialDeposit = async () => {
@@ -144,18 +144,61 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
     }
     setCreating(true);
     try {
-      await redirectToCheckout(createdPotId!, amount);
+      const pendingData = JSON.parse(localStorage.getItem('pendingPotData') || '{}');
+      await redirectToCheckout(pendingData, amount);
     } catch (err: any) {
       setCreating(false);
       toast({ title: "Checkout error", description: err.message ?? "Could not start checkout.", variant: "destructive" });
     }
   };
 
-  const handleSkipDeposit = () => {
+  const handleSkipDeposit = async () => {
+    // No payment — create pot in DB immediately
+    setCreating(true);
+    const pendingRaw = localStorage.getItem('pendingPotData');
+    if (!pendingRaw) {
+      setCreating(false);
+      toast({ title: "Error", description: "Missing pot data.", variant: "destructive" });
+      return;
+    }
+    const potConfig = JSON.parse(pendingRaw);
+    const { data: sessionData } = await supabase.auth.getSession();
+    const userId = sessionData?.session?.user?.id;
+    if (!userId) {
+      setCreating(false);
+      toast({ title: "Not signed in", variant: "destructive" });
+      return;
+    }
+
+    const { error: potError } = await supabase.from("pots").insert({
+      id: potConfig.id,
+      name: potConfig.name,
+      created_by: userId,
+      visual_style: "progress_ring",
+      currency: potConfig.currency,
+      goal_amount: potConfig.goal_amount,
+      withdrawal_rule: potConfig.withdrawal_rule,
+      withdrawal_password: potConfig.withdrawal_password,
+      require_receipt: potConfig.require_receipt,
+      max_withdrawal_amount: potConfig.max_withdrawal_amount,
+      max_withdrawals_per_day: potConfig.max_withdrawals_per_day,
+    } as any);
+
+    if (potError) {
+      setCreating(false);
+      toast({ title: "Error creating pot", description: potError.message, variant: "destructive" });
+      return;
+    }
+
+    await supabase.from("pot_members").insert({ pot_id: potConfig.id, user_id: userId, role: "creator" });
+
+    localStorage.removeItem('pendingPotData');
+    queryClient.invalidateQueries({ queryKey: ["pots"] });
+    setCreating(false);
     reset();
     onOpenChange(false);
-    toast({ title: "🎉 Pot created!", description: `"${potName}" is ready to go.` });
-    navigate(`/pots/${createdPotId}`);
+    toast({ title: "🎉 Pot created!", description: `"${potConfig.name}" is ready to go.` });
+    navigate(`/pots/${potConfig.id}`);
   };
 
   const currencySymbol = currency === "EUR" ? "€" : currency === "GBP" ? "£" : "$";
@@ -363,7 +406,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
           {step === 3 && (
             <div className="space-y-5">
               <p className="text-sm text-muted-foreground">
-                Your pot is ready! 🎉 Add an initial deposit to kickstart your savings, or skip for now.
+                Your pot is almost ready! 🎉 Add an initial deposit to kickstart your savings, or skip for now.
               </p>
 
               <div className="space-y-1.5">
@@ -396,7 +439,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
                   type="button"
                   disabled={creating}
                 >
-                  Skip
+                  {creating ? "Creating…" : "Skip"}
                 </Button>
                 <Button
                   className="flex-1 h-11 rounded-xl"
