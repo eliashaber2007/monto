@@ -29,10 +29,12 @@ export default function Signup() {
 
     setLoading(true);
 
-    // Preserve pending invite URL — signUp triggers SIGNED_IN which
-    // causes AuthContext to consume it prematurely
+    // Save and REMOVE invite URLs before signUp so AuthContext's
+    // SIGNED_IN handler cannot consume them and redirect prematurely
     const savedInviteUrl = localStorage.getItem('pendingInviteUrl');
     const savedJoinPotId = localStorage.getItem('pending_join_pot_id');
+    localStorage.removeItem('pendingInviteUrl');
+    localStorage.removeItem('pending_join_pot_id');
 
     const { data, error } = await supabase.auth.signUp({
       email,
