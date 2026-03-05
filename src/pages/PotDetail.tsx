@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Users, Plus, CheckCircle2, Image as ImageIcon, Upload, X, LogOut, Copy, Check, Landmark, ThumbsUp, ThumbsDown, MessageCircle, KeyRound } from 'lucide-react';
+import { ArrowLeft, Users, Plus, CheckCircle2, Image as ImageIcon, Upload, X, LogOut, Copy, Check, Landmark, ThumbsUp, ThumbsDown, MessageCircle, KeyRound, ChevronDown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePotDetail } from '@/hooks/usePots';
@@ -186,6 +186,8 @@ export default function PotDetail() {
   const [showChat, setShowChat] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [unreadChatCount, setUnreadChatCount] = useState(0);
+  const [fundsOpen, setFundsOpen] = useState(false);
+  const [withdrawalsOpen, setWithdrawalsOpen] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -534,164 +536,193 @@ export default function PotDetail() {
           </TabsList>
 
           <TabsContent value="activity" className="mt-5 space-y-3">
-            {/* Pending withdrawal requests (visible to all, actionable by creator) */}
-            {withdrawals.filter((w) => w.status === 'pending').map((w) => {
-              const memberData = members.find((m) => m.user_id === w.user_id);
-              const profile = (memberData as any)?.profiles;
-              const requesterName = profile?.first_name || 'Member';
-              const isMyRequest = w.user_id === user?.id;
+            {(() => {
+              const deposits = transactions.filter((tx) => Number(tx.amount) > 0);
+              const withdrawalTxs = transactions.filter((tx) => Number(tx.amount) < 0);
+              const totalDeposits = deposits.reduce((s, tx) => s + Number(tx.amount), 0);
+              const totalWithdrawals = withdrawals.reduce((s, w) => s + Number(w.amount), 0);
+
+              const getMemberProfile = (userId: string) => {
+                const m = members.find((m) => m.user_id === userId);
+                return (m as any)?.profiles;
+              };
+
+              const MemberAvatar = ({ userId }: { userId: string }) => {
+                const profile = getMemberProfile(userId);
+                const avatarUrl = profile?.avatar_url;
+                const avatarColor = profile?.avatar_color || '#3b82f6';
+                const initial = (profile?.first_name || '?')[0].toUpperCase();
+                if (avatarUrl) {
+                  return <img src={avatarUrl} alt="" className="w-8 h-8 rounded-full object-cover flex-shrink-0" />;
+                }
+                return (
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{ backgroundColor: avatarColor }}>
+                    {initial}
+                  </div>
+                );
+              };
 
               return (
-                <div key={w.id} className="bg-warning/5 rounded-xl border border-warning/30 p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-warning/10 flex items-center justify-center flex-shrink-0">
-                      <span className="text-base">⏳</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-foreground">
-                        {isMyRequest ? 'Your withdrawal request' : `${requesterName} requested withdrawal`}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatCurrency(w.amount, currency)} • {formatDate(w.created_at)}
-                      </p>
-                      {w.note && <p className="text-xs text-muted-foreground mt-1 italic">"{w.note}"</p>}
-                    </div>
-                    <div className="flex-shrink-0">
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-warning/10 text-warning border border-warning/20 font-semibold">
-                        Pending
-                      </span>
-                    </div>
+                <>
+                  {/* Funds Added section */}
+                  <div className="bg-card rounded-xl border border-border overflow-hidden">
+                    <button
+                      onClick={() => setFundsOpen((v) => !v)}
+                      className="w-full flex items-center justify-between p-4 hover:bg-accent/50 transition-colors"
+                      type="button"
+                    >
+                      <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                        <span>💳</span>
+                        <span>Funds Added</span>
+                        <span className="text-muted-foreground font-normal">·</span>
+                        <span className="text-success">{formatCurrency(totalDeposits, currency)}</span>
+                        <span className="text-muted-foreground font-normal">·</span>
+                        <span className="text-muted-foreground font-normal text-xs">{deposits.length} transaction{deposits.length !== 1 ? 's' : ''}</span>
+                      </div>
+                      <ChevronDown size={16} className={`text-muted-foreground transition-transform duration-200 ${fundsOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    {fundsOpen && (
+                      <div className="border-t border-border divide-y divide-border">
+                        {deposits.length === 0 ? (
+                          <div className="p-4 text-center text-xs text-muted-foreground">No contributions yet</div>
+                        ) : deposits.map((tx) => {
+                          const profile = getMemberProfile(tx.user_id);
+                          const name = profile?.first_name || 'Member';
+                          return (
+                            <div key={tx.id} className="flex items-center gap-3 px-4 py-3">
+                              <MemberAvatar userId={tx.user_id} />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-foreground truncate">{name}</p>
+                                <p className="text-xs text-muted-foreground">{formatDate(tx.created_at)}</p>
+                              </div>
+                              <span className="text-sm font-bold text-success">+{formatCurrency(Number(tx.amount), currency)}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
-                  {isCreator && !isMyRequest && (
-                    <div className="flex gap-2 mt-3 ml-12">
-                      <button
-                        onClick={() => handleApproveWithdrawal(w)}
-                        disabled={processingWithdrawal === w.id}
-                        className="flex-1 text-xs font-semibold py-2 rounded-lg bg-success/10 text-success border border-success/20 hover:bg-success/20 transition-colors disabled:opacity-50"
-                      >
-                        {processingWithdrawal === w.id ? 'Processing…' : 'Approve ✅'}
-                      </button>
-                      <button
-                        onClick={() => handleRejectWithdrawal(w)}
-                        disabled={processingWithdrawal === w.id}
-                        className="flex-1 text-xs font-semibold py-2 rounded-lg bg-destructive/10 text-destructive border border-destructive/20 hover:bg-destructive/20 transition-colors disabled:opacity-50"
-                      >
-                        Reject ❌
-                      </button>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
 
-            {/* Resolved withdrawal requests */}
-            {withdrawals.filter((w) => w.status !== 'pending').map((w) => {
-              const isMyRequest = w.user_id === user?.id;
-              const memberData = members.find((m) => m.user_id === w.user_id);
-              const profile = (memberData as any)?.profiles;
-              const requesterName = profile?.first_name || 'Member';
-              const statusLabel = w.status === 'approved' ? 'Approved' : 'Rejected';
-              const statusColor = w.status === 'approved' ? 'text-success bg-success/10 border-success/20' : 'text-destructive bg-destructive/10 border-destructive/20';
+                  {/* Withdrawals section */}
+                  <div className="bg-card rounded-xl border border-border overflow-hidden">
+                    <button
+                      onClick={() => setWithdrawalsOpen((v) => !v)}
+                      className="w-full flex items-center justify-between p-4 hover:bg-accent/50 transition-colors"
+                      type="button"
+                    >
+                      <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                        <span>💸</span>
+                        <span>Withdrawals</span>
+                        <span className="text-muted-foreground font-normal">·</span>
+                        <span className="text-destructive">{formatCurrency(totalWithdrawals, currency)}</span>
+                        <span className="text-muted-foreground font-normal">·</span>
+                        <span className="text-muted-foreground font-normal text-xs">{withdrawals.length} transaction{withdrawals.length !== 1 ? 's' : ''}</span>
+                      </div>
+                      <ChevronDown size={16} className={`text-muted-foreground transition-transform duration-200 ${withdrawalsOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    {withdrawalsOpen && (
+                      <div className="border-t border-border divide-y divide-border">
+                        {withdrawals.length === 0 ? (
+                          <div className="p-4 text-center text-xs text-muted-foreground">No withdrawals yet</div>
+                        ) : withdrawals.map((w) => {
+                          const profile = getMemberProfile(w.user_id);
+                          const name = profile?.first_name || 'Member';
+                          const isMyRequest = w.user_id === user?.id;
+                          const isPending = w.status === 'pending';
+                          const statusLabel = isPending ? 'Pending' : w.status === 'approved' ? 'Approved' : 'Rejected';
+                          const statusColor = isPending
+                            ? 'text-warning bg-warning/10 border-warning/20'
+                            : w.status === 'approved'
+                              ? 'text-success bg-success/10 border-success/20'
+                              : 'text-destructive bg-destructive/10 border-destructive/20';
 
-              return (
-                <div key={w.id} className="bg-card rounded-xl border border-border p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-                      <span className="text-base">{w.status === 'approved' ? '✅' : '❌'}</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-foreground">
-                        {isMyRequest ? 'Your withdrawal' : `${requesterName}'s withdrawal`} — {formatCurrency(w.amount, currency)}
-                      </p>
-                      <p className="text-xs text-muted-foreground">{formatDate(w.processed_at || w.created_at)}</p>
-                      {w.note && <p className="text-xs text-muted-foreground mt-0.5 italic">"{w.note}"</p>}
-                    </div>
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full border font-semibold ${statusColor}`}>
-                      {statusLabel}
-                    </span>
+                          // Find matching withdrawal transaction for receipt lookup
+                          const matchingTx = withdrawalTxs.find((tx) => tx.user_id === w.user_id && Math.abs(Number(tx.amount)) === Number(w.amount));
+                          const receipt = matchingTx ? receiptByTx[matchingTx.id] : null;
+                          const canUploadReceipt = isMyRequest && !receipt && matchingTx;
+
+                          return (
+                            <div key={w.id} className="px-4 py-3 space-y-2">
+                              <div className="flex items-center gap-3">
+                                <MemberAvatar userId={w.user_id} />
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-foreground truncate">{name}</p>
+                                  <p className="text-xs text-muted-foreground">{formatDate(w.processed_at || w.created_at)}</p>
+                                  {w.note && <p className="text-xs text-muted-foreground mt-0.5 italic">"{w.note}"</p>}
+                                </div>
+                                <div className="flex flex-col items-end gap-1.5">
+                                  <span className="text-sm font-bold text-destructive">-{formatCurrency(Number(w.amount), currency)}</span>
+                                  <span className={`text-[10px] px-2 py-0.5 rounded-full border font-semibold ${statusColor}`}>
+                                    {statusLabel}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Receipt actions */}
+                              {receipt && receipt.image_url && (
+                                <div className="ml-11">
+                                  <a
+                                    href={receipt.image_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-[10px] inline-flex items-center gap-1 text-primary font-semibold bg-accent border border-primary/20 px-2 py-0.5 rounded-full hover:bg-primary/10 transition-colors"
+                                  >
+                                    <ImageIcon size={9} />
+                                    View receipt
+                                  </a>
+                                </div>
+                              )}
+                              {receipt && receipt.status === 'submitted' && isCreator && (
+                                <div className="ml-11">
+                                  <button
+                                    onClick={() => setShowReview(receipt)}
+                                    className="text-[10px] flex items-center gap-1 text-primary font-semibold bg-accent border border-primary/20 px-2 py-0.5 rounded-full hover:bg-primary/10 transition-colors"
+                                  >
+                                    <ImageIcon size={9} />
+                                    Review receipt
+                                  </button>
+                                </div>
+                              )}
+                              {canUploadReceipt && (
+                                <div className="ml-11">
+                                  <button
+                                    onClick={() => setShowUpload(matchingTx.id)}
+                                    className="text-[10px] flex items-center gap-1 text-warning font-semibold bg-warning/10 border border-warning/20 px-2 py-0.5 rounded-full hover:bg-warning/20 transition-colors"
+                                  >
+                                    <Upload size={9} />
+                                    Upload receipt
+                                  </button>
+                                </div>
+                              )}
+
+                              {/* Creator approve/reject for pending */}
+                              {isPending && isCreator && !isMyRequest && (
+                                <div className="flex gap-2 ml-11">
+                                  <button
+                                    onClick={() => handleApproveWithdrawal(w)}
+                                    disabled={processingWithdrawal === w.id}
+                                    className="flex-1 text-xs font-semibold py-2 rounded-lg bg-success/10 text-success border border-success/20 hover:bg-success/20 transition-colors disabled:opacity-50"
+                                  >
+                                    {processingWithdrawal === w.id ? 'Processing…' : 'Approve ✅'}
+                                  </button>
+                                  <button
+                                    onClick={() => handleRejectWithdrawal(w)}
+                                    disabled={processingWithdrawal === w.id}
+                                    className="flex-1 text-xs font-semibold py-2 rounded-lg bg-destructive/10 text-destructive border border-destructive/20 hover:bg-destructive/20 transition-colors disabled:opacity-50"
+                                  >
+                                    Reject ❌
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
-                </div>
+                </>
               );
-            })}
-
-            <div className="bg-card rounded-xl border border-border p-4 flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-accent flex items-center justify-center flex-shrink-0">
-                <span className="text-base">🎉</span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground">Created "{pot.name}"</p>
-                <p className="text-xs text-muted-foreground">{formatDate(pot.created_at)}</p>
-              </div>
-            </div>
-
-            {transactions.map((tx) => {
-              const receipt = receiptByTx[tx.id];
-              const myTx = tx.user_id === user?.id;
-              const isWithdrawal = Number(tx.amount) < 0;
-              const needsWithdrawalReceipt = isWithdrawal && !receipt && myTx;
-
-              return (
-                <div key={tx.id} className="bg-card rounded-xl border border-border p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-success/10 flex items-center justify-center flex-shrink-0">
-                      <span className="text-base">{isWithdrawal ? '💸' : '💳'}</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-foreground">
-                        {isWithdrawal ? 'Withdrawal' : 'Added'} {formatCurrency(Math.abs(Number(tx.amount)), currency)}
-                      </p>
-                      <p className="text-xs text-muted-foreground">{formatDate(tx.created_at)}</p>
-                      {receipt && (
-                        <div className="mt-1.5">
-                          {receipt.image_url ? (
-                            <a
-                              href={receipt.image_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-[10px] inline-flex items-center gap-1 text-primary font-semibold bg-accent border border-primary/20 px-2 py-0.5 rounded-full hover:bg-primary/10 transition-colors"
-                            >
-                              <ImageIcon size={9} />
-                              View receipt
-                            </a>
-                          ) : (
-                            <ReceiptStatusBadge status={receipt.status} />
-                          )}
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex flex-col items-end gap-1.5">
-                      <span className={`font-bold text-sm ${isWithdrawal ? 'text-destructive' : 'text-success'}`}>
-                        {isWithdrawal ? '' : '+'}{formatCurrency(Number(tx.amount), currency)}
-                      </span>
-                      {needsWithdrawalReceipt && (
-                        <button
-                          onClick={() => setShowUpload(tx.id)}
-                          className="text-[10px] flex items-center gap-1 text-warning font-semibold bg-warning/10 border border-warning/20 px-2 py-0.5 rounded-full hover:bg-warning/20 transition-colors"
-                        >
-                          <Upload size={9} />
-                          Upload receipt
-                        </button>
-                      )}
-                      {receipt && receipt.status === 'submitted' && isCreator && (
-                        <button
-                          onClick={() => setShowReview(receipt)}
-                          className="text-[10px] flex items-center gap-1 text-primary font-semibold bg-accent border border-primary/20 px-2 py-0.5 rounded-full hover:bg-primary/10 transition-colors"
-                        >
-                          <ImageIcon size={9} />
-                          Review
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-
-            {transactions.length === 0 && (
-              <div className="bg-card rounded-xl border border-border p-10 text-center">
-                <p className="text-sm text-muted-foreground">No transactions yet. Add funds to get started! 💰</p>
-              </div>
-            )}
+            })()}
           </TabsContent>
 
           <TabsContent value="leaderboard" className="mt-5 space-y-3">
