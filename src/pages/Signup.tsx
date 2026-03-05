@@ -29,6 +29,11 @@ export default function Signup() {
 
     setLoading(true);
 
+    // Preserve pending invite URL — signUp triggers SIGNED_IN which
+    // causes AuthContext to consume it prematurely
+    const savedInviteUrl = localStorage.getItem('pendingInviteUrl');
+    const savedJoinPotId = localStorage.getItem('pending_join_pot_id');
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -45,8 +50,16 @@ export default function Signup() {
     }
 
     // Auto-confirm creates a session automatically — sign out so
-    // the user must log in manually (preserves pendingInviteUrl in localStorage)
+    // the user must log in manually
     await supabase.auth.signOut();
+
+    // Restore pending invite URL so login redirect works for new accounts
+    if (savedInviteUrl) {
+      localStorage.setItem('pendingInviteUrl', savedInviteUrl);
+    }
+    if (savedJoinPotId) {
+      localStorage.setItem('pending_join_pot_id', savedJoinPotId);
+    }
 
     setLoading(false);
 
