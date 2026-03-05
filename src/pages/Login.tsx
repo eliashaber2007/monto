@@ -17,14 +17,23 @@ export default function Login() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    // Grab and REMOVE invite URL BEFORE signIn so AuthContext's
+    // SIGNED_IN handler cannot also consume it and trigger a duplicate join
+    const pendingInviteUrl = localStorage.getItem('pendingInviteUrl');
+    const pendingJoinPotId = localStorage.getItem('pending_join_pot_id');
+    localStorage.removeItem('pendingInviteUrl');
+    localStorage.removeItem('pending_join_pot_id');
+
     const { data: signInData, error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) {
+      // Restore invite URLs on failure so user can retry
+      if (pendingInviteUrl) localStorage.setItem('pendingInviteUrl', pendingInviteUrl);
+      if (pendingJoinPotId) localStorage.setItem('pending_join_pot_id', pendingJoinPotId);
       toast({ title: 'Login failed', description: error.message, variant: 'destructive' });
       return;
     }
-
-    const pendingInviteUrl = localStorage.getItem('pendingInviteUrl');
     if (pendingInviteUrl) {
       // Extract pot ID from /invite/[id] or /join/[id]
       const match = pendingInviteUrl.match(/\/(invite|join)\/([^/?#]+)/);
