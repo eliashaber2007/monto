@@ -17,8 +17,9 @@ function formatCurrency(amount: number, currency: string) {
   }).format(amount);
 }
 
-function LiquidBubble({ balance, goal }: { balance: number; goal?: number | null }) {
-  const pct = goal && goal > 0 ? Math.min(balance / goal, 1) : 0;
+function LiquidBubble({ balance, peakBalance }: { balance: number; peakBalance: number }) {
+  const effectivePeak = peakBalance > 0 ? peakBalance : balance;
+  const pct = effectivePeak > 0 ? Math.min(balance / effectivePeak, 1) : 0;
   const r = 22;
   const cx = 28;
   const cy = 28;
@@ -180,7 +181,7 @@ export default function MyPots() {
                 onClick={() => navigate(`/pots/${pot.id}`)}
                 className="w-full bg-card rounded-2xl border border-border shadow-sm hover:shadow-md p-5 flex items-center gap-4 text-left transition-all duration-200 active:scale-[0.99] group"
               >
-                <LiquidBubble balance={pot.balance ?? 0} goal={pot.goal_amount} />
+                <LiquidBubble balance={pot.balance ?? 0} peakBalance={pot.peak_balance ?? 0} />
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">

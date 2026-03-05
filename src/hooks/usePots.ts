@@ -37,6 +37,7 @@ export function usePots() {
             id,
             name,
             balance,
+            peak_balance,
             currency,
             created_at,
             created_by,
