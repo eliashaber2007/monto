@@ -274,13 +274,7 @@ export default function PotDetail() {
   const handleApproveWithdrawal = async (withdrawal: any) => {
     setProcessingWithdrawal(withdrawal.id);
     try {
-      // 1. Deduct balance from the pot
-      await supabase.rpc('increment_pot_balance', {
-        p_pot_id: id!,
-        p_amount: -withdrawal.amount,
-      });
-
-      // 2. Call create-payout to trigger bank transfer
+      // Call create-payout to trigger bank transfer (balance deduction happens inside the edge function)
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
 

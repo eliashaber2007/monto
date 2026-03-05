@@ -1,0 +1,1 @@
+CREATE POLICY "pot_members_select_own" ON public.pot_members FOR SELECT TO authenticated USING (auth.uid() = user_id);
