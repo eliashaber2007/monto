@@ -239,6 +239,7 @@ export type Database = {
           dark_mode: boolean
           first_name: string
           has_logged_in_before: boolean
+          has_seen_onboarding: boolean
           id: string
           stripe_account_id: string | null
           stripe_onboarding_complete: boolean
@@ -250,6 +251,7 @@ export type Database = {
           dark_mode?: boolean
           first_name: string
           has_logged_in_before?: boolean
+          has_seen_onboarding?: boolean
           id: string
           stripe_account_id?: string | null
           stripe_onboarding_complete?: boolean
@@ -261,6 +263,7 @@ export type Database = {
           dark_mode?: boolean
           first_name?: string
           has_logged_in_before?: boolean
+          has_seen_onboarding?: boolean
           id?: string
           stripe_account_id?: string | null
           stripe_onboarding_complete?: boolean
