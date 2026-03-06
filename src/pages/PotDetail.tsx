@@ -655,18 +655,7 @@ export default function PotDetail() {
                                 </div>
                               </div>
 
-                              {/* Justify expenses button */}
-                              {(isMyRequest || isCreator) && (
-                                <div className="ml-11">
-                                  <button
-                                    onClick={() => navigate(`/expenses/${w.id}`)}
-                                    className="text-[10px] flex items-center gap-1 text-primary font-semibold bg-accent border border-primary/20 px-2 py-0.5 rounded-full hover:bg-primary/10 transition-colors"
-                                  >
-                                    <Receipt size={9} />
-                                    Justify expenses
-                                  </button>
-                                </div>
-                              )}
+                              {/* Justify expenses button - inline right side */}
 
                               {/* Creator approve/reject for pending */}
                               {isPending && isCreator && !isMyRequest && (
