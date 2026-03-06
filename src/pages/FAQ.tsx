@@ -10,7 +10,7 @@ import {
 const FAQ_ITEMS = [
   {
     q: "Where does my money go when I add funds?",
-    a: "When you add money to a pot, it is held securely by Stripe — a global payments platform trusted by millions of businesses. Your funds are protected and only accessible through Monto.",
+    a: "When you add money to a pot, it is held securely by Stripe: a global payments platform trusted by companies like Apple, Uber and Amazon. Your funds are protected and only accessible through Monto.",
   },
   {
     q: "How do withdrawals work?",
