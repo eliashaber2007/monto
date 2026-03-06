@@ -140,6 +140,7 @@ export default function WithdrawalExpenses() {
 
       const { error } = await supabase.from('withdrawal_expenses').insert({
         withdrawal_id: withdrawalId!,
+        user_id: user!.id,
         name: expName.trim(),
         description: expDescription.trim() || null,
         amount: Number(expAmount),

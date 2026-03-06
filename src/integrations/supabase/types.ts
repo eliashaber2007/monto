@@ -386,6 +386,7 @@ export type Database = {
           id: string
           name: string
           receipt_url: string | null
+          user_id: string
           withdrawal_id: string
         }
         Insert: {
@@ -395,6 +396,7 @@ export type Database = {
           id?: string
           name: string
           receipt_url?: string | null
+          user_id: string
           withdrawal_id: string
         }
         Update: {
@@ -404,9 +406,17 @@ export type Database = {
           id?: string
           name?: string
           receipt_url?: string | null
+          user_id?: string
           withdrawal_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "withdrawal_expenses_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "withdrawal_expenses_withdrawal_id_fkey"
             columns: ["withdrawal_id"]
