@@ -652,10 +652,16 @@ export default function PotDetail() {
                                   <span className={`text-[10px] px-2 py-0.5 rounded-full border font-semibold ${statusColor}`}>
                                     {statusLabel}
                                   </span>
+                                  {(isMyRequest || isCreator) && (
+                                    <button
+                                      onClick={() => navigate(`/expenses/${w.id}`)}
+                                      className="text-xs flex items-center gap-1.5 text-primary-foreground font-semibold bg-primary px-3 py-1.5 rounded-lg hover:bg-primary/90 transition-colors mt-0.5"
+                                    >
+                                      <Receipt size={12} />
+                                      Justify expenses
+                                    </button>
+                                  )}
                                 </div>
-                              </div>
-
-                              {/* Justify expenses button - inline right side */}
 
                               {/* Creator approve/reject for pending */}
                               {isPending && isCreator && !isMyRequest && (
