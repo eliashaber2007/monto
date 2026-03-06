@@ -299,6 +299,26 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
                 <p className="text-xs text-muted-foreground">Leave blank for an open-ended pot</p>
               </div>
 
+              <div className="space-y-1.5">
+                <Label>Add an icon to your pot (optional)</Label>
+                <div className="flex flex-wrap gap-1.5">
+                  {POT_EMOJIS.map((emoji) => (
+                    <button
+                      key={emoji}
+                      type="button"
+                      onClick={() => setSelectedEmoji(selectedEmoji === emoji ? null : emoji)}
+                      className={`w-9 h-9 rounded-lg text-lg flex items-center justify-center transition-all ${
+                        selectedEmoji === emoji
+                          ? "bg-primary/15 ring-2 ring-primary scale-110"
+                          : "bg-secondary hover:bg-accent"
+                      }`}
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <Button className="w-full h-11 rounded-xl" disabled={!potName.trim()} onClick={() => setStep(2)}>
                 Next
               </Button>
