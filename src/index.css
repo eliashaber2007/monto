@@ -139,3 +139,55 @@
   50% { transform: translateY(-2px); }
 }
 
+@keyframes orb-float-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -40px) scale(1.05); }
+  66% { transform: translate(-20px, 20px) scale(0.95); }
+}
+
+@keyframes orb-float-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-40px, 30px) scale(1.08); }
+  66% { transform: translate(25px, -25px) scale(0.92); }
+}
+
+@keyframes orb-float-3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(35px, 35px) scale(1.04); }
+}
+
+.onboarding-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.5;
+  will-change: transform;
+}
+
+.onboarding-orb-1 {
+  width: 320px;
+  height: 320px;
+  top: 10%;
+  left: 10%;
+  background: radial-gradient(circle, hsl(221 83% 53% / 0.4), hsl(252 96% 67% / 0.15));
+  animation: orb-float-1 12s ease-in-out infinite;
+}
+
+.onboarding-orb-2 {
+  width: 260px;
+  height: 260px;
+  top: 50%;
+  right: 5%;
+  background: radial-gradient(circle, hsl(252 96% 67% / 0.35), hsl(221 83% 53% / 0.1));
+  animation: orb-float-2 15s ease-in-out infinite;
+}
+
+.onboarding-orb-3 {
+  width: 200px;
+  height: 200px;
+  bottom: 15%;
+  left: 25%;
+  background: radial-gradient(circle, hsl(221 83% 68% / 0.3), hsl(252 70% 60% / 0.1));
+  animation: orb-float-3 10s ease-in-out infinite;
+}
+

@@ -97,7 +97,15 @@ export default function MyPots() {
   const activePots = (pots ?? []).filter((p: any) => p.status !== 'closed');
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Animated onboarding background */}
+      {showOnboarding && (
+        <div className="fixed inset-0 z-10 pointer-events-none">
+          <div className="onboarding-orb onboarding-orb-1" />
+          <div className="onboarding-orb onboarding-orb-2" />
+          <div className="onboarding-orb onboarding-orb-3" />
+        </div>
+      )}
       {/* Header */}
       <div className="bg-card border-b border-border sticky top-0 z-20">
         <div className="max-w-lg mx-auto px-5 py-4 flex items-center justify-between">
