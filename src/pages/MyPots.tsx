@@ -231,6 +231,7 @@ export default function MyPots() {
 
       <CreatePotModal open={showCreate} onOpenChange={setShowCreate} />
       <OnboardingModal open={showOnboarding} onComplete={handleOnboardingComplete} />
+      <NotificationPrompt open={showNotificationPrompt} onClose={() => setShowNotificationPrompt(false)} />
     </div>
   );
 }
