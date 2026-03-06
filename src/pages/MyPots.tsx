@@ -144,16 +144,11 @@ export default function MyPots() {
       </div>
 
       <div className="max-w-lg mx-auto px-5 pt-8 pb-28">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-foreground">
-            {displayName ? `${displayName}'s Pots 🏦` : 'My Pots 🏦'}
-          </h1>
-          {activePots.length > 0 && (
-            <p className="text-sm text-muted-foreground mt-1">
-              💰 You've got {activePots.length} active {activePots.length === 1 ? 'pot' : 'pots'}
-            </p>
-          )}
-        </div>
+        {activePots.length > 0 && (
+          <p className="text-sm text-muted-foreground mb-3">
+            💰 You've got {activePots.length} active {activePots.length === 1 ? 'pot' : 'pots'}
+          </p>
+        )}
 
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
