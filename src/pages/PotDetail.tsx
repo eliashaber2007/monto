@@ -186,8 +186,8 @@ export default function PotDetail() {
   const [showChat, setShowChat] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [unreadChatCount, setUnreadChatCount] = useState(0);
-  const [fundsOpen, setFundsOpen] = useState(false);
-  const [withdrawalsOpen, setWithdrawalsOpen] = useState(false);
+  const [fundsOpen, setFundsOpen] = useState(true);
+  const [withdrawalsOpen, setWithdrawalsOpen] = useState(true);
   const [expandedMembers, setExpandedMembers] = useState<Record<string, boolean>>({});
   const [withdrawalExpenses, setWithdrawalExpenses] = useState<Record<string, number>>({});
   const queryClient = useQueryClient();
