@@ -36,10 +36,13 @@ export default function OnboardingModal({ open, onComplete }: OnboardingModalPro
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) onComplete(); }}>
       <DialogContent className="max-w-sm rounded-2xl p-0 gap-0 [&>button]:hidden">
-        <div className="px-6 pt-8 pb-6 text-center">
-          <screen.Animation />
+        <div className="px-6 pt-8 pb-2 text-center">
           <h2 className="text-xl font-bold text-foreground mb-3">{screen.title}</h2>
           <p className="text-sm text-foreground/90 leading-relaxed">{screen.body}</p>
+        </div>
+
+        <div className="px-6 pb-2">
+          <screen.Animation />
         </div>
 
         {/* Dots */}
