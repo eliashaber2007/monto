@@ -638,11 +638,6 @@ export default function PotDetail() {
                               ? 'text-success bg-success/10 border-success/20'
                               : 'text-destructive bg-destructive/10 border-destructive/20';
 
-                          // Find matching withdrawal transaction for receipt lookup
-                          const matchingTx = withdrawalTxs.find((tx) => tx.user_id === w.user_id && Math.abs(Number(tx.amount)) === Number(w.amount));
-                          const receipt = matchingTx ? receiptByTx[matchingTx.id] : null;
-                          const canUploadReceipt = isMyRequest && !receipt && matchingTx;
-
                           return (
                             <div key={w.id} className="px-4 py-3 space-y-2">
                               <div className="flex items-center gap-3">
@@ -660,31 +655,7 @@ export default function PotDetail() {
                                 </div>
                               </div>
 
-                              {/* Receipt actions */}
-                              {receipt && receipt.image_url && (
-                                <div className="ml-11">
-                                  <a
-                                    href={receipt.image_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-[10px] inline-flex items-center gap-1 text-primary font-semibold bg-accent border border-primary/20 px-2 py-0.5 rounded-full hover:bg-primary/10 transition-colors"
-                                  >
-                                    <ImageIcon size={9} />
-                                    View receipt
-                                  </a>
-                                </div>
-                              )}
-                              {receipt && receipt.status === 'submitted' && isCreator && (
-                                <div className="ml-11">
-                                  <button
-                                    onClick={() => setShowReview(receipt)}
-                                    className="text-[10px] flex items-center gap-1 text-primary font-semibold bg-accent border border-primary/20 px-2 py-0.5 rounded-full hover:bg-primary/10 transition-colors"
-                                  >
-                                    <ImageIcon size={9} />
-                                    Review receipt
-                                  </button>
-                                </div>
-                              )}
+                              {/* Justify expenses button */}
                               {(isMyRequest || isCreator) && (
                                 <div className="ml-11">
                                   <button
