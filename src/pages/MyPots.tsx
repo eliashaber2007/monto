@@ -67,6 +67,7 @@ export default function MyPots() {
   const { data: profile } = useProfile();
   const { data: pots, isLoading } = usePots();
   const [showCreate, setShowCreate] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [showNotificationPrompt, setShowNotificationPrompt] = useState(false);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
