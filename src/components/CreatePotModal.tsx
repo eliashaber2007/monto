@@ -40,6 +40,13 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
   const [requireReceipt, setRequireReceipt] = useState(false);
   const [maxWithdrawalAmount, setMaxWithdrawalAmount] = useState("");
   const [maxWithdrawalsPerDay, setMaxWithdrawalsPerDay] = useState("");
+  const [selectedEmoji, setSelectedEmoji] = useState<string | null>(null);
+
+  const POT_EMOJIS = [
+    "💰", "🏖️", "🎉", "🎁", "✈️", "🏠", "🚗", "🎓", "💍", "🍕",
+    "🏋️", "⚽", "🎮", "🎵", "📱", "👶", "🐶", "🌴", "🎄", "💊",
+    "🍻", "☕", "📚", "🛍️", "🎬", "🏔️",
+  ];
 
   const reset = () => {
     setStep(1);
@@ -52,6 +59,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
     setRequireReceipt(false);
     setMaxWithdrawalAmount("");
     setMaxWithdrawalsPerDay("");
+    setSelectedEmoji(null);
   };
 
   const handleClose = (val: boolean) => {
