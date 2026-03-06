@@ -662,6 +662,7 @@ export default function PotDetail() {
                                     </button>
                                   )}
                                 </div>
+                              </div>
 
                               {/* Creator approve/reject for pending */}
                               {isPending && isCreator && !isMyRequest && (
