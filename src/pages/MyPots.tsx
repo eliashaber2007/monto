@@ -130,7 +130,7 @@ export default function MyPots() {
                   </span>
                 )}
               </button>
-              <span className="font-bold text-foreground text-lg">My Pots</span>
+              <span className="font-bold text-foreground text-lg">My Pots 🏦</span>
           </div>
           <div className="flex items-center gap-1">
             <NotificationBell />
