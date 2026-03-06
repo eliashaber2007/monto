@@ -108,7 +108,7 @@ export default function MyPots() {
       {/* Header */}
       <div className="bg-card border-b border-border sticky top-0 z-20">
         <div className="max-w-lg mx-auto px-5 py-4 flex items-center justify-between">
-           <div className="flex items-center gap-3">
+           <div className="flex items-center">
               <button
                 onClick={() => navigate('/profile')}
                 className="w-10 h-10 rounded-full flex items-center justify-center shadow-sm overflow-hidden"
@@ -122,7 +122,6 @@ export default function MyPots() {
                   </span>
                 )}
               </button>
-            <span className="font-bold text-foreground text-lg">My Pots 🏦</span>
           </div>
           <div className="flex items-center gap-1">
             <NotificationBell />
