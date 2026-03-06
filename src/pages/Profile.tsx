@@ -62,6 +62,7 @@ export default function Profile() {
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [savingInfo, setSavingInfo] = useState(false);
+  const [gender, setGender] = useState<string | null>(null);
 
   // Avatar
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -110,6 +111,7 @@ export default function Profile() {
       setDisplayName(profile.first_name ?? '');
       setAvatarUrl((profile as any).avatar_url ?? null);
       setAvatarColor((profile as any).avatar_color ?? '#3b82f6');
+      setGender((profile as any).gender ?? null);
     }
     if (user) {
       setEmail(user.email ?? '');
@@ -197,7 +199,7 @@ export default function Profile() {
   const handleSaveInfo = async () => {
     if (!user) return;
     setSavingInfo(true);
-    const { error: updateError } = await supabase.from('profiles').update({ first_name: displayName }).eq('id', user.id);
+    const { error: updateError } = await supabase.from('profiles').update({ first_name: displayName, gender } as any).eq('id', user.id);
     if (updateError) {
       toast({ title: 'Save failed', description: updateError.message, variant: 'destructive' });
       setSavingInfo(false);
@@ -366,6 +368,29 @@ export default function Profile() {
           <div className="space-y-2">
             <Label htmlFor="email" className="text-sm">Email</Label>
             <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="rounded-xl" />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-sm">Gender</Label>
+            <div className="flex rounded-xl border border-border overflow-hidden">
+              {[
+                { value: 'male', label: 'Male' },
+                { value: 'female', label: 'Female' },
+                { value: 'prefer_not_to_say', label: 'Prefer not to say' },
+              ].map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setGender(gender === opt.value ? null : opt.value)}
+                  className={`flex-1 py-2.5 text-xs font-medium transition-colors ${
+                    gender === opt.value
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-card text-muted-foreground hover:bg-secondary'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
           </div>
           <Button onClick={handleSaveInfo} disabled={savingInfo} className="w-full h-11 rounded-xl font-semibold">
             <Save size={15} className="mr-1.5" />
