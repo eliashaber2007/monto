@@ -199,6 +199,7 @@ export default function MyPots() {
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
+                    {pot.emoji && <span className="text-lg flex-shrink-0">{pot.emoji}</span>}
                     <span className="font-bold text-foreground truncate text-lg">{pot.name}</span>
                     <span className="flex-shrink-0 text-[11px] px-2 py-0.5 rounded-full bg-accent text-primary font-semibold border border-primary/20">
                       {pot.role === 'creator' ? '👑 Creator' : '👤 Member'}

@@ -471,6 +471,7 @@ export default function PotDetail() {
           </button>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
+              {(pot as any).emoji && <span className="text-lg flex-shrink-0">{(pot as any).emoji}</span>}
               <h1 className="font-bold text-foreground truncate text-lg">{pot.name}</h1>
               <span className="flex-shrink-0 text-[11px] px-2 py-0.5 rounded-full bg-accent text-primary border border-primary/20 font-semibold">
                 {isCreator ? '👑 Creator' : '👤 Member'}
