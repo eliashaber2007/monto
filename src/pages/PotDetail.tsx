@@ -245,6 +245,27 @@ export default function PotDetail() {
     fetchWithdrawals();
   }, [id]);
 
+  // Fetch expense totals per withdrawal
+  useEffect(() => {
+    if (withdrawals.length === 0) return;
+    const wIds = withdrawals.map((w: any) => w.id);
+    supabase
+      .from('withdrawal_expenses')
+      .select('withdrawal_id, amount')
+      .in('withdrawal_id', wIds)
+      .then(({ data }) => {
+        const totals: Record<string, number> = {};
+        (data ?? []).forEach((e: any) => {
+          totals[e.withdrawal_id] = (totals[e.withdrawal_id] ?? 0) + Number(e.amount);
+        });
+        setWithdrawalExpenses(totals);
+      });
+  }, [withdrawals]);
+
+  const toggleMemberExpand = (memberId: string) => {
+    setExpandedMembers((prev) => ({ ...prev, [memberId]: !prev[memberId] }));
+  };
+
   // Unread chat count
   useEffect(() => {
     if (!id || !user) return;
