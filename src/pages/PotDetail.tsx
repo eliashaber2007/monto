@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Users, Plus, CheckCircle2, Image as ImageIcon, Upload, X, LogOut, Copy, Check, Landmark, ThumbsUp, ThumbsDown, MessageCircle, KeyRound, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Users, Plus, CheckCircle2, Image as ImageIcon, Upload, X, LogOut, Copy, Check, Landmark, ThumbsUp, ThumbsDown, MessageCircle, KeyRound, ChevronDown, Receipt } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePotDetail } from '@/hooks/usePots';
@@ -685,14 +685,14 @@ export default function PotDetail() {
                                   </button>
                                 </div>
                               )}
-                              {canUploadReceipt && (
+                              {(isMyRequest || isCreator) && (
                                 <div className="ml-11">
                                   <button
-                                    onClick={() => setShowUpload(matchingTx.id)}
-                                    className="text-[10px] flex items-center gap-1 text-warning font-semibold bg-warning/10 border border-warning/20 px-2 py-0.5 rounded-full hover:bg-warning/20 transition-colors"
+                                    onClick={() => navigate(`/expenses/${w.id}`)}
+                                    className="text-[10px] flex items-center gap-1 text-primary font-semibold bg-accent border border-primary/20 px-2 py-0.5 rounded-full hover:bg-primary/10 transition-colors"
                                   >
-                                    <Upload size={9} />
-                                    Upload receipt
+                                    <Receipt size={9} />
+                                    Justify expenses
                                   </button>
                                 </div>
                               )}
