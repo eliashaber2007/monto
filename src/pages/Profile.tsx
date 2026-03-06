@@ -394,6 +394,15 @@ export default function Profile() {
           </Button>
         </div>
 
+        {/* FAQ */}
+        <button
+          onClick={() => navigate('/faq')}
+          className="w-full bg-card rounded-2xl border border-border p-4 flex items-center justify-between hover:shadow-sm transition-shadow"
+        >
+          <span className="text-sm font-semibold text-foreground">FAQ</span>
+          <span className="text-muted-foreground text-xs">→</span>
+        </button>
+
         {/* Stats */}
         <div className="bg-card rounded-2xl border border-border p-6">
           <h2 className="font-bold text-foreground text-base mb-4">Your Stats</h2>
