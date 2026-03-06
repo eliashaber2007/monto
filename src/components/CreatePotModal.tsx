@@ -98,6 +98,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
           require_receipt: potConfig.require_receipt,
           max_withdrawal_amount: potConfig.max_withdrawal_amount,
           max_withdrawals_per_day: potConfig.max_withdrawals_per_day,
+          emoji: potConfig.emoji,
         },
       },
     });
@@ -191,6 +192,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
       require_receipt: potConfig.require_receipt,
       max_withdrawal_amount: potConfig.max_withdrawal_amount,
       max_withdrawals_per_day: potConfig.max_withdrawals_per_day,
+      emoji: potConfig.emoji,
     } as any);
 
     if (potError) {
