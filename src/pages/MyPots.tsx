@@ -53,6 +53,14 @@ function LiquidBubble({ balance, peakBalance }: { balance: number; peakBalance: 
   );
 }
 
+function getGreeting(name: string) {
+  const hour = new Date().getHours();
+  if (hour >= 6 && hour < 12) return `Good morning, ${name}! ☀️`;
+  if (hour >= 12 && hour < 18) return `Good afternoon, ${name}! 👋`;
+  if (hour >= 18) return `Good evening, ${name}! 🌙`;
+  return `Good night, ${name}! 🌙`;
+}
+
 export default function MyPots() {
   const { signOut, user } = useAuth();
   const { data: profile } = useProfile();
@@ -108,7 +116,7 @@ export default function MyPots() {
       {/* Header */}
       <div className="bg-card border-b border-border sticky top-0 z-20">
         <div className="max-w-lg mx-auto px-5 py-4 flex items-center justify-between">
-           <div className="flex items-center gap-3">
+           <div className="flex items-center">
               <button
                 onClick={() => navigate('/profile')}
                 className="w-10 h-10 rounded-full flex items-center justify-center shadow-sm overflow-hidden"
@@ -122,7 +130,6 @@ export default function MyPots() {
                   </span>
                 )}
               </button>
-              <span className="font-bold text-foreground text-lg">{displayName ? `${displayName}'s Pots` : 'My Pots'}</span>
           </div>
           <div className="flex items-center gap-1">
             <NotificationBell />
@@ -143,7 +150,10 @@ export default function MyPots() {
         </div>
       </div>
 
-      <div className="max-w-lg mx-auto px-5 pt-8 pb-28">
+       <div className="max-w-lg mx-auto px-5 pt-8 pb-28">
+        <h1 className="text-2xl font-bold text-foreground mb-1">
+          {getGreeting(displayName)}
+        </h1>
         {activePots.length > 0 && (
           <p className="text-base font-semibold text-foreground mb-3">
             💰 You've got {activePots.length} active {activePots.length === 1 ? 'pot' : 'pots'}
