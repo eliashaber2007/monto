@@ -806,29 +806,97 @@ export default function PotDetail() {
               const memberAvatar = memberProfile?.avatar_url;
               const memberColor = memberProfile?.avatar_color || '#3b82f6';
               const initial = memberName[0]?.toUpperCase() || '?';
+              const isExpanded = expandedMembers[m.id] ?? false;
+              const memberWithdrawals = withdrawals.filter((w: any) => w.user_id === m.user_id);
+              const totalWithdrawn = memberWithdrawals.reduce((s: number, w: any) => s + Number(w.amount), 0);
+              const totalJustified = memberWithdrawals.reduce((s: number, w: any) => s + (withdrawalExpenses[w.id] ?? 0), 0);
+              const overallJustifiedPct = totalWithdrawn > 0 ? Math.min(Math.round((totalJustified / totalWithdrawn) * 100), 100) : 0;
 
               return (
-                <div key={m.id} className="bg-card rounded-xl border border-border p-4 flex items-center gap-3">
-                  <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden"
-                    style={{ backgroundColor: memberAvatar ? undefined : memberColor }}
+                <div key={m.id} className="bg-card rounded-xl border border-border overflow-hidden">
+                  <button
+                    onClick={() => toggleMemberExpand(m.id)}
+                    className="w-full p-4 flex items-center gap-3 text-left hover:bg-accent/30 transition-colors"
                   >
-                    {memberAvatar ? (
-                      <img src={memberAvatar} alt={memberName} className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-white font-bold text-sm">{initial}</span>
+                    <div
+                      className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden"
+                      style={{ backgroundColor: memberAvatar ? undefined : memberColor }}
+                    >
+                      {memberAvatar ? (
+                        <img src={memberAvatar} alt={memberName} className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-white font-bold text-sm">{initial}</span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-foreground">
+                        {m.user_id === user?.id ? `${memberName} (You)` : memberName}
+                      </p>
+                      <p className="text-xs text-muted-foreground capitalize">{m.role}</p>
+                    </div>
+                    {m.role === 'creator' && (
+                      <span className="text-[11px] px-2 py-0.5 rounded-full bg-accent text-primary border border-primary/20 font-semibold">
+                        👑 Creator
+                      </span>
                     )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground">
-                      {m.user_id === user?.id ? `${memberName} (You)` : memberName}
-                    </p>
-                    <p className="text-xs text-muted-foreground capitalize">{m.role}</p>
-                  </div>
-                  {m.role === 'creator' && (
-                    <span className="text-[11px] px-2 py-0.5 rounded-full bg-accent text-primary border border-primary/20 font-semibold">
-                      👑 Creator
-                    </span>
+                    <ChevronDown
+                      size={16}
+                      className={`text-muted-foreground transition-transform duration-200 flex-shrink-0 ${isExpanded ? 'rotate-0' : '-rotate-90'}`}
+                    />
+                  </button>
+
+                  {isExpanded && (
+                    <div className="border-t border-border px-4 pb-4 pt-3 space-y-3">
+                      {memberWithdrawals.length === 0 ? (
+                        <p className="text-xs text-muted-foreground text-center py-2">No withdrawals yet</p>
+                      ) : (
+                        <>
+                          <p className="text-xs font-semibold text-muted-foreground">
+                            {memberWithdrawals.length} withdrawal{memberWithdrawals.length !== 1 ? 's' : ''} · {formatCurrency(totalWithdrawn, currency)} total · {overallJustifiedPct}% justified overall
+                          </p>
+                          {memberWithdrawals.map((w: any) => {
+                            const expTotal = withdrawalExpenses[w.id] ?? 0;
+                            const pct = Number(w.amount) > 0 ? Math.min(Math.round((expTotal / Number(w.amount)) * 100), 100) : 0;
+                            const statusMap: Record<string, { label: string; cls: string }> = {
+                              pending: { label: 'Pending', cls: 'bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-700' },
+                              approved: { label: 'Approved', cls: 'bg-green-100 text-green-800 border-green-300 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700' },
+                              rejected: { label: 'Rejected', cls: 'bg-red-100 text-red-800 border-red-300 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700' },
+                            };
+                            const st = statusMap[w.status] ?? statusMap.pending;
+                            const canJustify = w.user_id === user?.id || isCreator;
+
+                            return (
+                              <div key={w.id} className="bg-muted/40 rounded-lg p-3 space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm font-bold text-destructive">-{formatCurrency(Number(w.amount), currency)}</span>
+                                  <span className={`text-[10px] px-2 py-0.5 rounded-full border font-semibold ${st.cls}`}>{st.label}</span>
+                                </div>
+                                <p className="text-[11px] text-muted-foreground">{formatDate(w.created_at)}</p>
+                                {w.note && <p className="text-xs text-foreground/80 italic">"{w.note}"</p>}
+                                <div className="space-y-1">
+                                  <div className="w-full h-2.5 rounded-full bg-muted overflow-hidden">
+                                    <div
+                                      className="h-full rounded-full bg-primary transition-all duration-300"
+                                      style={{ width: `${pct}%` }}
+                                    />
+                                  </div>
+                                  <p className="text-[10px] text-muted-foreground">{pct}% justified ({formatCurrency(expTotal, currency)} of {formatCurrency(Number(w.amount), currency)})</p>
+                                </div>
+                                {canJustify && (
+                                  <button
+                                    onClick={() => navigate(`/expenses/${w.id}`)}
+                                    className="text-xs flex items-center gap-1.5 text-primary-foreground font-semibold bg-primary px-3 py-1.5 rounded-lg hover:bg-primary/90 transition-colors"
+                                  >
+                                    <Receipt size={12} />
+                                    Justify expenses
+                                  </button>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </>
+                      )}
+                    </div>
                   )}
                 </div>
               );
