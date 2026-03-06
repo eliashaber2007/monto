@@ -652,21 +652,17 @@ export default function PotDetail() {
                                   <span className={`text-[10px] px-2 py-0.5 rounded-full border font-semibold ${statusColor}`}>
                                     {statusLabel}
                                   </span>
+                                  {(isMyRequest || isCreator) && (
+                                    <button
+                                      onClick={() => navigate(`/expenses/${w.id}`)}
+                                      className="text-xs flex items-center gap-1.5 text-primary-foreground font-semibold bg-primary px-3 py-1.5 rounded-lg hover:bg-primary/90 transition-colors mt-0.5"
+                                    >
+                                      <Receipt size={12} />
+                                      Justify expenses
+                                    </button>
+                                  )}
                                 </div>
                               </div>
-
-                              {/* Justify expenses button */}
-                              {(isMyRequest || isCreator) && (
-                                <div className="ml-11">
-                                  <button
-                                    onClick={() => navigate(`/expenses/${w.id}`)}
-                                    className="text-[10px] flex items-center gap-1 text-primary font-semibold bg-accent border border-primary/20 px-2 py-0.5 rounded-full hover:bg-primary/10 transition-colors"
-                                  >
-                                    <Receipt size={9} />
-                                    Justify expenses
-                                  </button>
-                                </div>
-                              )}
 
                               {/* Creator approve/reject for pending */}
                               {isPending && isCreator && !isMyRequest && (

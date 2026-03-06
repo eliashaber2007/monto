@@ -215,17 +215,15 @@ export default function WithdrawalExpenses() {
           <p className="text-2xl font-bold text-foreground">
             {formatCurrency(withdrawalAmount, currency)}
           </p>
-          <div className="flex items-center justify-center gap-2">
-            <div className="flex-1 h-2 rounded-full bg-secondary overflow-hidden max-w-[200px]">
-              <div
-                className="h-full rounded-full bg-primary transition-all duration-300"
-                style={{ width: `${Math.min((totalJustified / withdrawalAmount) * 100, 100)}%` }}
-              />
-            </div>
-            <span className="text-xs font-semibold text-muted-foreground">
-              {formatCurrency(totalJustified, currency)} of {formatCurrency(withdrawalAmount, currency)}
-            </span>
+          <div className="w-full max-w-[260px] mx-auto h-3 rounded-full bg-muted overflow-hidden">
+            <div
+              className="h-full rounded-full bg-primary transition-all duration-300"
+              style={{ width: `${Math.min((totalJustified / withdrawalAmount) * 100, 100)}%` }}
+            />
           </div>
+          <p className="text-sm font-semibold text-foreground">
+            {formatCurrency(totalJustified, currency)} of {formatCurrency(withdrawalAmount, currency)} justified
+          </p>
         </div>
 
         {/* Expenses list */}
