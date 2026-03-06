@@ -233,7 +233,7 @@ export default function MyPots() {
             <span>Secured by</span>
             <img src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg" alt="Stripe" className="h-[14px] w-auto opacity-50" />
           </div>
-          <span className="text-[10px]">Your money and data are protected</span>
+          <span className="text-[10px]">Your money and data is protected</span>
         </div>
       </div>
 
