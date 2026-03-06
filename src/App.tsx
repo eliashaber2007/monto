@@ -18,6 +18,7 @@ import Profile from "./pages/Profile";
 import PotArchive from "./pages/PotArchive";
 import PotSuccess from "./pages/PotSuccess";
 import FAQ from "./pages/FAQ";
+import WithdrawalExpenses from "./pages/WithdrawalExpenses";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -90,6 +91,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <FAQ />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/expenses/:withdrawalId"
+              element={
+                <ProtectedRoute>
+                  <WithdrawalExpenses />
                 </ProtectedRoute>
               }
             />
