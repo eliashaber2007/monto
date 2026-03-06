@@ -172,6 +172,7 @@ export type Database = {
           created_at: string
           created_by: string
           currency: string
+          emoji: string | null
           goal_amount: number | null
           id: string
           max_withdrawal_amount: number | null
@@ -190,6 +191,7 @@ export type Database = {
           created_at?: string
           created_by: string
           currency?: string
+          emoji?: string | null
           goal_amount?: number | null
           id?: string
           max_withdrawal_amount?: number | null
@@ -208,6 +210,7 @@ export type Database = {
           created_at?: string
           created_by?: string
           currency?: string
+          emoji?: string | null
           goal_amount?: number | null
           id?: string
           max_withdrawal_amount?: number | null
