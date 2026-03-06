@@ -26,6 +26,7 @@ interface Message {
 interface PotChatProps {
   potId: string;
   potName: string;
+  potEmoji?: string | null;
   members: Member[];
   onClose: () => void;
 }
@@ -46,7 +47,7 @@ function dateDivider(dateStr: string) {
   return d.toLocaleDateString('en-IE', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-export default function PotChat({ potId, potName, members, onClose }: PotChatProps) {
+export default function PotChat({ potId, potName, potEmoji, members, onClose }: PotChatProps) {
   const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [text, setText] = useState('');
@@ -251,7 +252,7 @@ export default function PotChat({ potId, potName, members, onClose }: PotChatPro
           <ArrowLeft size={20} />
         </button>
         <div className="flex-1 min-w-0">
-          <h2 className="font-bold text-foreground text-base">Chat</h2>
+          <h2 className="font-bold text-foreground text-base">{potEmoji ? `${potEmoji} ` : ''}Chat</h2>
           <p className="text-xs text-muted-foreground">{members.length} members</p>
         </div>
       </div>

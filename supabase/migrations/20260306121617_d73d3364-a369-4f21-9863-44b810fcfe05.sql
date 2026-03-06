@@ -1,0 +1,1 @@
+ALTER TABLE public.pots ADD COLUMN emoji text DEFAULT NULL;

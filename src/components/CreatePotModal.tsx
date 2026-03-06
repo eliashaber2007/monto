@@ -40,6 +40,13 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
   const [requireReceipt, setRequireReceipt] = useState(false);
   const [maxWithdrawalAmount, setMaxWithdrawalAmount] = useState("");
   const [maxWithdrawalsPerDay, setMaxWithdrawalsPerDay] = useState("");
+  const [selectedEmoji, setSelectedEmoji] = useState<string | null>(null);
+
+  const POT_EMOJIS = [
+    "💰", "🏖️", "🎉", "🎁", "✈️", "🏠", "🚗", "🎓", "💍", "🍕",
+    "🏋️", "⚽", "🎮", "🎵", "📱", "👶", "🐶", "🌴", "🎄", "💊",
+    "🍻", "☕", "📚", "🛍️", "🎬", "🏔️",
+  ];
 
   const reset = () => {
     setStep(1);
@@ -52,6 +59,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
     setRequireReceipt(false);
     setMaxWithdrawalAmount("");
     setMaxWithdrawalsPerDay("");
+    setSelectedEmoji(null);
   };
 
   const handleClose = (val: boolean) => {
@@ -69,6 +77,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
     require_receipt: requireReceipt,
     max_withdrawal_amount: maxWithdrawalAmount ? parseFloat(maxWithdrawalAmount) : null,
     max_withdrawals_per_day: maxWithdrawalsPerDay ? parseInt(maxWithdrawalsPerDay) : null,
+    emoji: selectedEmoji,
   });
 
   const redirectToCheckout = async (potConfig: ReturnType<typeof buildPotConfig>, amountEuros: number) => {
@@ -89,6 +98,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
           require_receipt: potConfig.require_receipt,
           max_withdrawal_amount: potConfig.max_withdrawal_amount,
           max_withdrawals_per_day: potConfig.max_withdrawals_per_day,
+          emoji: potConfig.emoji,
         },
       },
     });
@@ -182,6 +192,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
       require_receipt: potConfig.require_receipt,
       max_withdrawal_amount: potConfig.max_withdrawal_amount,
       max_withdrawals_per_day: potConfig.max_withdrawals_per_day,
+      emoji: potConfig.emoji,
     } as any);
 
     if (potError) {
@@ -286,6 +297,26 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
                   />
                 </div>
                 <p className="text-xs text-muted-foreground">Leave blank for an open-ended pot</p>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label>Add an icon to your pot (optional)</Label>
+                <div className="flex flex-wrap gap-1.5">
+                  {POT_EMOJIS.map((emoji) => (
+                    <button
+                      key={emoji}
+                      type="button"
+                      onClick={() => setSelectedEmoji(selectedEmoji === emoji ? null : emoji)}
+                      className={`w-9 h-9 rounded-lg text-lg flex items-center justify-center transition-all ${
+                        selectedEmoji === emoji
+                          ? "bg-primary/15 ring-2 ring-primary scale-110"
+                          : "bg-secondary hover:bg-accent"
+                      }`}
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <Button className="w-full h-11 rounded-xl" disabled={!potName.trim()} onClick={() => setStep(2)}>
