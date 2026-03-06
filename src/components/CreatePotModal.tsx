@@ -77,6 +77,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
     require_receipt: requireReceipt,
     max_withdrawal_amount: maxWithdrawalAmount ? parseFloat(maxWithdrawalAmount) : null,
     max_withdrawals_per_day: maxWithdrawalsPerDay ? parseInt(maxWithdrawalsPerDay) : null,
+    emoji: selectedEmoji,
   });
 
   const redirectToCheckout = async (potConfig: ReturnType<typeof buildPotConfig>, amountEuros: number) => {
