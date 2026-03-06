@@ -1046,6 +1046,7 @@ export default function PotDetail() {
         <PotChat
           potId={id!}
           potName={pot?.name ?? 'the pot'}
+          potEmoji={(pot as any)?.emoji}
           members={members}
           onClose={() => setShowChat(false)}
         />
