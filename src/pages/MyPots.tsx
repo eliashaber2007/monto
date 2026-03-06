@@ -108,8 +108,15 @@ export default function MyPots() {
     }
   };
 
-  // Filter out closed pots
-  const activePots = (pots ?? []).filter((p: any) => p.status !== 'closed');
+  // Filter out closed pots, then sort: creators first, then by recency
+  const activePots = (pots ?? [])
+    .filter((p: any) => p.status !== 'closed')
+    .sort((a: any, b: any) => {
+      const aCreator = a.role === 'creator' ? 0 : 1;
+      const bCreator = b.role === 'creator' ? 0 : 1;
+      if (aCreator !== bCreator) return aCreator - bCreator;
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
