@@ -150,7 +150,10 @@ export default function MyPots() {
         </div>
       </div>
 
-      <div className="max-w-lg mx-auto px-5 pt-8 pb-28">
+       <div className="max-w-lg mx-auto px-5 pt-8 pb-28">
+        <h1 className="text-2xl font-bold text-foreground mb-1">
+          {getGreeting(displayName)}
+        </h1>
         {activePots.length > 0 && (
           <p className="text-base font-semibold text-foreground mb-3">
             💰 You've got {activePots.length} active {activePots.length === 1 ? 'pot' : 'pots'}
