@@ -2,19 +2,23 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { CoinsPotAnimation, ProgressRingAnimation, BankConnectAnimation } from '@/components/OnboardingAnimations';
 
 const screens = [
   {
     title: 'Welcome to Monto',
     body: "Monto gives your group one place to hold shared money. The pot owner stays in control. Members can request what they need, no awkward messages, no chasing anyone down 💸. Every transaction is logged and owners can request receipts to keep things clean ✅.",
+    Animation: CoinsPotAnimation,
   },
   {
     title: 'How it works',
     body: "Create a pot, set a goal amount and share the link 🔗. Everyone contributes at their own pace and the pot owner withdraws when the time is right.",
+    Animation: ProgressRingAnimation,
   },
   {
     title: 'Connect your bank account',
     body: "To receive withdrawals you'll need to connect your bank account first 🏦. It only takes a minute and you can do it anytime from your Profile page.",
+    Animation: BankConnectAnimation,
   },
 ];
 
