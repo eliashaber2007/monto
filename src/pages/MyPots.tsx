@@ -74,7 +74,6 @@ export default function MyPots() {
   const displayName = profile?.first_name || user?.user_metadata?.first_name || user?.email?.split('@')[0] || '';
 
   const hasSeenOnboarding = (profile as any)?.has_seen_onboarding ?? true;
-  const isFirstLogin = !hasSeenOnboarding;
 
   // Show onboarding for users who haven't seen it yet
   const onboardingTriggered = useRef(false);
