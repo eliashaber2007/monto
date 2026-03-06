@@ -94,6 +94,14 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/expenses/:withdrawalId"
+              element={
+                <ProtectedRoute>
+                  <WithdrawalExpenses />
+                </ProtectedRoute>
+              }
+            />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
