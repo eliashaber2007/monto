@@ -225,6 +225,16 @@ export default function MyPots() {
             ))}
           </div>
         )}
+
+        {/* Trust footer */}
+        <div className="mt-10 mb-4 flex flex-col items-center gap-1.5 text-muted-foreground/60">
+          <div className="flex items-center gap-1.5 text-[11px] font-medium">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <span>Secured by</span>
+            <svg viewBox="0 0 60 25" className="h-[14px] w-auto" fill="currentColor"><path d="M59.64 14.28h-8.06c.19 1.93 1.6 2.55 3.2 2.55 1.64 0 2.96-.37 4.05-.95l.6 3.54c-1.37.78-3.2 1.27-5.1 1.27-4.7 0-7.27-2.98-7.27-7.37 0-4.14 2.45-7.55 6.83-7.55 4.14 0 6.17 3.03 6.17 6.98 0 .58-.06 1.23-.12 1.53h-.3zm-4.32-5.89c-.06 0-2.68-.06-2.68 2.62h5.36c0-1.78-.86-2.62-2.68-2.62zM40.84 18.5h-4.58V6.33l-4.3.94-.72-3.82 5.9-1.78h3.7V18.5zm-12.46-4.04c0 3.9-2.37 4.7-5.47 4.7-1.54 0-3.34-.37-4.76-1.03l.72-3.72c1.11.58 2.68.95 3.66.95.86 0 1.36-.25 1.36-.95 0-1.78-5.78-.95-5.78-5.53 0-3.48 2.37-4.7 5.28-4.7 1.48 0 3.03.31 4.14.78l-.66 3.6c-.86-.43-2.37-.72-3.28-.72-.86 0-1.24.25-1.24.83 0 1.78 6.03.89 6.03 5.79zm-14.66 4.04h-4.7l-.12-1.54c-.98 1.17-2.44 1.84-4.14 1.84-2.31 0-3.97-1.6-3.97-4.2 0-3.78 3.16-5.16 7.49-5.16v-.37c0-1.05-.62-1.54-2.19-1.54-1.42 0-3.03.43-4.27 1.05L1.6 5.63c1.42-.72 3.72-1.3 5.96-1.3 4.45 0 6.17 1.97 6.17 5.78v8.39h-.01zm-4.7-5.96c-2.25 0-3.28.62-3.28 1.84 0 .86.55 1.36 1.48 1.36 1.05 0 1.97-.74 1.97-2.06v-1.14h-.17z"/></svg>
+          </div>
+          <span className="text-[10px]">Your money and data are protected</span>
+        </div>
       </div>
 
       {/* Floating + button */}
