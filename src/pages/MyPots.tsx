@@ -53,6 +53,14 @@ function LiquidBubble({ balance, peakBalance }: { balance: number; peakBalance: 
   );
 }
 
+function getGreeting(name: string) {
+  const hour = new Date().getHours();
+  if (hour >= 6 && hour < 12) return `Good morning, ${name}! ☀️`;
+  if (hour >= 12 && hour < 18) return `Good afternoon, ${name}! 👋`;
+  if (hour >= 18) return `Good evening, ${name}! 🌙`;
+  return `Good night, ${name}! 🌙`;
+}
+
 export default function MyPots() {
   const { signOut, user } = useAuth();
   const { data: profile } = useProfile();
