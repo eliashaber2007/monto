@@ -241,6 +241,7 @@ export type Database = {
           created_at: string
           dark_mode: boolean
           first_name: string
+          gender: string | null
           has_logged_in_before: boolean
           has_seen_onboarding: boolean
           id: string
@@ -253,6 +254,7 @@ export type Database = {
           created_at?: string
           dark_mode?: boolean
           first_name: string
+          gender?: string | null
           has_logged_in_before?: boolean
           has_seen_onboarding?: boolean
           id: string
@@ -265,6 +267,7 @@ export type Database = {
           created_at?: string
           dark_mode?: boolean
           first_name?: string
+          gender?: string | null
           has_logged_in_before?: boolean
           has_seen_onboarding?: boolean
           id?: string
