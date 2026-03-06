@@ -74,7 +74,6 @@ export default function MyPots() {
   const displayName = profile?.first_name || user?.user_metadata?.first_name || user?.email?.split('@')[0] || '';
 
   const hasSeenOnboarding = (profile as any)?.has_seen_onboarding ?? true;
-  const isFirstLogin = !hasSeenOnboarding;
 
   // Show onboarding for users who haven't seen it yet
   const onboardingTriggered = useRef(false);
@@ -145,10 +144,9 @@ export default function MyPots() {
       </div>
 
       <div className="max-w-lg mx-auto px-5 pt-8 pb-28">
-        {/* Welcome heading */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-foreground">
-            {isFirstLogin ? `Welcome, ${displayName || '…'}! 👋` : `Welcome back, ${displayName || '…'}! 👋`}
+            {displayName ? `${displayName}'s Pots 🏦` : 'My Pots 🏦'}
           </h1>
           {activePots.length > 0 && (
             <p className="text-sm text-muted-foreground mt-1">
