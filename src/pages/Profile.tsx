@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Camera, Save, Eye, EyeOff, Landmark, CheckCircle2, Moon, Sun } from 'lucide-react';
+import { ArrowLeft, Camera, Save, Eye, EyeOff, Landmark, CheckCircle2, Moon, Sun, BookOpen } from 'lucide-react';
+import OnboardingModal from '@/components/OnboardingModal';
 import StripeOnboardingForm from '@/components/StripeOnboardingForm';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -82,6 +83,9 @@ export default function Profile() {
 
   // Stripe Connect
   const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // Tutorial modal
+  const [showTutorial, setShowTutorial] = useState(false);
   const [connectingBank, setConnectingBank] = useState(false);
   const stripeOnboardingComplete = (profile as any)?.stripe_onboarding_complete ?? false;
 
@@ -420,14 +424,28 @@ export default function Profile() {
           </Button>
         </div>
 
-        {/* FAQ */}
-        <button
-          onClick={() => navigate('/faq')}
-          className="w-full bg-card rounded-2xl border border-border p-4 flex items-center justify-between hover:shadow-sm transition-shadow"
-        >
-          <span className="text-sm font-semibold text-foreground">FAQ</span>
-          <span className="text-muted-foreground text-xs">→</span>
-        </button>
+        {/* How Monto Works & FAQ */}
+        <div className="bg-card rounded-2xl border border-border divide-y divide-border">
+          <button
+            onClick={() => setShowTutorial(true)}
+            className="w-full p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors rounded-t-2xl"
+          >
+            <div className="flex items-center gap-3">
+              <BookOpen size={18} className="text-muted-foreground" />
+              <span className="text-sm font-semibold text-foreground">How Monto Works</span>
+            </div>
+            <span className="text-muted-foreground text-xs">→</span>
+          </button>
+          <button
+            onClick={() => navigate('/faq')}
+            className="w-full p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors rounded-b-2xl"
+          >
+            <span className="text-sm font-semibold text-foreground pl-[30px]">FAQ</span>
+            <span className="text-muted-foreground text-xs">→</span>
+          </button>
+        </div>
+
+        <OnboardingModal open={showTutorial} onComplete={() => setShowTutorial(false)} />
 
         {/* Stats */}
         <div className="bg-card rounded-2xl border border-border p-6">
