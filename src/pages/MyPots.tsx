@@ -156,7 +156,7 @@ export default function MyPots() {
           {getGreeting(displayName)}
         </h1>
         {activePots.length > 0 && (
-          <p className="text-base font-semibold text-foreground mb-3">
+          <p className="text-sm text-muted-foreground mb-3">
             💰 You've got {activePots.length} active {activePots.length === 1 ? 'pot' : 'pots'}
           </p>
         )}
