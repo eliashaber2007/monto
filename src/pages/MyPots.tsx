@@ -8,6 +8,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import CreatePotModal from '@/components/CreatePotModal';
 import OnboardingModal from '@/components/OnboardingModal';
 import NotificationBell from '@/components/NotificationBell';
+import NotificationPrompt from '@/components/NotificationPrompt';
 
 function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat('en-IE', {
@@ -67,6 +68,7 @@ export default function MyPots() {
   const { data: pots, isLoading } = usePots();
   const [showCreate, setShowCreate] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showNotificationPrompt, setShowNotificationPrompt] = useState(false);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
@@ -97,6 +99,12 @@ export default function MyPots() {
     if (user?.id) {
       await supabase.from('profiles').update({ has_seen_onboarding: true } as any).eq('id', user.id);
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+    }
+    // Show notification prompt if not already shown and permission is default
+    const alreadyShown = localStorage.getItem('notificationPromptShown') === 'true';
+    const canAsk = typeof Notification !== 'undefined' && Notification.permission === 'default';
+    if (!alreadyShown && canAsk) {
+      setShowNotificationPrompt(true);
     }
   };
 
@@ -223,6 +231,7 @@ export default function MyPots() {
 
       <CreatePotModal open={showCreate} onOpenChange={setShowCreate} />
       <OnboardingModal open={showOnboarding} onComplete={handleOnboardingComplete} />
+      <NotificationPrompt open={showNotificationPrompt} onClose={() => setShowNotificationPrompt(false)} />
     </div>
   );
 }
