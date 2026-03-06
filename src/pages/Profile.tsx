@@ -371,20 +371,21 @@ export default function Profile() {
           </div>
           <div className="space-y-2">
             <Label className="text-sm">Gender</Label>
-            <div className="flex rounded-xl border border-border overflow-hidden">
+            <div className="grid grid-cols-2 gap-2">
               {[
                 { value: 'male', label: 'Male' },
                 { value: 'female', label: 'Female' },
+                { value: 'other', label: 'Other' },
                 { value: 'prefer_not_to_say', label: 'Prefer not to say' },
               ].map((opt) => (
                 <button
                   key={opt.value}
                   type="button"
                   onClick={() => setGender(gender === opt.value ? null : opt.value)}
-                  className={`flex-1 py-2.5 text-xs font-medium transition-colors ${
+                  className={`py-2.5 px-3 text-sm font-medium rounded-xl border transition-colors ${
                     gender === opt.value
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-card text-muted-foreground hover:bg-secondary'
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'bg-card text-muted-foreground border-border hover:bg-secondary'
                   }`}
                 >
                   {opt.label}
