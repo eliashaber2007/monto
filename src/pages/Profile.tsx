@@ -382,7 +382,7 @@ export default function Profile() {
                   key={opt.value}
                   type="button"
                   onClick={() => setGender(gender === opt.value ? null : opt.value)}
-                  className={`py-2.5 px-3 text-sm font-medium rounded-xl border transition-colors ${
+                  className={`py-2 px-2 text-xs font-medium rounded-lg border transition-colors ${
                     gender === opt.value
                       ? 'bg-primary text-primary-foreground border-primary'
                       : 'bg-card text-muted-foreground border-border hover:bg-secondary'
