@@ -221,6 +221,7 @@ export default function PotDetail() {
       .channel(`pot-${id}`)
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'pots', filter: `id=eq.${id}` }, () => refetch())
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'transactions', filter: `pot_id=eq.${id}` }, () => refetch())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'withdrawals', filter: `pot_id=eq.${id}` }, () => fetchWithdrawals())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [id, refetch]);
