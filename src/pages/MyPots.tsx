@@ -100,6 +100,12 @@ export default function MyPots() {
       await supabase.from('profiles').update({ has_seen_onboarding: true } as any).eq('id', user.id);
       queryClient.invalidateQueries({ queryKey: ['profile'] });
     }
+    // Show notification prompt if not already shown and permission is default
+    const alreadyShown = localStorage.getItem('notificationPromptShown') === 'true';
+    const canAsk = typeof Notification !== 'undefined' && Notification.permission === 'default';
+    if (!alreadyShown && canAsk) {
+      setShowNotificationPrompt(true);
+    }
   };
 
   // Filter out closed pots
