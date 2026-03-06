@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -7,14 +7,20 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import SocialLoginButtons from '@/components/SocialLoginButtons';
+import { CheckCircle2, AlertCircle } from 'lucide-react';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [showUnverified, setShowUnverified] = useState(false);
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
   const { session, loading: authLoading } = useAuth();
+
+  const isVerified = searchParams.get('verified') === 'true';
 
   // Redirect authenticated users away from login
   useEffect(() => {
@@ -23,12 +29,38 @@ export default function Login() {
     }
   }, [session, authLoading, navigate]);
 
+  // Clear verified param after showing
+  useEffect(() => {
+    if (isVerified) {
+      const timer = setTimeout(() => setSearchParams({}, { replace: true }), 10000);
+      return () => clearTimeout(timer);
+    }
+  }, [isVerified, setSearchParams]);
+
+  const handleResendVerification = async () => {
+    if (!email) {
+      toast({ title: 'Enter your email', description: 'Type your email address above first.', variant: 'destructive' });
+      return;
+    }
+    setResending(true);
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+      options: { emailRedirectTo: `${window.location.origin}/login?verified=true` },
+    });
+    setResending(false);
+    if (error) {
+      toast({ title: 'Could not resend', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Verification email sent!', description: 'Check your inbox for the link.' });
+    }
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setShowUnverified(false);
 
-    // Grab and REMOVE invite URL BEFORE signIn so AuthContext's
-    // SIGNED_IN handler cannot also consume it and trigger a duplicate join
     const pendingInviteUrl = localStorage.getItem('pendingInviteUrl');
     const pendingJoinPotId = localStorage.getItem('pending_join_pot_id');
     localStorage.removeItem('pendingInviteUrl');
@@ -36,15 +68,22 @@ export default function Login() {
 
     const { data: signInData, error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
+
     if (error) {
-      // Restore invite URLs on failure so user can retry
       if (pendingInviteUrl) localStorage.setItem('pendingInviteUrl', pendingInviteUrl);
       if (pendingJoinPotId) localStorage.setItem('pending_join_pot_id', pendingJoinPotId);
+
+      // Check if error is about unverified email
+      if (error.message.toLowerCase().includes('email not confirmed')) {
+        setShowUnverified(true);
+        return;
+      }
+
       toast({ title: 'Login failed', description: error.message, variant: 'destructive' });
       return;
     }
+
     if (pendingInviteUrl) {
-      // Extract pot ID from /invite/[id] or /join/[id]
       const match = pendingInviteUrl.match(/\/(invite|join)\/([^/?#]+)/);
       const potId = match?.[2];
       const userId = signInData.user?.id;
@@ -64,7 +103,6 @@ export default function Login() {
               user_id: userId,
               role: 'member',
             });
-
             if (insertError) throw insertError;
           } catch (err: any) {
             if (err?.code !== '23505') {
@@ -72,7 +110,6 @@ export default function Login() {
             }
           }
         }
-
         navigate(`/pots/${potId}`, { replace: true });
       } else {
         navigate('/', { replace: true });
@@ -88,6 +125,31 @@ export default function Login() {
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-foreground">Monto</h1>
         </div>
+
+        {isVerified && (
+          <div className="flex items-center gap-2 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 rounded-xl px-4 py-3 mb-4 text-sm">
+            <CheckCircle2 size={18} className="flex-shrink-0" />
+            <span>Email verified! You can now log in with your credentials.</span>
+          </div>
+        )}
+
+        {showUnverified && (
+          <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 rounded-xl px-4 py-3 mb-4 text-sm space-y-2">
+            <div className="flex items-center gap-2">
+              <AlertCircle size={18} className="flex-shrink-0" />
+              <span>Please verify your email first. Check your inbox for the verification link.</span>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleResendVerification}
+              disabled={resending}
+              className="w-full text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700 hover:bg-amber-100 dark:hover:bg-amber-900/30"
+            >
+              {resending ? 'Sending…' : 'Resend verification email'}
+            </Button>
+          </div>
+        )}
 
         <div className="bg-card rounded-2xl shadow-card p-6 border border-border space-y-4">
           <SocialLoginButtons />

@@ -1,18 +1,19 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import SocialLoginButtons from "@/components/SocialLoginButtons";
+import { Mail } from "lucide-react";
 
 export default function Signup() {
   const [firstName, setFirstName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  const [verificationSent, setVerificationSent] = useState(false);
   const { toast } = useToast();
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -29,19 +30,12 @@ export default function Signup() {
 
     setLoading(true);
 
-    // Save and REMOVE invite URLs before signUp so AuthContext's
-    // SIGNED_IN handler cannot consume them and redirect prematurely
-    const savedInviteUrl = localStorage.getItem('pendingInviteUrl');
-    const savedJoinPotId = localStorage.getItem('pending_join_pot_id');
-    localStorage.removeItem('pendingInviteUrl');
-    localStorage.removeItem('pending_join_pot_id');
-
-    const { data, error } = await supabase.auth.signUp({
+    const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: { first_name: firstName },
-        emailRedirectTo: window.location.origin,
+        emailRedirectTo: `${window.location.origin}/login?verified=true`,
       },
     });
 
@@ -51,28 +45,34 @@ export default function Signup() {
       return;
     }
 
-    // Auto-confirm creates a session automatically — sign out so
-    // the user must log in manually
+    // Sign out any auto-created session so user must verify first
     await supabase.auth.signOut();
 
-    // Restore pending invite URL so login redirect works for new accounts
-    if (savedInviteUrl) {
-      localStorage.setItem('pendingInviteUrl', savedInviteUrl);
-    }
-    if (savedJoinPotId) {
-      localStorage.setItem('pending_join_pot_id', savedJoinPotId);
-    }
-
     setLoading(false);
-
-    toast({
-      title: "Account created!",
-      description: "Log back in with your credentials.",
-    });
-
-    // Navigate to login — pending invite URL stays in localStorage
-    navigate("/login");
+    setVerificationSent(true);
   };
+
+  if (verificationSent) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <div className="w-full max-w-sm text-center">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary mb-4 shadow-pill">
+            <Mail className="text-primary-foreground" size={24} />
+          </div>
+          <h1 className="text-2xl font-bold text-foreground mb-2">Check your inbox!</h1>
+          <p className="text-muted-foreground text-sm leading-relaxed">
+            We sent a verification link to <span className="font-semibold text-foreground">{email}</span>. Click it to activate your account.
+          </p>
+          <p className="text-center text-sm text-muted-foreground mt-8">
+            Already verified?{" "}
+            <Link to="/login" className="text-primary font-semibold hover:underline">
+              Sign in
+            </Link>
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
@@ -91,43 +91,16 @@ export default function Signup() {
           <form onSubmit={handleSignup} className="space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="firstName">First name</Label>
-              <Input
-                id="firstName"
-                type="text"
-                placeholder="Alex"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                required
-                className="h-11 rounded-xl"
-              />
+              <Input id="firstName" type="text" placeholder="Alex" value={firstName} onChange={(e) => setFirstName(e.target.value)} required className="h-11 rounded-xl" />
             </div>
-
             <div className="space-y-1.5">
               <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="h-11 rounded-xl"
-              />
+              <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="h-11 rounded-xl" />
             </div>
-
             <div className="space-y-1.5">
               <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Min. 6 characters"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="h-11 rounded-xl"
-              />
+              <Input id="password" type="password" placeholder="Min. 6 characters" value={password} onChange={(e) => setPassword(e.target.value)} required className="h-11 rounded-xl" />
             </div>
-
             <Button type="submit" className="w-full h-11 rounded-xl mt-2" disabled={loading}>
               {loading ? "Creating account…" : "Create account"}
             </Button>
@@ -136,9 +109,7 @@ export default function Signup() {
 
         <p className="text-center text-sm text-muted-foreground mt-6">
           Already have an account?{" "}
-          <Link to="/login" className="text-primary font-semibold hover:underline">
-            Sign in
-          </Link>
+          <Link to="/login" className="text-primary font-semibold hover:underline">Sign in</Link>
         </p>
       </div>
     </div>
