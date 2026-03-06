@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Users, Plus, CheckCircle2, Image as ImageIcon, Upload, X, LogOut, Copy, Check, Landmark, ThumbsUp, ThumbsDown, MessageCircle, KeyRound, ChevronDown, Receipt } from 'lucide-react';
+import { ArrowLeft, Users, Plus, CheckCircle2, Image as ImageIcon, Upload, X, LogOut, Copy, Check, Landmark, ThumbsUp, ThumbsDown, MessageCircle, KeyRound, ChevronDown, ChevronRight, Receipt } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePotDetail } from '@/hooks/usePots';
@@ -188,6 +188,8 @@ export default function PotDetail() {
   const [unreadChatCount, setUnreadChatCount] = useState(0);
   const [fundsOpen, setFundsOpen] = useState(false);
   const [withdrawalsOpen, setWithdrawalsOpen] = useState(false);
+  const [expandedMembers, setExpandedMembers] = useState<Record<string, boolean>>({});
+  const [withdrawalExpenses, setWithdrawalExpenses] = useState<Record<string, number>>({});
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
