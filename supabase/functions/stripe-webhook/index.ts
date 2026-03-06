@@ -77,6 +77,7 @@ Deno.serve(async (req) => {
           require_receipt: metadata.pot_require_receipt === 'true',
           max_withdrawal_amount: isNaN(maxWdAmount as number) ? null : maxWdAmount,
           max_withdrawals_per_day: isNaN(maxWdPerDay as number) ? null : maxWdPerDay,
+          emoji: metadata.pot_emoji || null,
         });
 
         if (potError) {
