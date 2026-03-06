@@ -17,6 +17,7 @@ import Notifications from "./pages/Notifications";
 import Profile from "./pages/Profile";
 import PotArchive from "./pages/PotArchive";
 import PotSuccess from "./pages/PotSuccess";
+import FAQ from "./pages/FAQ";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -81,6 +82,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/faq"
+              element={
+                <ProtectedRoute>
+                  <FAQ />
                 </ProtectedRoute>
               }
             />
