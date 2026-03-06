@@ -8,6 +8,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import CreatePotModal from '@/components/CreatePotModal';
 import OnboardingModal from '@/components/OnboardingModal';
 import NotificationBell from '@/components/NotificationBell';
+import NotificationPrompt from '@/components/NotificationPrompt';
 
 function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat('en-IE', {
