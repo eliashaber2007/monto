@@ -108,7 +108,7 @@ export default function MyPots() {
       {/* Header */}
       <div className="bg-card border-b border-border sticky top-0 z-20">
         <div className="max-w-lg mx-auto px-5 py-4 flex items-center justify-between">
-           <div className="flex items-center">
+           <div className="flex items-center gap-3">
               <button
                 onClick={() => navigate('/profile')}
                 className="w-10 h-10 rounded-full flex items-center justify-center shadow-sm overflow-hidden"
@@ -122,6 +122,7 @@ export default function MyPots() {
                   </span>
                 )}
               </button>
+              <span className="font-bold text-foreground text-lg">{displayName ? `${displayName}'s Pots` : 'My Pots'}</span>
           </div>
           <div className="flex items-center gap-1">
             <NotificationBell />
@@ -143,16 +144,11 @@ export default function MyPots() {
       </div>
 
       <div className="max-w-lg mx-auto px-5 pt-8 pb-28">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-foreground">
-            {displayName ? `${displayName}'s Pots 🏦` : 'My Pots 🏦'}
-          </h1>
-          {activePots.length > 0 && (
-            <p className="text-sm text-muted-foreground mt-1">
-              💰 You've got {activePots.length} active {activePots.length === 1 ? 'pot' : 'pots'}
-            </p>
-          )}
-        </div>
+        {activePots.length > 0 && (
+          <p className="text-sm text-muted-foreground mb-3">
+            💰 You've got {activePots.length} active {activePots.length === 1 ? 'pot' : 'pots'}
+          </p>
+        )}
 
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
