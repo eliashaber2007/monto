@@ -73,28 +73,22 @@ export default function MyPots() {
 
   const displayName = profile?.first_name || user?.user_metadata?.first_name || user?.email?.split('@')[0] || '';
 
-  // Determine if first login by comparing profile.created_at with session last_sign_in_at
-  const isFirstLogin = (() => {
-    if (!profile?.created_at || !user?.last_sign_in_at) return false;
-    const createdAt = new Date(profile.created_at).getTime();
-    const lastSignIn = new Date(user.last_sign_in_at).getTime();
-    return Math.abs(createdAt - lastSignIn) <= 90_000;
-  })();
+  const hasSeenOnboarding = (profile as any)?.has_seen_onboarding ?? true;
+  const isFirstLogin = !hasSeenOnboarding;
 
-  // Show onboarding for first-time users who haven't seen it yet
+  // Show onboarding for users who haven't seen it yet
   const onboardingTriggered = useRef(false);
   useEffect(() => {
-    if (isFirstLogin && profile && !(profile as any).has_logged_in_before && !onboardingTriggered.current) {
+    if (profile && !hasSeenOnboarding && !onboardingTriggered.current) {
       onboardingTriggered.current = true;
       setShowOnboarding(true);
     }
-  }, [isFirstLogin, profile]);
+  }, [profile, hasSeenOnboarding]);
 
   const handleOnboardingComplete = async () => {
     setShowOnboarding(false);
-    // Mark as seen so it never shows again
     if (user?.id) {
-      await supabase.from('profiles').update({ has_logged_in_before: true } as any).eq('id', user.id);
+      await supabase.from('profiles').update({ has_seen_onboarding: true } as any).eq('id', user.id);
       queryClient.invalidateQueries({ queryKey: ['profile'] });
     }
   };
