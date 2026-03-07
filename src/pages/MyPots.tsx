@@ -85,28 +85,12 @@ export default function MyPots() {
 
   const hasSeenOnboarding = (profile as any)?.has_seen_onboarding ?? true;
 
-  // Show onboarding for users who haven't seen it yet
-  const onboardingTriggered = useRef(false);
+  // Redirect to full-screen onboarding for first-time users
   useEffect(() => {
-    if (profile && !hasSeenOnboarding && !onboardingTriggered.current) {
-      onboardingTriggered.current = true;
-      setShowOnboarding(true);
+    if (profile && !hasSeenOnboarding) {
+      navigate('/onboarding', { replace: true });
     }
-  }, [profile, hasSeenOnboarding]);
-
-  const handleOnboardingComplete = async () => {
-    setShowOnboarding(false);
-    if (user?.id) {
-      await supabase.from('profiles').update({ has_seen_onboarding: true } as any).eq('id', user.id);
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
-    }
-    // Show notification prompt if not already shown and permission is default
-    const alreadyShown = localStorage.getItem('notificationPromptShown') === 'true';
-    const canAsk = typeof Notification !== 'undefined' && Notification.permission === 'default';
-    if (!alreadyShown && canAsk) {
-      setShowNotificationPrompt(true);
-    }
-  };
+  }, [profile, hasSeenOnboarding, navigate]);
 
   // Filter out closed pots, then sort: creators first, then by recency
   const activePots = (pots ?? [])
