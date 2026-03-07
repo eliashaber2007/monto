@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ChevronRight, Droplets, Sparkles, LogOut, Archive } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -6,7 +6,7 @@ import { useProfile, usePots } from '@/hooks/usePots';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import CreatePotModal from '@/components/CreatePotModal';
-import OnboardingModal from '@/components/OnboardingModal';
+
 import NotificationBell from '@/components/NotificationBell';
 import NotificationPrompt from '@/components/NotificationPrompt';
 
@@ -67,7 +67,6 @@ export default function MyPots() {
   const { data: profile } = useProfile();
   const { data: pots, isLoading } = usePots();
   const [showCreate, setShowCreate] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(false);
   const [showNotificationPrompt, setShowNotificationPrompt] = useState(false);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -85,28 +84,12 @@ export default function MyPots() {
 
   const hasSeenOnboarding = (profile as any)?.has_seen_onboarding ?? true;
 
-  // Show onboarding for users who haven't seen it yet
-  const onboardingTriggered = useRef(false);
+  // Redirect to full-screen onboarding for first-time users
   useEffect(() => {
-    if (profile && !hasSeenOnboarding && !onboardingTriggered.current) {
-      onboardingTriggered.current = true;
-      setShowOnboarding(true);
+    if (profile && !hasSeenOnboarding) {
+      navigate('/onboarding', { replace: true });
     }
-  }, [profile, hasSeenOnboarding]);
-
-  const handleOnboardingComplete = async () => {
-    setShowOnboarding(false);
-    if (user?.id) {
-      await supabase.from('profiles').update({ has_seen_onboarding: true } as any).eq('id', user.id);
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
-    }
-    // Show notification prompt if not already shown and permission is default
-    const alreadyShown = localStorage.getItem('notificationPromptShown') === 'true';
-    const canAsk = typeof Notification !== 'undefined' && Notification.permission === 'default';
-    if (!alreadyShown && canAsk) {
-      setShowNotificationPrompt(true);
-    }
-  };
+  }, [profile, hasSeenOnboarding, navigate]);
 
   // Filter out closed pots, then sort: creators first, then by recency
   const activePots = (pots ?? [])
@@ -120,14 +103,6 @@ export default function MyPots() {
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Animated onboarding background */}
-      {showOnboarding && (
-        <div className="fixed inset-0 z-10 pointer-events-none">
-          <div className="onboarding-orb onboarding-orb-1" />
-          <div className="onboarding-orb onboarding-orb-2" />
-          <div className="onboarding-orb onboarding-orb-3" />
-        </div>
-      )}
       {/* Header */}
       <div className="bg-card border-b border-border sticky top-0 z-20">
         <div className="max-w-lg mx-auto px-5 py-4 flex items-center justify-between">
@@ -248,7 +223,6 @@ export default function MyPots() {
       </button>
 
       <CreatePotModal open={showCreate} onOpenChange={setShowCreate} />
-      <OnboardingModal open={showOnboarding} onComplete={handleOnboardingComplete} />
       <NotificationPrompt open={showNotificationPrompt} onClose={() => setShowNotificationPrompt(false)} />
     </div>
   );
