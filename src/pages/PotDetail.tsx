@@ -931,6 +931,7 @@ export default function PotDetail() {
               <KeyRound size={15} className="mr-2" />
               Change Withdrawal Password
             </Button>
+          )}
           {isCreator ? (
             <Button
               variant="destructive"
