@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ChevronRight, Droplets, Sparkles, LogOut, Archive } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -67,7 +67,6 @@ export default function MyPots() {
   const { data: profile } = useProfile();
   const { data: pots, isLoading } = usePots();
   const [showCreate, setShowCreate] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(false);
   const [showNotificationPrompt, setShowNotificationPrompt] = useState(false);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -232,7 +231,6 @@ export default function MyPots() {
       </button>
 
       <CreatePotModal open={showCreate} onOpenChange={setShowCreate} />
-      <OnboardingModal open={showOnboarding} onComplete={handleOnboardingComplete} />
       <NotificationPrompt open={showNotificationPrompt} onClose={() => setShowNotificationPrompt(false)} />
     </div>
   );
