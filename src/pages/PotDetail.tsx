@@ -675,7 +675,7 @@ export default function PotDetail() {
                                   <span className={`text-[10px] px-2 py-0.5 rounded-full border font-semibold ${statusColor}`}>
                                     {statusLabel}
                                   </span>
-                                  {isMyRequest && (
+                                  {isMyRequest ? (
                                     <button
                                       onClick={() => navigate(`/expenses/${w.id}`)}
                                       className="text-xs flex items-center gap-1.5 text-primary-foreground font-semibold bg-primary px-3 py-1.5 rounded-lg hover:bg-primary/90 transition-colors mt-0.5"
@@ -683,7 +683,15 @@ export default function PotDetail() {
                                       <Receipt size={12} />
                                       Justify expenses
                                     </button>
-                                  )}
+                                  ) : isCreator ? (
+                                    <button
+                                      onClick={() => navigate(`/expenses/${w.id}`)}
+                                      className="text-xs flex items-center gap-1.5 text-muted-foreground font-semibold bg-muted px-3 py-1.5 rounded-lg hover:bg-muted/80 transition-colors mt-0.5"
+                                    >
+                                      <Receipt size={12} />
+                                      View justified expenses
+                                    </button>
+                                  ) : null}
                                 </div>
                               </div>
 
@@ -882,7 +890,7 @@ export default function PotDetail() {
                                   </div>
                                   <p className="text-[10px] text-muted-foreground">{pct}% justified ({formatCurrency(expTotal, currency)} of {formatCurrency(Number(w.amount), currency)})</p>
                                 </div>
-                                {canJustify && (
+                                {canJustify ? (
                                   <button
                                     onClick={() => navigate(`/expenses/${w.id}`)}
                                     className="text-xs flex items-center gap-1.5 text-primary-foreground font-semibold bg-primary px-3 py-1.5 rounded-lg hover:bg-primary/90 transition-colors"
@@ -890,7 +898,15 @@ export default function PotDetail() {
                                     <Receipt size={12} />
                                     Justify expenses
                                   </button>
-                                )}
+                                ) : isCreator ? (
+                                  <button
+                                    onClick={() => navigate(`/expenses/${w.id}`)}
+                                    className="text-xs flex items-center gap-1.5 text-muted-foreground font-semibold bg-muted px-3 py-1.5 rounded-lg hover:bg-muted/80 transition-colors"
+                                  >
+                                    <Receipt size={12} />
+                                    View justified expenses
+                                  </button>
+                                ) : null}
                               </div>
                             );
                           })}
@@ -916,7 +932,6 @@ export default function PotDetail() {
               Change Withdrawal Password
             </Button>
           )}
-
           {isCreator ? (
             <Button
               variant="destructive"
