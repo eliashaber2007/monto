@@ -6,7 +6,7 @@ import { useProfile, usePots } from '@/hooks/usePots';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import CreatePotModal from '@/components/CreatePotModal';
-import OnboardingModal from '@/components/OnboardingModal';
+
 import NotificationBell from '@/components/NotificationBell';
 import NotificationPrompt from '@/components/NotificationPrompt';
 
