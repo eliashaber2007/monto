@@ -907,7 +907,6 @@ export default function PotDetail() {
                                     View justified expenses
                                   </button>
                                 ) : null}
-                                )}
                               </div>
                             );
                           })}
