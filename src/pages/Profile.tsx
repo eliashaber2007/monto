@@ -427,7 +427,7 @@ export default function Profile() {
         {/* How Monto Works & FAQ */}
         <div className="bg-card rounded-2xl border border-border divide-y divide-border">
           <button
-            onClick={() => setShowTutorial(true)}
+            onClick={() => navigate('/onboarding?tutorial=true')}
             className="w-full p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors rounded-t-2xl"
           >
             <div className="flex items-center gap-3">
