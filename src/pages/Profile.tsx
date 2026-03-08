@@ -339,26 +339,6 @@ export default function Profile() {
           <DarkModeToggle />
         </div>
 
-        {/* Language */}
-        <div className="bg-card rounded-2xl border border-border p-6 space-y-4">
-          <h2 className="font-bold text-foreground text-base">{t('profile.language')}</h2>
-          <div className="flex flex-wrap gap-2">
-            {LANGUAGES.map((lang) => (
-              <button
-                key={lang.code}
-                onClick={() => handleLanguageChange(lang.code)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-all text-sm font-medium ${
-                  i18n.language === lang.code
-                    ? 'border-primary bg-primary/10 text-foreground'
-                    : 'border-border bg-secondary/50 text-muted-foreground hover:bg-secondary'
-                }`}
-              >
-                <span className="text-lg">{lang.flag}</span>
-                {lang.label}
-              </button>
-            ))}
-          </div>
-        </div>
 
         {/* Payout Account */}
         <div className="bg-card rounded-2xl border border-border p-6 space-y-4">
@@ -475,6 +455,27 @@ export default function Profile() {
           <Button onClick={handleChangePassword} disabled={savingPassword || !newPassword || !confirmPassword} className="w-full h-11 rounded-xl font-semibold">
             {savingPassword ? t('auth.updating') : t('profile.updatePassword')}
           </Button>
+        </div>
+
+        {/* Language */}
+        <div className="bg-card rounded-2xl border border-border p-6 space-y-4">
+          <h2 className="font-bold text-foreground text-base">{t('profile.language')}</h2>
+          <div className="flex flex-wrap gap-2">
+            {LANGUAGES.map((lang) => (
+              <button
+                key={lang.code}
+                onClick={() => handleLanguageChange(lang.code)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-all text-sm font-medium ${
+                  i18n.language === lang.code
+                    ? 'border-primary bg-primary/10 text-foreground'
+                    : 'border-border bg-secondary/50 text-muted-foreground hover:bg-secondary'
+                }`}
+              >
+                <span className="text-lg">{lang.flag}</span>
+                {lang.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="bg-card rounded-2xl border border-border divide-y divide-border">
