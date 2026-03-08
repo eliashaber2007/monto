@@ -407,7 +407,7 @@
     "q4": "Ist mein Geld sicher?",
     "a4": "Ja. Alle Zahlungen werden von Stripe verarbeitet, das PCI DSS-konform ist und Verschlüsselung auf Bankniveau verwendet. Monto speichert niemals direkt Ihre Bank- oder Kartendaten.",
     "q5": "Wie verbinde ich mein Bankkonto?",
-    "a5": "Gehen Sie zu Ihrer Profilseite und tippen Sie auf „Auszahlungskonto". Folgen Sie den Schritten und verbinden Sie Ihr Bankkonto. Sie müssen ein Bankkonto verbinden, bevor Sie Auszahlungen erhalten können.",
+    "a5": "Gehen Sie zu Ihrer Profilseite und tippen Sie auf 'Auszahlungskonto'. Folgen Sie den Schritten und verbinden Sie Ihr Bankkonto. Sie muessen ein Bankkonto verbinden, bevor Sie Auszahlungen erhalten koennen.",
     "q6": "Kann ich eine Kasse verlassen?",
     "a6": "Ja, Sie können jede Kasse jederzeit verlassen. Wenn Sie der Ersteller sind, können Sie die Kasse vollständig schließen, was eine letzte Auszahlung der verbleibenden Mittel auslöst.",
     "q7": "Wer kann Leute in eine Kasse einladen?",
