@@ -190,6 +190,7 @@ export default function PotDetail() {
   const [withdrawalsOpen, setWithdrawalsOpen] = useState(true);
   const [expandedMembers, setExpandedMembers] = useState<Record<string, boolean>>({});
   const [withdrawalExpenses, setWithdrawalExpenses] = useState<Record<string, number>>({});
+  const [sendingReminder, setSendingReminder] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
