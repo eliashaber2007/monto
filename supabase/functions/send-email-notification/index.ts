@@ -44,11 +44,12 @@ function formatCurrency(amount: number, currency = 'EUR') {
 }
 
 interface EmailPayload {
-  type: 'member_joined' | 'withdrawal_requested' | 'withdrawal_approved' | 'funds_added' | 'pot_closed';
+  type: 'member_joined' | 'withdrawal_requested' | 'withdrawal_approved' | 'funds_added' | 'pot_closed' | 'expense_reminder';
   pot_id: string;
-  user_id?: string;       // the actor (who joined, who deposited, etc.)
+  user_id?: string;
   amount?: number;
   currency?: string;
+  creator_name?: string;
 }
 
 async function sendEmail(to: string, subject: string, body: string) {
@@ -142,6 +143,31 @@ async function handleNotification(payload: EmailPayload) {
           email,
           `${pot.name} has been closed`,
           `The pot <strong>${pot.name}</strong> has been closed by the creator. Your share of the funds will be processed shortly.`,
+        );
+      }
+      break;
+    }
+
+    case 'expense_reminder': {
+      if (!payload.user_id) break;
+      const creatorName = payload.creator_name || 'The pot creator';
+      const reminderMessage = `${pot.name}: ${creatorName} is requesting you to justify your withdrawal of ${formatCurrency(payload.amount ?? 0, currency)}. Please add your expenses and receipts.`;
+
+      // Insert in-app notification
+      await supabaseAdmin.from('notifications').insert({
+        user_id: payload.user_id,
+        pot_id: payload.pot_id,
+        type: 'expense_reminder',
+        message: reminderMessage,
+      });
+
+      // Send email
+      const recipientEmail = await getUserEmail(payload.user_id);
+      if (recipientEmail) {
+        await sendEmail(
+          recipientEmail,
+          `Justify your withdrawal in ${pot.name}`,
+          `${creatorName} is requesting you to justify your withdrawal of <strong>${formatCurrency(payload.amount ?? 0, currency)}</strong> from <strong>${pot.name}</strong>. Please add your expenses and receipts.`,
         );
       }
       break;

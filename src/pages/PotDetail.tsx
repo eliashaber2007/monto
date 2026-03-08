@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Users, Plus, CheckCircle2, Image as ImageIcon, Upload, X, LogOut, Copy, Check, Landmark, ThumbsUp, ThumbsDown, MessageCircle, KeyRound, ChevronDown, ChevronRight, Receipt } from 'lucide-react';
+import { ArrowLeft, Users, Plus, CheckCircle2, Image as ImageIcon, Upload, X, LogOut, Copy, Check, Landmark, ThumbsUp, ThumbsDown, MessageCircle, KeyRound, ChevronDown, ChevronRight, Receipt, Bell } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePotDetail } from '@/hooks/usePots';
@@ -190,6 +190,7 @@ export default function PotDetail() {
   const [withdrawalsOpen, setWithdrawalsOpen] = useState(true);
   const [expandedMembers, setExpandedMembers] = useState<Record<string, boolean>>({});
   const [withdrawalExpenses, setWithdrawalExpenses] = useState<Record<string, number>>({});
+  const [sendingReminder, setSendingReminder] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -692,6 +693,51 @@ export default function PotDetail() {
                                       View justified expenses
                                     </button>
                                   ) : null}
+                                  {/* Send reminder button for creator when expenses not fully justified */}
+                                  {isCreator && !isMyRequest && w.status === 'approved' && (withdrawalExpenses[w.id] ?? 0) < Number(w.amount) && (
+                                    <button
+                                      onClick={async () => {
+                                        setSendingReminder(w.id);
+                                        try {
+                                          const creatorProfile = getMemberProfile(user!.id);
+                                          const creatorName = creatorProfile?.first_name || 'The pot creator';
+
+                                          // Send reminder via edge function (handles both notification insert and email)
+                                          const { data: sessionData } = await supabase.auth.getSession();
+                                          const token = sessionData?.session?.access_token;
+                                          await fetch(
+                                            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email-notification`,
+                                            {
+                                              method: 'POST',
+                                              headers: {
+                                                'Content-Type': 'application/json',
+                                                Authorization: `Bearer ${token}`,
+                                                apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+                                              },
+                                              body: JSON.stringify({
+                                                type: 'expense_reminder',
+                                                pot_id: pot.id,
+                                                user_id: w.user_id,
+                                                amount: Number(w.amount),
+                                                creator_name: creatorName,
+                                              }),
+                                            }
+                                          );
+
+                                          toast({ title: 'Reminder sent 📩' });
+                                        } catch (err: any) {
+                                          toast({ title: 'Error', description: err.message, variant: 'destructive' });
+                                        } finally {
+                                          setSendingReminder(null);
+                                        }
+                                      }}
+                                      disabled={sendingReminder === w.id}
+                                      className="text-xs flex items-center gap-1.5 text-warning font-semibold bg-warning/10 border border-warning/20 px-3 py-1.5 rounded-lg hover:bg-warning/20 transition-colors mt-0.5 disabled:opacity-50"
+                                    >
+                                      <Bell size={12} />
+                                      {sendingReminder === w.id ? 'Sending…' : 'Send reminder'}
+                                    </button>
+                                  )}
                                 </div>
                               </div>
 
