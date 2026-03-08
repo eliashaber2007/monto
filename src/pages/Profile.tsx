@@ -334,10 +334,32 @@ export default function Profile() {
         <div className="bg-card rounded-2xl border border-border p-6 space-y-4">
           <h2 className="font-bold text-foreground text-base">Payout Account</h2>
           {stripeOnboardingComplete ? (
-            <div className="flex items-center gap-2 text-success font-semibold">
-              <CheckCircle2 size={18} />
-              Bank account connected ✅
-            </div>
+            showChangeBankForm ? (
+              <StripeOnboardingForm
+                mode="update"
+                onComplete={() => {
+                  setShowChangeBankForm(false);
+                  queryClient.invalidateQueries({ queryKey: ['profile'] });
+                  queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
+                }}
+                onCancel={() => setShowChangeBankForm(false)}
+              />
+            ) : (
+              <>
+                <div className="flex items-center gap-2 text-success font-semibold">
+                  <CheckCircle2 size={18} />
+                  Bank account connected ✅
+                </div>
+                <Button
+                  onClick={() => setShowChangeBankForm(true)}
+                  variant="outline"
+                  className="w-full h-11 rounded-xl font-semibold"
+                >
+                  <RefreshCw size={15} className="mr-1.5" />
+                  Change bank account
+                </Button>
+              </>
+            )
           ) : showOnboarding ? (
             <StripeOnboardingForm
               onComplete={() => {
