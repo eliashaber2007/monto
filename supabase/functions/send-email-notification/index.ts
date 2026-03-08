@@ -75,11 +75,29 @@ async function sendEmail(to: string, subject: string, body: string) {
   }
 }
 
+async function sendPush(userId: string, title: string, body: string, url: string) {
+  try {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${serviceRoleKey}`,
+      },
+      body: JSON.stringify({ user_id: userId, title, body, url }),
+    });
+  } catch (err) {
+    console.error('Push notification failed:', err);
+  }
+}
+
 async function handleNotification(payload: EmailPayload) {
   const pot = await getPot(payload.pot_id);
   if (!pot) { console.error('Pot not found:', payload.pot_id); return; }
 
   const currency = payload.currency || pot.currency || 'EUR';
+  const potUrl = `/pots/${payload.pot_id}`;
 
   switch (payload.type) {
     case 'member_joined': {
@@ -88,11 +106,13 @@ async function handleNotification(payload: EmailPayload) {
       const creatorEmail = await getUserEmail(pot.created_by);
       if (!creatorEmail) break;
       const memberCount = await getPotMemberCount(payload.pot_id);
+      const subject = `${name} joined your pot ${pot.name}`;
       await sendEmail(
         creatorEmail,
-        `${name} joined your pot ${pot.name}`,
+        subject,
         `${name} has just joined your pot <strong>${pot.name}</strong>. You now have <strong>${memberCount}</strong> members.`,
       );
+      await sendPush(pot.created_by, pot.name, `${name} joined your pot`, potUrl);
       break;
     }
 
@@ -106,6 +126,7 @@ async function handleNotification(payload: EmailPayload) {
         `Withdrawal request in ${pot.name}`,
         `${name} has requested a withdrawal of <strong>${formatCurrency(payload.amount ?? 0, currency)}</strong> from <strong>${pot.name}</strong>. Log in to approve or reject it.`,
       );
+      await sendPush(pot.created_by, pot.name, `${name} requested a withdrawal of ${formatCurrency(payload.amount ?? 0, currency)}`, potUrl);
       break;
     }
 
@@ -118,6 +139,7 @@ async function handleNotification(payload: EmailPayload) {
         'Your withdrawal has been approved',
         `Your withdrawal of <strong>${formatCurrency(payload.amount ?? 0, currency)}</strong> from <strong>${pot.name}</strong> has been approved. Funds will arrive within 1-3 business days.`,
       );
+      await sendPush(payload.user_id, pot.name, `Your withdrawal of ${formatCurrency(payload.amount ?? 0, currency)} has been approved ✅`, potUrl);
       break;
     }
 
@@ -131,6 +153,7 @@ async function handleNotification(payload: EmailPayload) {
         `${name} added ${formatCurrency(payload.amount ?? 0, currency)} to ${pot.name}`,
         `${name} added <strong>${formatCurrency(payload.amount ?? 0, currency)}</strong> to your pot <strong>${pot.name}</strong>. The new balance is <strong>${formatCurrency(pot.balance, currency)}</strong>.`,
       );
+      await sendPush(pot.created_by, pot.name, `${name} added ${formatCurrency(payload.amount ?? 0, currency)}`, potUrl);
       break;
     }
 
@@ -144,6 +167,7 @@ async function handleNotification(payload: EmailPayload) {
           `${pot.name} has been closed`,
           `The pot <strong>${pot.name}</strong> has been closed by the creator. Your share of the funds will be processed shortly.`,
         );
+        await sendPush(memberId, pot.name, `${pot.name} has been closed`, '/');
       }
       break;
     }
@@ -170,6 +194,18 @@ async function handleNotification(payload: EmailPayload) {
           `${creatorName} is requesting you to justify your withdrawal of <strong>${formatCurrency(payload.amount ?? 0, currency)}</strong> from <strong>${pot.name}</strong>. Please add your expenses and receipts.`,
         );
       }
+      await sendPush(payload.user_id, pot.name, reminderMessage, potUrl);
+      break;
+    }
+
+    case 'mention': {
+      if (!payload.user_id) break;
+      const senderName = payload.creator_name || 'Someone';
+      const mentionMessage = `${senderName} mentioned you in ${pot.name}`;
+      
+      const recipientEmail = await getUserEmail(payload.user_id);
+      // No email for mentions, just push
+      await sendPush(payload.user_id, pot.name, mentionMessage, potUrl);
       break;
     }
   }
