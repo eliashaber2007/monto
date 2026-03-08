@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
@@ -26,18 +26,24 @@ const screens = [
 export default function Onboarding() {
   const [step, setStep] = useState(0);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const screen = screens[step];
   const isLast = step === screens.length - 1;
+  const isTutorial = searchParams.get('tutorial') === 'true';
 
   const handleContinue = async () => {
     if (isLast) {
-      if (user?.id) {
-        await supabase.from('profiles').update({ has_seen_onboarding: true } as any).eq('id', user.id);
-        queryClient.invalidateQueries({ queryKey: ['profile'] });
+      if (isTutorial) {
+        navigate('/profile', { replace: true });
+      } else {
+        if (user?.id) {
+          await supabase.from('profiles').update({ has_seen_onboarding: true } as any).eq('id', user.id);
+          queryClient.invalidateQueries({ queryKey: ['profile'] });
+        }
+        navigate('/', { replace: true });
       }
-      navigate('/', { replace: true });
     } else {
       setStep(step + 1);
     }
@@ -77,7 +83,7 @@ export default function Onboarding() {
         onClick={handleContinue}
         className="w-full max-w-sm h-14 rounded-2xl bg-primary text-primary-foreground font-semibold text-base hover:bg-primary/90 transition-colors active:scale-[0.98]"
       >
-        {isLast ? 'Get started' : 'Continue'}
+        {isLast ? (isTutorial ? 'Done' : 'Get started') : 'Continue'}
       </button>
     </div>
   );

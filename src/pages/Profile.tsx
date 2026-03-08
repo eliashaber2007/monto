@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Camera, Save, Eye, EyeOff, Landmark, CheckCircle2, Moon, Sun, BookOpen } from 'lucide-react';
-import OnboardingModal from '@/components/OnboardingModal';
+
 import StripeOnboardingForm from '@/components/StripeOnboardingForm';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -85,7 +85,7 @@ export default function Profile() {
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   // Tutorial modal
-  const [showTutorial, setShowTutorial] = useState(false);
+  
   const [connectingBank, setConnectingBank] = useState(false);
   const stripeOnboardingComplete = (profile as any)?.stripe_onboarding_complete ?? false;
 
@@ -427,7 +427,7 @@ export default function Profile() {
         {/* How Monto Works & FAQ */}
         <div className="bg-card rounded-2xl border border-border divide-y divide-border">
           <button
-            onClick={() => setShowTutorial(true)}
+            onClick={() => navigate('/onboarding?tutorial=true')}
             className="w-full p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors rounded-t-2xl"
           >
             <div className="flex items-center gap-3">
@@ -445,7 +445,7 @@ export default function Profile() {
           </button>
         </div>
 
-        <OnboardingModal open={showTutorial} onComplete={() => setShowTutorial(false)} />
+        
 
         {/* Stats */}
         <div className="bg-card rounded-2xl border border-border p-6">
