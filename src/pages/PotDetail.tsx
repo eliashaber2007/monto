@@ -687,7 +687,7 @@ export default function PotDetail() {
                                   ) : isCreator ? (
                                     <button
                                       onClick={() => navigate(`/expenses/${w.id}`)}
-                                      className="text-xs flex items-center gap-1.5 text-muted-foreground font-semibold bg-muted px-3 py-1.5 rounded-lg hover:bg-muted/80 transition-colors mt-0.5"
+                                      className="text-xs flex items-center gap-1.5 text-primary-foreground font-semibold bg-primary px-3 py-1.5 rounded-lg hover:bg-primary/90 transition-colors mt-0.5"
                                     >
                                       <Receipt size={12} />
                                       View justified expenses
