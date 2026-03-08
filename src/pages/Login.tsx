@@ -8,8 +8,10 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import SocialLoginButtons from '@/components/SocialLoginButtons';
 import { CheckCircle2, AlertCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export default function Login() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -22,14 +24,12 @@ export default function Login() {
 
   const isVerified = searchParams.get('verified') === 'true';
 
-  // Redirect authenticated users away from login
   useEffect(() => {
     if (!authLoading && session) {
       navigate('/', { replace: true });
     }
   }, [session, authLoading, navigate]);
 
-  // Clear verified param after showing
   useEffect(() => {
     if (isVerified) {
       const timer = setTimeout(() => setSearchParams({}, { replace: true }), 10000);
@@ -39,7 +39,7 @@ export default function Login() {
 
   const handleResendVerification = async () => {
     if (!email) {
-      toast({ title: 'Enter your email', description: 'Type your email address above first.', variant: 'destructive' });
+      toast({ title: t('auth.enterEmail'), description: t('auth.enterEmailDesc'), variant: 'destructive' });
       return;
     }
     setResending(true);
@@ -50,9 +50,9 @@ export default function Login() {
     });
     setResending(false);
     if (error) {
-      toast({ title: 'Could not resend', description: error.message, variant: 'destructive' });
+      toast({ title: t('auth.couldNotResend'), description: error.message, variant: 'destructive' });
     } else {
-      toast({ title: 'Verification email sent!', description: 'Check your inbox for the link.' });
+      toast({ title: t('auth.verificationEmailSent'), description: t('auth.checkInboxForLink') });
     }
   };
 
@@ -73,13 +73,12 @@ export default function Login() {
       if (pendingInviteUrl) localStorage.setItem('pendingInviteUrl', pendingInviteUrl);
       if (pendingJoinPotId) localStorage.setItem('pending_join_pot_id', pendingJoinPotId);
 
-      // Check if error is about unverified email
       if (error.message.toLowerCase().includes('email not confirmed')) {
         setShowUnverified(true);
         return;
       }
 
-      toast({ title: 'Login failed', description: error.message, variant: 'destructive' });
+      toast({ title: t('auth.loginFailed'), description: error.message, variant: 'destructive' });
       return;
     }
 
@@ -123,13 +122,13 @@ export default function Login() {
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-foreground">Monto</h1>
+          <h1 className="text-3xl font-bold text-foreground">{t('common.monto')}</h1>
         </div>
 
         {isVerified && (
           <div className="flex items-center gap-2 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 rounded-xl px-4 py-3 mb-4 text-sm">
             <CheckCircle2 size={18} className="flex-shrink-0" />
-            <span>Email verified! You can now log in with your credentials.</span>
+            <span>{t('auth.emailVerified')}</span>
           </div>
         )}
 
@@ -137,7 +136,7 @@ export default function Login() {
           <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 rounded-xl px-4 py-3 mb-4 text-sm space-y-2">
             <div className="flex items-center gap-2">
               <AlertCircle size={18} className="flex-shrink-0" />
-              <span>Please verify your email first. Check your inbox for the verification link.</span>
+              <span>{t('auth.verifyEmail')}</span>
             </div>
             <Button
               variant="outline"
@@ -146,7 +145,7 @@ export default function Login() {
               disabled={resending}
               className="w-full text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700 hover:bg-amber-100 dark:hover:bg-amber-900/30"
             >
-              {resending ? 'Sending…' : 'Resend verification email'}
+              {resending ? t('auth.sending') : t('auth.resendVerification')}
             </Button>
           </div>
         )}
@@ -156,25 +155,25 @@ export default function Login() {
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('auth.email')}</Label>
               <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="h-11 rounded-xl" />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t('auth.password')}</Label>
               <Input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required className="h-11 rounded-xl" />
             </div>
             <div className="flex justify-end">
-              <Link to="/forgot-password" className="text-xs text-primary hover:underline">Forgot password?</Link>
+              <Link to="/forgot-password" className="text-xs text-primary hover:underline">{t('auth.forgotPassword')}</Link>
             </div>
             <Button type="submit" className="w-full h-11 rounded-xl mt-2" disabled={loading}>
-              {loading ? 'Signing in…' : 'Sign in'}
+              {loading ? t('auth.signingIn') : t('auth.signIn')}
             </Button>
           </form>
         </div>
 
         <p className="text-center text-sm text-muted-foreground mt-6">
-          Don't have an account?{' '}
-          <Link to="/signup" className="text-primary font-semibold hover:underline">Create one</Link>
+          {t('auth.noAccount')}{' '}
+          <Link to="/signup" className="text-primary font-semibold hover:underline">{t('auth.createOne')}</Link>
         </p>
       </div>
     </div>

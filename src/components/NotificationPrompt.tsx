@@ -5,6 +5,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Bell } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface NotificationPromptProps {
   open: boolean;
@@ -12,6 +13,7 @@ interface NotificationPromptProps {
 }
 
 export default function NotificationPrompt({ open, onClose }: NotificationPromptProps) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
 
   const handleAllow = async () => {
@@ -39,16 +41,16 @@ export default function NotificationPrompt({ open, onClose }: NotificationPrompt
             <Bell className="text-primary" size={28} />
           </div>
         </div>
-        <h2 className="text-lg font-bold text-foreground mb-2">Stay in the loop 🔔</h2>
+        <h2 className="text-lg font-bold text-foreground mb-2">{t('notifications.stayInLoop')}</h2>
         <p className="text-sm text-muted-foreground leading-relaxed mb-6">
-          Get notified when someone joins your pot, requests a withdrawal, or mentions you in chat.
+          {t('notifications.notificationDesc')}
         </p>
         <div className="space-y-2">
           <Button onClick={handleAllow} disabled={loading} className="w-full h-11 rounded-xl">
-            {loading ? 'Requesting…' : 'Allow notifications'}
+            {loading ? t('notifications.requesting') : t('notifications.allowNotifications')}
           </Button>
           <Button variant="ghost" onClick={handleDismiss} className="w-full h-11 rounded-xl text-muted-foreground">
-            Not now
+            {t('notifications.notNow')}
           </Button>
         </div>
       </DialogContent>

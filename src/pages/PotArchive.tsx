@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { usePots } from '@/hooks/usePots';
 import { supabase } from '@/integrations/supabase/client';
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat('en-IE', {
@@ -21,6 +22,7 @@ function formatDate(dateStr: string) {
 }
 
 export default function PotArchive() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data: pots, isLoading } = usePots();
@@ -67,7 +69,7 @@ export default function PotArchive() {
           >
             <ArrowLeft size={20} />
           </button>
-          <h1 className="font-bold text-foreground text-lg">Pot Archive 📦</h1>
+          <h1 className="font-bold text-foreground text-lg">{t('archive.title')}</h1>
         </div>
       </div>
 
@@ -79,9 +81,9 @@ export default function PotArchive() {
         ) : closedPots.length === 0 ? (
           <div className="bg-card rounded-2xl border border-border p-12 text-center shadow-sm">
             <span className="text-4xl block mb-3">📦</span>
-            <h2 className="font-bold text-foreground text-lg mb-2">No closed pots</h2>
+            <h2 className="font-bold text-foreground text-lg mb-2">{t('archive.noClosedPots')}</h2>
             <p className="text-sm text-muted-foreground">
-              When pots are closed, they'll appear here for your records.
+              {t('archive.noClosedPotsDesc')}
             </p>
           </div>
         ) : (
@@ -103,11 +105,11 @@ export default function PotArchive() {
                     <div className="flex items-center gap-2 mb-0.5">
                       <span className="font-bold text-foreground truncate">{pot.name}</span>
                       <span className="flex-shrink-0 text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-semibold">
-                        Closed
+                        {t('archive.closed')}
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      Closed by creator • Final balance: {formatCurrency(pot.balance ?? 0, pot.currency ?? 'EUR')}
+                      {t('archive.closedByCreator')} • {t('archive.finalBalance')}: {formatCurrency(pot.balance ?? 0, pot.currency ?? 'EUR')}
                     </p>
                   </div>
                   {isExpanded ? (
@@ -120,21 +122,21 @@ export default function PotArchive() {
                 {isExpanded && (
                   <div className="border-t border-border px-5 py-4 space-y-2">
                     <p className="text-xs text-muted-foreground font-semibold mb-2">
-                      {isCreator ? 'All transactions' : 'Your contributions'}
+                      {isCreator ? t('archive.allTransactions') : t('archive.yourContributions')}
                     </p>
                     {loadingTx === pot.id ? (
                       <div className="flex justify-center py-4">
                         <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                       </div>
                     ) : txList.length === 0 ? (
-                      <p className="text-sm text-muted-foreground text-center py-4">No transactions found</p>
+                      <p className="text-sm text-muted-foreground text-center py-4">{t('archive.noTransactions')}</p>
                     ) : (
                       txList.map((tx: any) => (
                         <div key={tx.id} className="flex items-center gap-3 py-2">
                           <span className="text-sm">{Number(tx.amount) < 0 ? '💸' : '💳'}</span>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm text-foreground">
-                              {Number(tx.amount) < 0 ? 'Withdrawal' : 'Deposit'}
+                              {Number(tx.amount) < 0 ? t('potDetail.withdrawal') : t('potDetail.deposit')}
                             </p>
                             <p className="text-[11px] text-muted-foreground">{formatDate(tx.created_at)}</p>
                           </div>

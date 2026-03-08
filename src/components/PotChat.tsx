@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from 'react-i18next';
 
 interface Member {
   user_id: string;
@@ -36,18 +37,19 @@ function timeLabel(dateStr: string) {
   return d.toLocaleTimeString('en-IE', { hour: '2-digit', minute: '2-digit' });
 }
 
-function dateDivider(dateStr: string) {
+function dateDivider(dateStr: string, t: (key: string) => string) {
   const d = new Date(dateStr);
   const today = new Date();
   const yesterday = new Date(today);
   yesterday.setDate(today.getDate() - 1);
 
-  if (d.toDateString() === today.toDateString()) return 'Today';
-  if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
+  if (d.toDateString() === today.toDateString()) return t('common.today');
+  if (d.toDateString() === yesterday.toDateString()) return t('common.yesterday');
   return d.toLocaleDateString('en-IE', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 export default function PotChat({ potId, potName, potEmoji, members, onClose }: PotChatProps) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [text, setText] = useState('');
@@ -64,7 +66,6 @@ export default function PotChat({ potId, potName, potEmoji, members, onClose }: 
     profileMap.current[m.user_id] = m.profiles;
   });
 
-  // Load messages
   useEffect(() => {
     const load = async () => {
       const { data } = await supabase
@@ -78,7 +79,6 @@ export default function PotChat({ potId, potName, potEmoji, members, onClose }: 
     load();
   }, [potId]);
 
-  // Realtime subscription
   useEffect(() => {
     const channel = supabase
       .channel(`pot-chat-${potId}`)
@@ -93,12 +93,10 @@ export default function PotChat({ potId, potName, potEmoji, members, onClose }: 
     return () => { supabase.removeChannel(channel); };
   }, [potId]);
 
-  // Scroll to bottom on new messages
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Mark as read on open and on new messages
   useEffect(() => {
     if (!user) return;
     const upsertRead = async () => {
@@ -112,7 +110,6 @@ export default function PotChat({ potId, potName, potEmoji, members, onClose }: 
     upsertRead();
   }, [potId, user, messages.length]);
 
-  // Close mention popup on outside click
   useEffect(() => {
     if (mentionQuery === null) return;
     const handleClickOutside = (e: MouseEvent) => {
@@ -127,7 +124,6 @@ export default function PotChat({ potId, potName, potEmoji, members, onClose }: 
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [mentionQuery]);
 
-  // Mention filtering — show all members (except self) when query is empty or filter by name
   const otherMembers = members.filter((m) => m.user_id !== user?.id);
   const filteredMentions = mentionQuery !== null
     ? otherMembers.filter((m) =>
@@ -137,7 +133,6 @@ export default function PotChat({ potId, potName, potEmoji, members, onClose }: 
 
   const handleTextChange = (val: string) => {
     setText(val);
-    // Detect @mention — match @ followed by optional letters/spaces at end of text before cursor
     const cursorPos = inputRef.current?.selectionStart ?? val.length;
     const textBeforeCursor = val.slice(0, cursorPos);
     const mentionMatch = textBeforeCursor.match(/@([a-zA-Z\s]*)$/);
@@ -176,7 +171,6 @@ export default function PotChat({ potId, potName, potEmoji, members, onClose }: 
 
     if (!error) {
       setText('');
-      // Create notifications for mentioned users
       const mentionRegex = /@([\w\s]+?)(?=\s@|\s[^@]|$)/g;
       let match;
       const notified = new Set<string>();
@@ -201,7 +195,6 @@ export default function PotChat({ potId, potName, potEmoji, members, onClose }: 
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    // Escape closes mention popup
     if (e.key === 'Escape' && mentionQuery !== null) {
       e.preventDefault();
       setMentionQuery(null);
@@ -227,7 +220,6 @@ export default function PotChat({ potId, potName, potEmoji, members, onClose }: 
     }
   };
 
-  // Render message content with @mentions highlighted
   const renderContent = (content: string) => {
     const parts = content.split(/(@[\w\s]+?)(?=\s@|\s[^@]|$)/g);
     return parts.map((part, i) => {
@@ -246,22 +238,20 @@ export default function PotChat({ potId, potName, potEmoji, members, onClose }: 
 
   return (
     <div className="fixed inset-0 z-50 bg-background flex flex-col">
-      {/* Header */}
       <div className="bg-card border-b border-border px-4 py-3 flex items-center gap-3 shrink-0">
         <button onClick={onClose} className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:bg-secondary transition-colors">
           <ArrowLeft size={20} />
         </button>
         <div className="flex-1 min-w-0">
-          <h2 className="font-bold text-foreground text-base">{potEmoji ? `${potEmoji} ` : ''}Chat</h2>
-          <p className="text-xs text-muted-foreground">{members.length} members</p>
+          <h2 className="font-bold text-foreground text-base">{potEmoji ? `${potEmoji} ` : ''}{t('chat.title')}</h2>
+          <p className="text-xs text-muted-foreground">{members.length} {t('common.members')}</p>
         </div>
       </div>
 
-      {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4" ref={scrollRef}>
         {messages.length === 0 && (
           <div className="flex items-center justify-center h-full">
-            <p className="text-sm text-muted-foreground">No messages yet. Say hello! 👋</p>
+            <p className="text-sm text-muted-foreground">{t('chat.noMessages')}</p>
           </div>
         )}
         {messages.map((msg) => {
@@ -271,7 +261,7 @@ export default function PotChat({ potId, potName, potEmoji, members, onClose }: 
           const initial = name.charAt(0).toUpperCase();
           const color = profile?.avatar_color ?? '#3b82f6';
 
-          const msgDate = dateDivider(msg.created_at);
+          const msgDate = dateDivider(msg.created_at, t);
           let showDate = false;
           if (msgDate !== lastDate) {
             lastDate = msgDate;
@@ -322,7 +312,6 @@ export default function PotChat({ potId, potName, potEmoji, members, onClose }: 
         <div ref={bottomRef} />
       </div>
 
-      {/* Mention popup */}
       {mentionQuery !== null && filteredMentions.length > 0 && (
         <div className="px-4 pb-1" ref={mentionRef}>
           <div className="bg-card border border-border rounded-xl shadow-lg p-1 max-h-40 overflow-y-auto">
@@ -352,14 +341,13 @@ export default function PotChat({ potId, potName, potEmoji, members, onClose }: 
         </div>
       )}
 
-      {/* Input */}
       <div className="border-t border-border bg-card px-4 py-3 flex items-end gap-2 shrink-0">
         <textarea
           ref={inputRef}
           value={text}
           onChange={(e) => handleTextChange(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Type a message..."
+          placeholder={t('chat.typePlaceholder')}
           rows={1}
           className="flex-1 resize-none bg-muted rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring max-h-24"
           style={{ minHeight: 40 }}

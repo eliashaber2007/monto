@@ -6,44 +6,16 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-
-const FAQ_ITEMS = [
-  {
-    q: "Where does my money go when I add funds?",
-    a: "When you add money to a pot, it is held securely by Stripe, a global payments platform trusted by companies like Apple, Uber and Amazon. Your funds are protected and only accessible through Monto.",
-  },
-  {
-    q: "How do withdrawals work?",
-    a: "The pot creator can withdraw funds at any time. Depending on the pot settings, members can also request withdrawals which the creator approves or rejects. Once approved, the money is sent directly to the creator's connected bank account, usually within 1–5 business days.",
-  },
-  {
-    q: "Are there any fees?",
-    a: "Monto charges no fees for adding money to a pot. Standard Stripe processing fees may apply on transactions. Withdrawals to your bank account are free.",
-  },
-  {
-    q: "Is my money safe?",
-    a: "Yes. All payments are processed by Stripe, which is PCI DSS compliant and uses bank-level encryption. Monto never stores your card or bank details directly.",
-  },
-  {
-    q: "How do I connect my bank account?",
-    a: 'Go to your Profile page and tap "Payout Account". Follow the steps to enter your details and connect your bank account via our secure onboarding form. You must connect a bank account before you can receive withdrawals.',
-  },
-  {
-    q: "Can I leave a pot?",
-    a: "Yes, you can leave any pot you are a member of at any time. If you are the creator, you can close the pot entirely, which will trigger a final withdrawal of remaining funds.",
-  },
-  {
-    q: "Who can invite people to a pot?",
-    a: "Both the pot creator and members can share the invite link to bring new people into a pot.",
-  },
-  {
-    q: "What happens if a withdrawal is rejected?",
-    a: "If the creator rejects a withdrawal request, no money is moved and the requester receives a notification letting them know.",
-  },
-];
+import { useTranslation } from 'react-i18next';
 
 export default function FAQ() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+
+  const FAQ_ITEMS = Array.from({ length: 8 }, (_, i) => ({
+    q: t(`faq.q${i + 1}`),
+    a: t(`faq.a${i + 1}`),
+  }));
 
   return (
     <div className="min-h-screen bg-background">
@@ -55,7 +27,7 @@ export default function FAQ() {
           >
             <ArrowLeft size={20} />
           </button>
-          <h1 className="font-bold text-foreground text-lg">FAQ</h1>
+          <h1 className="font-bold text-foreground text-lg">{t('faq.title')}</h1>
         </div>
       </div>
 

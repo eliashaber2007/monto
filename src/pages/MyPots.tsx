@@ -6,9 +6,9 @@ import { useProfile, usePots } from '@/hooks/usePots';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import CreatePotModal from '@/components/CreatePotModal';
-
 import NotificationBell from '@/components/NotificationBell';
 import NotificationPrompt from '@/components/NotificationPrompt';
+import { useTranslation } from 'react-i18next';
 
 function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat('en-IE', {
@@ -54,15 +54,8 @@ function LiquidBubble({ balance, peakBalance }: { balance: number; peakBalance: 
   );
 }
 
-function getGreeting(name: string) {
-  const hour = new Date().getHours();
-  if (hour >= 6 && hour < 12) return `Good morning, ${name}! ☀️`;
-  if (hour >= 12 && hour < 18) return `Good afternoon, ${name}! 👋`;
-  if (hour >= 18) return `Good evening, ${name}! 🌙`;
-  return `Good night, ${name}! 🌙`;
-}
-
 export default function MyPots() {
+  const { t } = useTranslation();
   const { signOut, user } = useAuth();
   const { data: profile } = useProfile();
   const { data: pots, isLoading } = usePots();
@@ -72,7 +65,6 @@ export default function MyPots() {
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
 
-  // Handle cancelled pot creation redirect
   useEffect(() => {
     if (searchParams.get('pot_cancelled') === 'true') {
       localStorage.removeItem('pendingPotData');
@@ -84,14 +76,12 @@ export default function MyPots() {
 
   const hasSeenOnboarding = (profile as any)?.has_seen_onboarding ?? true;
 
-  // Redirect to full-screen onboarding for first-time users
   useEffect(() => {
     if (profile && !hasSeenOnboarding) {
       navigate('/onboarding', { replace: true });
     }
   }, [profile, hasSeenOnboarding, navigate]);
 
-  // Filter out closed pots, then sort: creators first, then by recency
   const activePots = (pots ?? [])
     .filter((p: any) => p.status !== 'closed')
     .sort((a: any, b: any) => {
@@ -101,9 +91,16 @@ export default function MyPots() {
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
 
+  const getGreeting = (name: string) => {
+    const hour = new Date().getHours();
+    if (hour >= 6 && hour < 12) return t('myPots.goodMorning', { name });
+    if (hour >= 12 && hour < 18) return t('myPots.goodAfternoon', { name });
+    if (hour >= 18) return t('myPots.goodEvening', { name });
+    return t('myPots.goodNight', { name });
+  };
+
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Header */}
       <div className="bg-card border-b border-border sticky top-0 z-20">
         <div className="max-w-lg mx-auto px-5 py-4 flex items-center justify-between">
            <div className="flex items-center gap-3">
@@ -120,7 +117,7 @@ export default function MyPots() {
                   </span>
                 )}
               </button>
-              <span className="font-bold text-foreground text-lg">My Pots 🏦</span>
+              <span className="font-bold text-foreground text-lg">{t('myPots.title')}</span>
           </div>
           <div className="flex items-center gap-1">
             <NotificationBell />
@@ -147,7 +144,7 @@ export default function MyPots() {
         </h1>
         {activePots.length > 0 && (
           <p className="text-sm text-muted-foreground mb-3">
-            💰 You've got {activePots.length} active {activePots.length === 1 ? 'pot' : 'pots'}
+            {t(activePots.length === 1 ? 'myPots.activePots' : 'myPots.activePots_plural', { count: activePots.length })}
           </p>
         )}
 
@@ -157,16 +154,16 @@ export default function MyPots() {
           </div>
         ) : activePots.length === 0 ? (
           <div className="bg-card rounded-2xl border border-border p-12 text-center shadow-sm">
-            <h2 className="font-bold text-foreground text-lg mb-2">No pots yet!</h2>
+            <h2 className="font-bold text-foreground text-lg mb-2">{t('myPots.noPots')}</h2>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xs mx-auto">
-              Create your first pot with your friends. It only takes a minute! ✨
+              {t('myPots.noPotsDesc')}
             </p>
             <button
               onClick={() => setShowCreate(true)}
               className="mt-6 inline-flex items-center gap-2 bg-primary text-primary-foreground font-semibold px-6 py-3 rounded-xl hover:bg-primary/90 transition-colors"
             >
               <Sparkles size={16} />
-              Create my first pot
+              {t('myPots.createFirstPot')}
             </button>
           </div>
         ) : (
@@ -184,11 +181,11 @@ export default function MyPots() {
                     {pot.emoji && <span className="text-lg flex-shrink-0">{pot.emoji}</span>}
                     <span className="font-bold text-foreground truncate text-lg">{pot.name}</span>
                     <span className="flex-shrink-0 text-[11px] px-2 py-0.5 rounded-full bg-accent text-primary font-semibold border border-primary/20">
-                      {pot.role === 'creator' ? '👑 Creator' : '👤 Member'}
+                      {pot.role === 'creator' ? `👑 ${t('common.creator')}` : `👤 ${t('common.member')}`}
                     </span>
                   </div>
                   <div className="text-xs text-muted-foreground mb-1">
-                    {pot.memberCount} {pot.memberCount === 1 ? 'member' : 'members'} 🤝
+                    {pot.memberCount} {pot.memberCount === 1 ? t('common.member') : t('common.members')} 🤝
                   </div>
                   <div className="text-primary font-bold text-base">
                     {formatCurrency(pot.balance ?? 0, pot.currency ?? 'EUR')}
@@ -201,22 +198,20 @@ export default function MyPots() {
           </div>
         )}
 
-        {/* Trust footer */}
         <div className="mt-10 mb-4 flex flex-col items-center gap-1.5 text-muted-foreground/60">
           <div className="flex items-center gap-1.5 text-[11px] font-medium">
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            <span>Secured by</span>
+            <span>{t('common.securedBy')}</span>
             <img src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg" alt="Stripe" className="h-[14px] w-auto opacity-50" />
           </div>
-          <span className="text-[10px]">Your money and data is protected</span>
+          <span className="text-[10px]">{t('common.moneyProtected')}</span>
         </div>
       </div>
 
-      {/* Floating + button */}
       <button
         onClick={() => setShowCreate(true)}
         className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-primary shadow-lg flex items-center justify-center text-primary-foreground hover:bg-primary/90 transition-all duration-150 active:scale-95 text-2xl font-light"
-        aria-label="Create pot"
+        aria-label={t('myPots.createPot')}
         style={{ boxShadow: '0 8px 24px rgba(37,99,235,0.35)' }}
       >
         +
