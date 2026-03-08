@@ -10,8 +10,15 @@ import SocialLoginButtons from '@/components/SocialLoginButtons';
 import { CheckCircle2, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+const LANGUAGES = [
+  { code: 'en', flag: '🇬🇧' },
+  { code: 'fr', flag: '🇫🇷' },
+  { code: 'de', flag: '🇩🇪' },
+  { code: 'es', flag: '🇪🇸' },
+];
+
 export default function Login() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -121,6 +128,21 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
+        <div className="flex justify-center gap-1 mb-4">
+          {LANGUAGES.map((lang) => (
+            <button
+              key={lang.code}
+              onClick={() => i18n.changeLanguage(lang.code)}
+              className={`text-2xl p-1.5 rounded-lg transition-all ${
+                i18n.language === lang.code
+                  ? 'bg-primary/10 ring-2 ring-primary'
+                  : 'hover:bg-muted'
+              }`}
+            >
+              {lang.flag}
+            </button>
+          ))}
+        </div>
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-foreground">{t('common.monto')}</h1>
         </div>
