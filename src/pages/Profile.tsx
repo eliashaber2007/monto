@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Camera, Save, Eye, EyeOff, Landmark, CheckCircle2, Moon, Sun, BookOpen } from 'lucide-react';
+import { ArrowLeft, Camera, Save, Eye, EyeOff, Landmark, CheckCircle2, Moon, Sun, BookOpen, RefreshCw } from 'lucide-react';
 
 import StripeOnboardingForm from '@/components/StripeOnboardingForm';
 import { supabase } from '@/integrations/supabase/client';
@@ -83,6 +83,7 @@ export default function Profile() {
 
   // Stripe Connect
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showChangeBankForm, setShowChangeBankForm] = useState(false);
 
   // Tutorial modal
   
@@ -424,7 +425,38 @@ export default function Profile() {
           </Button>
         </div>
 
-        {/* How Monto Works & FAQ */}
+        {/* Change Bank Account — only visible if already connected */}
+        {stripeOnboardingComplete && (
+          <div className="bg-card rounded-2xl border border-border p-6 space-y-4">
+            <h2 className="font-bold text-foreground text-base">Change Bank Account</h2>
+            {showChangeBankForm ? (
+              <StripeOnboardingForm
+                mode="update"
+                onComplete={() => {
+                  setShowChangeBankForm(false);
+                  queryClient.invalidateQueries({ queryKey: ['profile'] });
+                  queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
+                }}
+                onCancel={() => setShowChangeBankForm(false)}
+              />
+            ) : (
+              <>
+                <p className="text-sm text-muted-foreground">
+                  Update your bank account details for future payouts.
+                </p>
+                <Button
+                  onClick={() => setShowChangeBankForm(true)}
+                  variant="outline"
+                  className="w-full h-11 rounded-xl font-semibold"
+                >
+                  <RefreshCw size={15} className="mr-1.5" />
+                  Change bank account
+                </Button>
+              </>
+            )}
+          </div>
+        )}
+
         <div className="bg-card rounded-2xl border border-border divide-y divide-border">
           <button
             onClick={() => navigate('/onboarding?tutorial=true')}

@@ -29,9 +29,10 @@ const COUNTRIES = [
 interface Props {
   onComplete: () => void;
   onCancel: () => void;
+  mode?: 'connect' | 'update';
 }
 
-export default function StripeOnboardingForm({ onComplete, onCancel }: Props) {
+export default function StripeOnboardingForm({ onComplete, onCancel, mode = 'connect' }: Props) {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -122,7 +123,7 @@ export default function StripeOnboardingForm({ onComplete, onCancel }: Props) {
 
       await queryClient.invalidateQueries({ queryKey: ['profile'] });
       await queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
-      toast({ title: 'Bank account connected! 🎉' });
+      toast({ title: mode === 'update' ? 'Bank account updated successfully ✅' : 'Bank account connected! 🎉' });
       onComplete();
     } catch (err: any) {
       toast({ title: 'Error', description: err.message, variant: 'destructive' });
@@ -254,7 +255,7 @@ export default function StripeOnboardingForm({ onComplete, onCancel }: Props) {
             onClick={handleSubmit}
           >
             <Landmark size={15} className="mr-1.5" />
-            {submitting ? 'Connecting…' : 'Connect Bank'}
+            {submitting ? (mode === 'update' ? 'Updating…' : 'Connecting…') : (mode === 'update' ? 'Update Bank' : 'Connect Bank')}
           </Button>
         )}
       </div>
