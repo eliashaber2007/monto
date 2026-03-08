@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 
 const QUICK_AMOUNTS = [10, 25, 50, 100];
 
@@ -28,6 +29,7 @@ export default function AddFundsModal({
   potName,
   currency,
 }: AddFundsModalProps) {
+  const { t } = useTranslation();
   const [selected, setSelected] = useState<number | null>(null);
   const [custom, setCustom] = useState('');
   const [loading, setLoading] = useState(false);
@@ -37,16 +39,13 @@ export default function AddFundsModal({
 
   const handleConfirm = async () => {
     if (!amount || amount <= 0) {
-      toast({ title: 'Invalid amount', description: 'Please enter an amount greater than 0.', variant: 'destructive' });
+      toast({ title: t('addFunds.invalidAmount'), description: t('addFunds.invalidAmountDesc'), variant: 'destructive' });
       return;
     }
 
     setLoading(true);
 
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData.session?.access_token;
-
       const res = await supabase.functions.invoke('create-checkout-session', {
         body: { pot_id: potId, amount_cents: Math.round(amount * 100) },
       });
@@ -59,7 +58,7 @@ export default function AddFundsModal({
       }
     } catch (err: any) {
       setLoading(false);
-      toast({ title: 'Error', description: err.message ?? 'Could not start checkout.', variant: 'destructive' });
+      toast({ title: t('common.error'), description: err.message ?? 'Could not start checkout.', variant: 'destructive' });
     }
   };
 
@@ -67,13 +66,12 @@ export default function AddFundsModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-sm rounded-2xl">
         <DialogHeader>
-          <DialogTitle>Add Funds to "{potName}"</DialogTitle>
+          <DialogTitle>{t('addFunds.title', { name: potName })}</DialogTitle>
         </DialogHeader>
 
         <div className="mt-2 space-y-5">
-          {/* Quick amounts */}
           <div>
-            <Label className="mb-2 block">Choose amount</Label>
+            <Label className="mb-2 block">{t('addFunds.chooseAmount')}</Label>
             <div className="grid grid-cols-4 gap-2">
               {QUICK_AMOUNTS.map((a) => (
                 <button
@@ -91,9 +89,8 @@ export default function AddFundsModal({
             </div>
           </div>
 
-          {/* Custom amount */}
           <div className="space-y-1.5">
-            <Label htmlFor="customAmount">Or enter custom amount (€)</Label>
+            <Label htmlFor="customAmount">{t('addFunds.customAmount')}</Label>
             <Input
               id="customAmount"
               type="number"
@@ -106,10 +103,9 @@ export default function AddFundsModal({
             />
           </div>
 
-          {/* Summary */}
           {amount && amount > 0 && (
             <div className="bg-surface rounded-xl p-3 flex justify-between text-sm">
-              <span className="text-muted-foreground">You'll add</span>
+              <span className="text-muted-foreground">{t('addFunds.youllAdd')}</span>
               <span className="font-bold text-primary">
                 {new Intl.NumberFormat('en-IE', { style: 'currency', currency }).format(amount)}
               </span>
@@ -118,14 +114,14 @@ export default function AddFundsModal({
 
           <div className="flex gap-3">
             <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               className="flex-1"
               onClick={handleConfirm}
               disabled={loading || !amount || amount <= 0}
             >
-              {loading ? 'Redirecting…' : 'Pay with Stripe'}
+              {loading ? t('addFunds.redirecting') : t('addFunds.payWithStripe')}
             </Button>
           </div>
         </div>
