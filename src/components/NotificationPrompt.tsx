@@ -42,7 +42,7 @@ export default function NotificationPrompt({ open, onClose }: NotificationPrompt
           const registration = await navigator.serviceWorker.register('/sw.js');
           await navigator.serviceWorker.ready;
 
-          const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+          const vapidPublicKey = VAPID_PUBLIC_KEY;
           if (vapidPublicKey) {
             const subscription = await registration.pushManager.subscribe({
               userVisibleOnly: true,
