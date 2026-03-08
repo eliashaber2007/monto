@@ -349,6 +349,7 @@ export default function WithdrawalExpenses() {
                   <input type="file" accept="image/*,.pdf" className="hidden" onChange={handleFileChange} />
                 </label>
               )}
+              <p className="text-[11px] text-destructive mt-1">No receipt? Add a written justification in the description field.</p>
             </div>
             <Button
               className="w-full h-11 rounded-xl font-semibold"
