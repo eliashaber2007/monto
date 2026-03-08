@@ -147,6 +147,19 @@ async function handleNotification(payload: EmailPayload) {
       }
       break;
     }
+
+    case 'expense_reminder': {
+      if (!payload.user_id) break;
+      const recipientEmail = await getUserEmail(payload.user_id);
+      if (!recipientEmail) break;
+      const creatorName = payload.creator_name || 'The pot creator';
+      await sendEmail(
+        recipientEmail,
+        `Justify your withdrawal in ${pot.name}`,
+        `${creatorName} is requesting you to justify your withdrawal of <strong>${formatCurrency(payload.amount ?? 0, currency)}</strong> from <strong>${pot.name}</strong>. Please add your expenses and receipts.`,
+      );
+      break;
+    }
   }
 }
 

@@ -693,6 +693,60 @@ export default function PotDetail() {
                                       View justified expenses
                                     </button>
                                   ) : null}
+                                  {/* Send reminder button for creator when expenses not fully justified */}
+                                  {isCreator && !isMyRequest && w.status === 'approved' && (withdrawalExpenses[w.id] ?? 0) < Number(w.amount) && (
+                                    <button
+                                      onClick={async () => {
+                                        setSendingReminder(w.id);
+                                        try {
+                                          const creatorProfile = getMemberProfile(user!.id);
+                                          const creatorName = creatorProfile?.first_name || 'The pot creator';
+                                          const message = `${pot.name}: ${creatorName} is requesting you to justify your withdrawal of ${formatCurrency(Number(w.amount), currency)}. Please add your expenses and receipts.`;
+
+                                          // Insert notification
+                                          await supabase.from('notifications').insert({
+                                            user_id: w.user_id,
+                                            pot_id: pot.id,
+                                            type: 'expense_reminder',
+                                            message,
+                                          } as any);
+
+                                          // Send email via edge function
+                                          const { data: sessionData } = await supabase.auth.getSession();
+                                          const token = sessionData?.session?.access_token;
+                                          await fetch(
+                                            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email-notification`,
+                                            {
+                                              method: 'POST',
+                                              headers: {
+                                                'Content-Type': 'application/json',
+                                                Authorization: `Bearer ${token}`,
+                                                apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+                                              },
+                                              body: JSON.stringify({
+                                                type: 'expense_reminder',
+                                                pot_id: pot.id,
+                                                user_id: w.user_id,
+                                                amount: Number(w.amount),
+                                                creator_name: creatorName,
+                                              }),
+                                            }
+                                          );
+
+                                          toast({ title: 'Reminder sent 📩' });
+                                        } catch (err: any) {
+                                          toast({ title: 'Error', description: err.message, variant: 'destructive' });
+                                        } finally {
+                                          setSendingReminder(null);
+                                        }
+                                      }}
+                                      disabled={sendingReminder === w.id}
+                                      className="text-xs flex items-center gap-1.5 text-warning font-semibold bg-warning/10 border border-warning/20 px-3 py-1.5 rounded-lg hover:bg-warning/20 transition-colors mt-0.5 disabled:opacity-50"
+                                    >
+                                      <Bell size={12} />
+                                      {sendingReminder === w.id ? 'Sending…' : 'Send reminder'}
+                                    </button>
+                                  )}
                                 </div>
                               </div>
 
