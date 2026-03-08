@@ -182,12 +182,35 @@ export default function PotChat({ potId, potName, potEmoji, members, onClose }: 
         if (mentionedMember && mentionedMember.user_id !== user.id && !notified.has(mentionedMember.user_id)) {
           notified.add(mentionedMember.user_id);
           const senderName = profileMap.current[user.id]?.first_name ?? 'Someone';
+          // In-app notification
           await supabase.from('notifications').insert({
             user_id: mentionedMember.user_id,
             pot_id: potId,
             type: 'mention',
             message: `${senderName} mentioned you in ${potName}`,
           });
+          // Push notification via edge function
+          try {
+            const { data: sessionData } = await supabase.auth.getSession();
+            const token = sessionData?.session?.access_token;
+            fetch(
+              `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email-notification`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${token}`,
+                  apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+                },
+                body: JSON.stringify({
+                  type: 'mention',
+                  pot_id: potId,
+                  user_id: mentionedMember.user_id,
+                  creator_name: senderName,
+                }),
+              }
+            );
+          } catch { /* fire and forget */ }
         }
       }
     }
