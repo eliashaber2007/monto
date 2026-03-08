@@ -44,11 +44,12 @@ function formatCurrency(amount: number, currency = 'EUR') {
 }
 
 interface EmailPayload {
-  type: 'member_joined' | 'withdrawal_requested' | 'withdrawal_approved' | 'funds_added' | 'pot_closed';
+  type: 'member_joined' | 'withdrawal_requested' | 'withdrawal_approved' | 'funds_added' | 'pot_closed' | 'expense_reminder';
   pot_id: string;
-  user_id?: string;       // the actor (who joined, who deposited, etc.)
+  user_id?: string;
   amount?: number;
   currency?: string;
+  creator_name?: string;
 }
 
 async function sendEmail(to: string, subject: string, body: string) {
