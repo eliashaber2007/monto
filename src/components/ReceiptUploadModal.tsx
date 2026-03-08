@@ -7,6 +7,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Camera, ImagePlus, Clock, CheckCircle2, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   open: boolean;
@@ -18,6 +19,7 @@ interface Props {
 }
 
 export default function ReceiptUploadModal({ open, onOpenChange, potId, transactionId, windowDays, onUploaded }: Props) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { toast } = useToast();
   const [preview, setPreview] = useState<string | null>(null);
@@ -40,35 +42,20 @@ export default function ReceiptUploadModal({ open, onOpenChange, potId, transact
     try {
       const ext = file.name.split('.').pop() ?? 'jpg';
       const path = `${user.id}/${potId}/${transactionId}.${ext}`;
-
-      const { error: storageError } = await supabase.storage
-        .from('receipts')
-        .upload(path, file, { upsert: true });
-
+      const { error: storageError } = await supabase.storage.from('receipts').upload(path, file, { upsert: true });
       if (storageError) throw storageError;
-
       const { data: urlData } = supabase.storage.from('receipts').getPublicUrl(path);
       const imageUrl = urlData?.publicUrl ?? path;
-
       const deadline = new Date();
       deadline.setDate(deadline.getDate() + windowDays);
-
       const { error: insertError } = await supabase.from('receipts').insert({
-        pot_id: potId,
-        user_id: user.id,
-        transaction_id: transactionId,
-        image_url: imageUrl,
-        status: 'submitted',
-        submitted_at: new Date().toISOString(),
-        deadline: deadline.toISOString(),
+        pot_id: potId, user_id: user.id, transaction_id: transactionId, image_url: imageUrl, status: 'submitted', submitted_at: new Date().toISOString(), deadline: deadline.toISOString(),
       });
-
       if (insertError) throw insertError;
-
-      toast({ title: 'Receipt submitted!', description: 'The pot creator will review it shortly.' });
+      toast({ title: t('receipt.submitted'), description: t('receipt.submittedDesc') });
       onUploaded();
     } catch (err: any) {
-      toast({ title: 'Upload failed', description: err.message, variant: 'destructive' });
+      toast({ title: t('profile.uploadFailed'), description: err.message, variant: 'destructive' });
     } finally {
       setUploading(false);
     }
@@ -83,42 +70,30 @@ export default function ReceiptUploadModal({ open, onOpenChange, potId, transact
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Clock size={16} className="text-warning" />
-              Upload receipt within {windowDays} days
+              {t('receipt.uploadTitle', { days: windowDays })}
             </DialogTitle>
           </DialogHeader>
 
           {!preview ? (
             <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">
-                This pot requires a receipt for each contribution. Choose how to upload yours.
-              </p>
-
-              {/* Camera button */}
-              <button
-                onClick={() => cameraRef.current?.click()}
-                className="w-full flex items-center gap-4 p-4 rounded-xl border border-border bg-card hover:border-primary/40 hover:bg-accent transition-all text-left"
-              >
+              <p className="text-sm text-muted-foreground">{t('receipt.requiresReceipt')}</p>
+              <button onClick={() => cameraRef.current?.click()} className="w-full flex items-center gap-4 p-4 rounded-xl border border-border bg-card hover:border-primary/40 hover:bg-accent transition-all text-left">
                 <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
                   <Camera size={18} className="text-primary-foreground" />
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-foreground">Open Camera</div>
-                  <div className="text-xs text-muted-foreground">Take a photo with your device</div>
+                  <div className="text-sm font-semibold text-foreground">{t('receipt.openCamera')}</div>
+                  <div className="text-xs text-muted-foreground">{t('receipt.takePhoto')}</div>
                 </div>
               </button>
               <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFile} />
-
-              {/* Gallery button */}
-              <button
-                onClick={() => fileRef.current?.click()}
-                className="w-full flex items-center gap-4 p-4 rounded-xl border border-border bg-card hover:border-primary/40 hover:bg-accent transition-all text-left"
-              >
+              <button onClick={() => fileRef.current?.click()} className="w-full flex items-center gap-4 p-4 rounded-xl border border-border bg-card hover:border-primary/40 hover:bg-accent transition-all text-left">
                 <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center">
                   <ImagePlus size={18} className="text-muted-foreground" />
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-foreground">Upload from gallery</div>
-                  <div className="text-xs text-muted-foreground">Choose an existing image</div>
+                  <div className="text-sm font-semibold text-foreground">{t('receipt.uploadFromGallery')}</div>
+                  <div className="text-xs text-muted-foreground">{t('receipt.chooseExisting')}</div>
                 </div>
               </button>
               <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
@@ -127,22 +102,15 @@ export default function ReceiptUploadModal({ open, onOpenChange, potId, transact
             <div className="space-y-4">
               <div className="relative rounded-xl overflow-hidden border border-border">
                 <img src={preview} alt="Receipt preview" className="w-full object-contain max-h-64" />
-                <button
-                  onClick={clear}
-                  className="absolute top-2 right-2 w-7 h-7 bg-foreground/70 rounded-full flex items-center justify-center text-white hover:bg-foreground transition-colors"
-                >
+                <button onClick={clear} className="absolute top-2 right-2 w-7 h-7 bg-foreground/70 rounded-full flex items-center justify-center text-white hover:bg-foreground transition-colors">
                   <X size={14} />
                 </button>
               </div>
-              <p className="text-sm text-muted-foreground text-center">Looks good? Confirm to submit.</p>
+              <p className="text-sm text-muted-foreground text-center">{t('receipt.looksGood')}</p>
               <div className="flex gap-3">
-                <Button variant="outline" className="flex-1 h-11 rounded-xl" onClick={clear}>
-                  Retake
-                </Button>
+                <Button variant="outline" className="flex-1 h-11 rounded-xl" onClick={clear}>{t('receipt.retake')}</Button>
                 <Button className="flex-1 h-11 rounded-xl" onClick={handleSubmit} disabled={uploading}>
-                  {uploading ? 'Uploading…' : (
-                    <><CheckCircle2 size={15} className="mr-1.5" />Confirm</>
-                  )}
+                  {uploading ? t('receipt.uploading') : (<><CheckCircle2 size={15} className="mr-1.5" />{t('common.confirm')}</>)}
                 </Button>
               </div>
             </div>

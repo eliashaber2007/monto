@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Camera, Save, Eye, EyeOff, Landmark, CheckCircle2, Moon, Sun, BookOpen, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Camera, Save, Eye, EyeOff, Landmark, CheckCircle2, Moon, Sun, BookOpen, RefreshCw, Globe } from 'lucide-react';
 
 import StripeOnboardingForm from '@/components/StripeOnboardingForm';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,11 +12,19 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useDarkMode } from '@/contexts/DarkModeContext';
+import { useTranslation } from 'react-i18next';
 
 const AVATAR_COLORS = [
   '#3b82f6', '#8b5cf6', '#ec4899', '#ef4444',
   '#f97316', '#eab308', '#22c55e', '#14b8a6',
   '#06b6d4', '#6366f1', '#a855f7', '#64748b',
+];
+
+const LANGUAGES = [
+  { code: 'en', flag: '🇬🇧', label: 'English' },
+  { code: 'fr', flag: '🇫🇷', label: 'Français' },
+  { code: 'de', flag: '🇩🇪', label: 'Deutsch' },
+  { code: 'es', flag: '🇪🇸', label: 'Español' },
 ];
 
 function formatCurrency(amount: number) {
@@ -25,12 +33,13 @@ function formatCurrency(amount: number) {
 
 function DarkModeToggle() {
   const { darkMode, setDarkMode } = useDarkMode();
+  const { t } = useTranslation();
 
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-3">
         {darkMode ? <Moon size={18} className="text-muted-foreground" /> : <Sun size={18} className="text-muted-foreground" />}
-        <span className="text-sm font-medium text-foreground">Dark Mode</span>
+        <span className="text-sm font-medium text-foreground">{t('profile.darkMode')}</span>
       </div>
       <button
         role="switch"
@@ -58,6 +67,7 @@ export default function Profile() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const fileRef = useRef<HTMLInputElement>(null);
+  const { t, i18n } = useTranslation();
 
   // Personal info
   const [displayName, setDisplayName] = useState('');
@@ -85,8 +95,6 @@ export default function Profile() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showChangeBankForm, setShowChangeBankForm] = useState(false);
 
-  // Tutorial modal
-  
   const [connectingBank, setConnectingBank] = useState(false);
   const stripeOnboardingComplete = (profile as any)?.stripe_onboarding_complete ?? false;
 
@@ -94,8 +102,7 @@ export default function Profile() {
   useEffect(() => {
     const connectStatus = searchParams.get('connect');
     if (connectStatus === 'success') {
-      toast({ title: 'Bank account connected successfully 🎉' });
-      // Poll profile a few times to catch webhook update
+      toast({ title: t('profile.bankConnectedSuccess') });
       const poll = async (attempts = 0) => {
         await queryClient.invalidateQueries({ queryKey: ['profile'] });
         await queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
@@ -157,11 +164,9 @@ export default function Profile() {
 
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || 'Failed to start onboarding');
-
-      // Redirect to Stripe onboarding
       window.location.href = result.url;
     } catch (err: any) {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+      toast({ title: t('common.error'), description: err.message, variant: 'destructive' });
       setConnectingBank(false);
     }
   };
@@ -179,7 +184,7 @@ export default function Profile() {
       .upload(path, file, { upsert: true });
 
     if (uploadError) {
-      toast({ title: 'Upload failed', description: uploadError.message, variant: 'destructive' });
+      toast({ title: t('profile.uploadFailed'), description: uploadError.message, variant: 'destructive' });
       setUploadingAvatar(false);
       return;
     }
@@ -190,7 +195,7 @@ export default function Profile() {
     await supabase.from('profiles').update({ avatar_url: url } as any).eq('id', user.id);
     setAvatarUrl(url);
     queryClient.invalidateQueries({ queryKey: ['profile'] });
-    toast({ title: 'Avatar updated! 📸' });
+    toast({ title: t('profile.avatarUpdated') });
     setUploadingAvatar(false);
   };
 
@@ -206,44 +211,48 @@ export default function Profile() {
     setSavingInfo(true);
     const { error: updateError } = await supabase.from('profiles').update({ first_name: displayName, gender } as any).eq('id', user.id);
     if (updateError) {
-      toast({ title: 'Save failed', description: updateError.message, variant: 'destructive' });
+      toast({ title: t('profile.saveFailed'), description: updateError.message, variant: 'destructive' });
       setSavingInfo(false);
       return;
     }
     if (email !== user.email) {
       const { error } = await supabase.auth.updateUser({ email });
       if (error) {
-        toast({ title: 'Email update failed', description: error.message, variant: 'destructive' });
+        toast({ title: t('profile.emailUpdateFailed'), description: error.message, variant: 'destructive' });
         setSavingInfo(false);
         return;
       }
     }
     await queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
     await queryClient.invalidateQueries({ queryKey: ['profile'] });
-    toast({ title: 'Profile updated! ✅' });
+    toast({ title: t('profile.profileUpdated') });
     setSavingInfo(false);
   };
 
   const handleChangePassword = async () => {
     if (newPassword !== confirmPassword) {
-      toast({ title: 'Passwords don\'t match', variant: 'destructive' });
+      toast({ title: t('profile.passwordsDontMatch'), variant: 'destructive' });
       return;
     }
     if (newPassword.length < 6) {
-      toast({ title: 'Password must be at least 6 characters', variant: 'destructive' });
+      toast({ title: t('profile.passwordMinChars'), variant: 'destructive' });
       return;
     }
     setSavingPassword(true);
     const { error } = await supabase.auth.updateUser({ password: newPassword });
     if (error) {
-      toast({ title: 'Password update failed', description: error.message, variant: 'destructive' });
+      toast({ title: t('profile.passwordUpdateFailed'), description: error.message, variant: 'destructive' });
     } else {
-      toast({ title: 'Password changed! 🔒' });
+      toast({ title: t('profile.passwordChanged') });
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
     }
     setSavingPassword(false);
+  };
+
+  const handleLanguageChange = (code: string) => {
+    i18n.changeLanguage(code);
   };
 
   if (isLoading) {
@@ -267,7 +276,7 @@ export default function Profile() {
           >
             <ArrowLeft size={20} />
           </button>
-          <h1 className="font-bold text-foreground text-lg">Profile</h1>
+          <h1 className="font-bold text-foreground text-lg">{t('profile.title')}</h1>
         </div>
       </div>
 
@@ -309,7 +318,7 @@ export default function Profile() {
 
           {!avatarUrl && (
             <div className="mt-4">
-              <p className="text-xs text-muted-foreground mb-2">Avatar color</p>
+              <p className="text-xs text-muted-foreground mb-2">{t('profile.avatarColor')}</p>
               <div className="flex flex-wrap justify-center gap-2">
                 {AVATAR_COLORS.map((c) => (
                   <button
@@ -326,13 +335,34 @@ export default function Profile() {
 
         {/* Appearance */}
         <div className="bg-card rounded-2xl border border-border p-6 space-y-4">
-          <h2 className="font-bold text-foreground text-base">Appearance</h2>
+          <h2 className="font-bold text-foreground text-base">{t('profile.appearance')}</h2>
           <DarkModeToggle />
+        </div>
+
+        {/* Language */}
+        <div className="bg-card rounded-2xl border border-border p-6 space-y-4">
+          <h2 className="font-bold text-foreground text-base">{t('profile.language')}</h2>
+          <div className="flex flex-wrap gap-2">
+            {LANGUAGES.map((lang) => (
+              <button
+                key={lang.code}
+                onClick={() => handleLanguageChange(lang.code)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-all text-sm font-medium ${
+                  i18n.language === lang.code
+                    ? 'border-primary bg-primary/10 text-foreground'
+                    : 'border-border bg-secondary/50 text-muted-foreground hover:bg-secondary'
+                }`}
+              >
+                <span className="text-lg">{lang.flag}</span>
+                {lang.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Payout Account */}
         <div className="bg-card rounded-2xl border border-border p-6 space-y-4">
-          <h2 className="font-bold text-foreground text-base">Payout Account</h2>
+          <h2 className="font-bold text-foreground text-base">{t('profile.payoutAccount')}</h2>
           {stripeOnboardingComplete ? (
             showChangeBankForm ? (
               <StripeOnboardingForm
@@ -348,7 +378,7 @@ export default function Profile() {
               <>
                 <div className="flex items-center gap-2 text-success font-semibold">
                   <CheckCircle2 size={18} />
-                  Bank account connected ✅
+                  {t('profile.bankConnected')}
                 </div>
                 <Button
                   onClick={() => setShowChangeBankForm(true)}
@@ -356,7 +386,7 @@ export default function Profile() {
                   className="w-full h-11 rounded-xl font-semibold"
                 >
                   <RefreshCw size={15} className="mr-1.5" />
-                  Change bank account
+                  {t('profile.changeBankAccount')}
                 </Button>
               </>
             )
@@ -372,14 +402,14 @@ export default function Profile() {
           ) : (
             <>
               <p className="text-sm text-muted-foreground">
-                Connect your bank account to receive payouts when pots are closed or withdrawals are approved.
+                {t('profile.connectBankDesc')}
               </p>
               <Button
                 onClick={() => setShowOnboarding(true)}
                 className="w-full h-11 rounded-xl font-semibold"
               >
                 <Landmark size={15} className="mr-1.5" />
-                Connect your bank account
+                {t('profile.connectBank')}
               </Button>
             </>
           )}
@@ -387,23 +417,23 @@ export default function Profile() {
 
         {/* Personal Info */}
         <div className="bg-card rounded-2xl border border-border p-6 space-y-4">
-          <h2 className="font-bold text-foreground text-base">Personal Info</h2>
+          <h2 className="font-bold text-foreground text-base">{t('profile.personalInfo')}</h2>
           <div className="space-y-2">
-            <Label htmlFor="name" className="text-sm">Display Name</Label>
+            <Label htmlFor="name" className="text-sm">{t('profile.displayName')}</Label>
             <Input id="name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="rounded-xl" />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-sm">Email</Label>
+            <Label htmlFor="email" className="text-sm">{t('profile.email')}</Label>
             <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="rounded-xl" />
           </div>
           <div className="space-y-2">
-            <Label className="text-sm">Gender</Label>
+            <Label className="text-sm">{t('profile.gender')}</Label>
             <div className="flex flex-wrap gap-1.5">
               {[
-                { value: 'male', label: 'Male' },
-                { value: 'female', label: 'Female' },
-                { value: 'other', label: 'Other' },
-                { value: 'prefer_not_to_say', label: 'Prefer not to say' },
+                { value: 'male', label: t('profile.male') },
+                { value: 'female', label: t('profile.female') },
+                { value: 'other', label: t('profile.other') },
+                { value: 'prefer_not_to_say', label: t('profile.preferNotToSay') },
               ].map((opt) => (
                 <button
                   key={opt.value}
@@ -422,33 +452,30 @@ export default function Profile() {
           </div>
           <Button onClick={handleSaveInfo} disabled={savingInfo} className="w-full h-11 rounded-xl font-semibold">
             <Save size={15} className="mr-1.5" />
-            {savingInfo ? 'Saving…' : 'Save Changes'}
+            {savingInfo ? t('profile.saving') : t('profile.saveChanges')}
           </Button>
         </div>
 
         {/* Change Password */}
         <div className="bg-card rounded-2xl border border-border p-6 space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="font-bold text-foreground text-base">Change Password</h2>
+            <h2 className="font-bold text-foreground text-base">{t('profile.changePassword')}</h2>
             <button onClick={() => setShowPasswords(!showPasswords)} className="text-muted-foreground">
               {showPasswords ? <EyeOff size={16} /> : <Eye size={16} />}
             </button>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="new-pw" className="text-sm">New Password</Label>
-            <Input id="new-pw" type={showPasswords ? 'text' : 'password'} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Enter new password" className="rounded-xl" />
+            <Label htmlFor="new-pw" className="text-sm">{t('profile.newPassword')}</Label>
+            <Input id="new-pw" type={showPasswords ? 'text' : 'password'} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder={t('profile.enterNewPassword')} className="rounded-xl" />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="confirm-pw" className="text-sm">Confirm New Password</Label>
-            <Input id="confirm-pw" type={showPasswords ? 'text' : 'password'} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirm new password" className="rounded-xl" />
+            <Label htmlFor="confirm-pw" className="text-sm">{t('profile.confirmNewPassword')}</Label>
+            <Input id="confirm-pw" type={showPasswords ? 'text' : 'password'} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder={t('profile.confirmNewPasswordPlaceholder')} className="rounded-xl" />
           </div>
           <Button onClick={handleChangePassword} disabled={savingPassword || !newPassword || !confirmPassword} className="w-full h-11 rounded-xl font-semibold">
-            {savingPassword ? 'Updating…' : 'Update Password'}
+            {savingPassword ? t('auth.updating') : t('profile.updatePassword')}
           </Button>
         </div>
-
-
-
 
         <div className="bg-card rounded-2xl border border-border divide-y divide-border">
           <button
@@ -457,7 +484,7 @@ export default function Profile() {
           >
             <div className="flex items-center gap-3">
               <BookOpen size={18} className="text-muted-foreground" />
-              <span className="text-sm font-semibold text-foreground">How Monto Works</span>
+              <span className="text-sm font-semibold text-foreground">{t('profile.howMontoWorks')}</span>
             </div>
             <span className="text-muted-foreground text-xs">→</span>
           </button>
@@ -465,24 +492,22 @@ export default function Profile() {
             onClick={() => navigate('/faq')}
             className="w-full p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors rounded-b-2xl"
           >
-            <span className="text-sm font-semibold text-foreground pl-[30px]">FAQ</span>
+            <span className="text-sm font-semibold text-foreground pl-[30px]">{t('profile.faq')}</span>
             <span className="text-muted-foreground text-xs">→</span>
           </button>
         </div>
 
-        
-
         {/* Stats */}
         <div className="bg-card rounded-2xl border border-border p-6">
-          <h2 className="font-bold text-foreground text-base mb-4">Your Stats</h2>
+          <h2 className="font-bold text-foreground text-base mb-4">{t('profile.yourStats')}</h2>
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-success/10 rounded-xl p-4 text-center">
               <p className="text-2xl font-bold text-success">{formatCurrency(totalDeposits)}</p>
-              <p className="text-xs text-muted-foreground mt-1">Total Deposited</p>
+              <p className="text-xs text-muted-foreground mt-1">{t('profile.totalDeposited')}</p>
             </div>
             <div className="bg-primary/10 rounded-xl p-4 text-center">
               <p className="text-2xl font-bold text-primary">{formatCurrency(totalWithdrawals)}</p>
-              <p className="text-xs text-muted-foreground mt-1">Total Withdrawn</p>
+              <p className="text-xs text-muted-foreground mt-1">{t('profile.totalWithdrawn')}</p>
             </div>
           </div>
         </div>

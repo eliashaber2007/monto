@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { ChevronLeft, ChevronRight, Landmark, User, MapPin, CreditCard } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const stripePromise = loadStripe('pk_test_51T2Gy27r0WrOyS8mTChm4L1Ch8L9OyugbWjtHJIQmZJ2WeFlkYPGVW3OOnX9CVtbhOb8FG1zYcSe2fIHToHcJY4D00fqmrkkix');
 
@@ -33,6 +34,7 @@ interface Props {
 }
 
 export default function StripeOnboardingForm({ onComplete, onCancel, mode = 'connect' }: Props) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -40,20 +42,17 @@ export default function StripeOnboardingForm({ onComplete, onCancel, mode = 'con
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
 
-  // Step 1: Personal details
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [dobDay, setDobDay] = useState('');
   const [dobMonth, setDobMonth] = useState('');
   const [dobYear, setDobYear] = useState('');
 
-  // Step 2: Address
   const [line1, setLine1] = useState('');
   const [city, setCity] = useState('');
   const [postalCode, setPostalCode] = useState('');
   const [country, setCountry] = useState('FR');
 
-  // Step 3: Bank
   const [iban, setIban] = useState('');
 
   const totalSteps = 3;
@@ -73,7 +72,6 @@ export default function StripeOnboardingForm({ onComplete, onCancel, mode = 'con
       const stripe = await stripePromise;
       if (!stripe) throw new Error('Failed to load payment processor');
 
-      // 1. Create account token via Stripe.js
       const { token: accountToken, error: tokenError } = await stripe.createToken('account' as any, {
         business_type: 'individual',
         individual: {
@@ -97,7 +95,6 @@ export default function StripeOnboardingForm({ onComplete, onCancel, mode = 'con
       if (tokenError) throw new Error(tokenError.message);
       if (!accountToken) throw new Error('Failed to create account token');
 
-      // 2. Send token + IBAN to edge function
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData?.session?.access_token;
 
@@ -123,21 +120,20 @@ export default function StripeOnboardingForm({ onComplete, onCancel, mode = 'con
 
       await queryClient.invalidateQueries({ queryKey: ['profile'] });
       await queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
-      toast({ title: mode === 'update' ? 'Bank account updated successfully ✅' : 'Bank account connected! 🎉' });
+      toast({ title: mode === 'update' ? t('profile.bankUpdated') : t('profile.bankConnectedSuccess') });
       onComplete();
     } catch (err: any) {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+      toast({ title: t('common.error'), description: err.message, variant: 'destructive' });
     } finally {
       setSubmitting(false);
     }
   };
 
   const stepIcons = [User, MapPin, CreditCard];
-  const stepLabels = ['Personal Details', 'Home Address', 'Bank Account'];
+  const stepLabels = [t('stripeOnboarding.personalDetails'), t('stripeOnboarding.homeAddress'), t('stripeOnboarding.bankAccount')];
 
   return (
     <div className="space-y-5">
-      {/* Progress */}
       <div className="flex items-center justify-between mb-2">
         {[1, 2, 3].map((s) => {
           const Icon = stepIcons[s - 1];
@@ -157,19 +153,18 @@ export default function StripeOnboardingForm({ onComplete, onCancel, mode = 'con
         })}
       </div>
 
-      {/* Step 1: Personal */}
       {step === 1 && (
         <div className="space-y-3">
           <div className="space-y-1.5">
-            <Label htmlFor="ob-fn">First name</Label>
+            <Label htmlFor="ob-fn">{t('stripeOnboarding.firstName')}</Label>
             <Input id="ob-fn" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="John" className="h-11 rounded-xl" />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="ob-ln">Last name</Label>
+            <Label htmlFor="ob-ln">{t('stripeOnboarding.lastName')}</Label>
             <Input id="ob-ln" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Doe" className="h-11 rounded-xl" />
           </div>
           <div className="space-y-1.5">
-            <Label>Date of birth</Label>
+            <Label>{t('stripeOnboarding.dateOfBirth')}</Label>
             <div className="flex gap-2">
               <Input type="number" placeholder="DD" min="1" max="31" value={dobDay} onChange={(e) => setDobDay(e.target.value)} className="h-11 rounded-xl flex-1" />
               <Input type="number" placeholder="MM" min="1" max="12" value={dobMonth} onChange={(e) => setDobMonth(e.target.value)} className="h-11 rounded-xl flex-1" />
@@ -179,25 +174,24 @@ export default function StripeOnboardingForm({ onComplete, onCancel, mode = 'con
         </div>
       )}
 
-      {/* Step 2: Address */}
       {step === 2 && (
         <div className="space-y-3">
           <div className="space-y-1.5">
-            <Label htmlFor="ob-line1">Street address</Label>
+            <Label htmlFor="ob-line1">{t('stripeOnboarding.streetAddress')}</Label>
             <Input id="ob-line1" value={line1} onChange={(e) => setLine1(e.target.value)} placeholder="123 Main St" className="h-11 rounded-xl" />
           </div>
           <div className="flex gap-2">
             <div className="flex-1 space-y-1.5">
-              <Label htmlFor="ob-city">City</Label>
+              <Label htmlFor="ob-city">{t('stripeOnboarding.city')}</Label>
               <Input id="ob-city" value={city} onChange={(e) => setCity(e.target.value)} placeholder="Paris" className="h-11 rounded-xl" />
             </div>
             <div className="flex-1 space-y-1.5">
-              <Label htmlFor="ob-postcode">Postcode</Label>
+              <Label htmlFor="ob-postcode">{t('stripeOnboarding.postcode')}</Label>
               <Input id="ob-postcode" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} placeholder="75001" className="h-11 rounded-xl" />
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label>Country</Label>
+            <Label>{t('stripeOnboarding.country')}</Label>
             <Select value={country} onValueChange={setCountry}>
               <SelectTrigger className="h-11 rounded-xl">
                 <SelectValue />
@@ -212,11 +206,10 @@ export default function StripeOnboardingForm({ onComplete, onCancel, mode = 'con
         </div>
       )}
 
-      {/* Step 3: Bank */}
       {step === 3 && (
         <div className="space-y-3">
           <div className="space-y-1.5">
-            <Label htmlFor="ob-iban">IBAN</Label>
+            <Label htmlFor="ob-iban">{t('stripeOnboarding.iban')}</Label>
             <Input
               id="ob-iban"
               value={iban}
@@ -224,12 +217,11 @@ export default function StripeOnboardingForm({ onComplete, onCancel, mode = 'con
               placeholder="FR76 3000 6000 0112 3456 7890 189"
               className="h-11 rounded-xl font-mono text-sm"
             />
-            <p className="text-xs text-muted-foreground">Your IBAN will be securely sent to our payment processor</p>
+            <p className="text-xs text-muted-foreground">{t('stripeOnboarding.ibanSecure')}</p>
           </div>
         </div>
       )}
 
-      {/* Navigation */}
       <div className="flex gap-3 pt-2">
         <Button
           variant="outline"
@@ -237,7 +229,7 @@ export default function StripeOnboardingForm({ onComplete, onCancel, mode = 'con
           onClick={() => step === 1 ? onCancel() : setStep(step - 1)}
         >
           <ChevronLeft size={16} className="mr-1" />
-          {step === 1 ? 'Cancel' : 'Back'}
+          {step === 1 ? t('common.cancel') : t('common.back')}
         </Button>
         {step < totalSteps ? (
           <Button
@@ -245,7 +237,7 @@ export default function StripeOnboardingForm({ onComplete, onCancel, mode = 'con
             disabled={!canGoNext()}
             onClick={() => setStep(step + 1)}
           >
-            Next
+            {t('common.next')}
             <ChevronRight size={16} className="ml-1" />
           </Button>
         ) : (
@@ -255,7 +247,9 @@ export default function StripeOnboardingForm({ onComplete, onCancel, mode = 'con
             onClick={handleSubmit}
           >
             <Landmark size={15} className="mr-1.5" />
-            {submitting ? (mode === 'update' ? 'Updating…' : 'Connecting…') : (mode === 'update' ? 'Update Bank' : 'Connect Bank')}
+            {submitting
+              ? (mode === 'update' ? t('stripeOnboarding.updatingBank') : t('stripeOnboarding.connecting'))
+              : (mode === 'update' ? t('stripeOnboarding.updateBank') : t('stripeOnboarding.connectBank'))}
           </Button>
         )}
       </div>

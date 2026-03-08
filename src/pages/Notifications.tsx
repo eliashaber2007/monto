@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, CheckCheck } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 interface Notification {
   id: string;
@@ -32,6 +33,7 @@ function timeAgo(dateStr: string) {
 }
 
 export default function Notifications() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -78,7 +80,6 @@ export default function Notifications() {
   const clearAll = async () => {
     const allIds = notifications.map((n) => n.id);
     if (allIds.length === 0) return;
-    // Mark all as read first, then remove from visible list
     const unreadIds = notifications.filter((n) => !n.read).map((n) => n.id);
     if (unreadIds.length > 0) {
       await supabase.from('notifications').update({ read: true }).in('id', unreadIds);
@@ -103,7 +104,7 @@ export default function Notifications() {
           >
             <ArrowLeft size={20} />
           </button>
-          <h1 className="font-bold text-foreground text-lg flex-1">Notifications</h1>
+          <h1 className="font-bold text-foreground text-lg flex-1">{t('notifications.title')}</h1>
           <div className="flex items-center gap-3">
             {unreadCount > 0 && (
               <button
@@ -111,7 +112,7 @@ export default function Notifications() {
                 className="text-xs text-primary font-semibold flex items-center gap-1 hover:underline"
               >
                 <CheckCheck size={14} />
-                Mark all read
+                {t('notifications.markAllRead')}
               </button>
             )}
             {notifications.length > 0 && (
@@ -119,7 +120,7 @@ export default function Notifications() {
                 onClick={clearAll}
                 className="text-xs text-muted-foreground font-medium hover:text-foreground hover:underline transition-colors"
               >
-                Clear all
+                {t('notifications.clearAll')}
               </button>
             )}
           </div>
@@ -134,7 +135,7 @@ export default function Notifications() {
         ) : notifications.length === 0 ? (
           <div className="py-20 text-center">
             <span className="text-4xl block mb-3">🔔</span>
-            <p className="text-sm text-muted-foreground">No notifications yet</p>
+            <p className="text-sm text-muted-foreground">{t('notifications.noNotifications')}</p>
           </div>
         ) : (
           <div className="divide-y divide-border">

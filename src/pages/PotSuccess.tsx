@@ -4,8 +4,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 
 export default function PotSuccess() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const queryClient = useQueryClient();
@@ -23,7 +25,6 @@ export default function PotSuccess() {
       const pendingRaw = localStorage.getItem('pendingPotData');
 
       if (!pendingRaw) {
-        // No pending pot data — redirect home silently
         navigate('/', { replace: true });
         return;
       }
@@ -31,7 +32,6 @@ export default function PotSuccess() {
       const potConfig = JSON.parse(pendingRaw);
       const potId = potConfig.id;
 
-      // Check if pot already exists (webhook may have created it)
       const { data: existingPot } = await supabase
         .from('pots')
         .select('id')
@@ -39,7 +39,6 @@ export default function PotSuccess() {
         .maybeSingle();
 
       if (!existingPot) {
-        // Webhook hasn't created it yet — create pot now
         const { error: potError } = await supabase.from('pots').insert({
           id: potId,
           name: potConfig.name,
@@ -56,10 +55,8 @@ export default function PotSuccess() {
 
         if (potError) {
           console.error('Error creating pot on success page:', potError);
-          // Pot might have been created by webhook between our check and insert — try to continue
         }
 
-        // Add creator as member
         await supabase.from('pot_members').insert({
           pot_id: potId,
           user_id: user.id,
@@ -67,13 +64,11 @@ export default function PotSuccess() {
         });
       }
 
-      // Clear pending data
       localStorage.removeItem('pendingPotData');
 
-      // Invalidate pots list so home screen shows correct balance
       queryClient.invalidateQueries({ queryKey: ['pots'] });
 
-      toast({ title: '🎉 Pot created!', description: 'Your payment was successful.' });
+      toast({ title: t('potSuccess.created'), description: t('potSuccess.paymentSuccess') });
       navigate(`/pots/${potId}?payment=success`, { replace: true });
     };
 
@@ -85,7 +80,7 @@ export default function PotSuccess() {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center space-y-3">
           <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-sm text-muted-foreground">Setting up your pot…</p>
+          <p className="text-sm text-muted-foreground">{t('potSuccess.settingUp')}</p>
         </div>
       </div>
     );

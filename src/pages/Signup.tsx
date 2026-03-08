@@ -7,8 +7,10 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import SocialLoginButtons from "@/components/SocialLoginButtons";
 import { Mail } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function Signup() {
+  const { t } = useTranslation();
   const [firstName, setFirstName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,8 +23,8 @@ export default function Signup() {
 
     if (password.length < 6) {
       toast({
-        title: "Password too short",
-        description: "Use at least 6 characters.",
+        title: t('auth.passwordTooShort'),
+        description: t('auth.passwordTooShortDesc'),
         variant: "destructive",
       });
       return;
@@ -41,11 +43,10 @@ export default function Signup() {
 
     if (error) {
       setLoading(false);
-      toast({ title: "Sign up failed", description: error.message, variant: "destructive" });
+      toast({ title: t('auth.signupFailed'), description: error.message, variant: "destructive" });
       return;
     }
 
-    // Sign out any auto-created session so user must verify first
     await supabase.auth.signOut();
 
     setLoading(false);
@@ -59,14 +60,14 @@ export default function Signup() {
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary mb-4 shadow-pill">
             <Mail className="text-primary-foreground" size={24} />
           </div>
-          <h1 className="text-2xl font-bold text-foreground mb-2">Check your inbox!</h1>
+          <h1 className="text-2xl font-bold text-foreground mb-2">{t('auth.checkInbox')}</h1>
           <p className="text-muted-foreground text-sm leading-relaxed">
-            We sent a verification link to <span className="font-semibold text-foreground">{email}</span>. Click it to activate your account.
+            {t('auth.verificationSent')} <span className="font-semibold text-foreground">{email}</span>{t('auth.clickToActivate')}
           </p>
           <p className="text-center text-sm text-muted-foreground mt-8">
-            Already verified?{" "}
+            {t('auth.alreadyVerified')}{" "}
             <Link to="/login" className="text-primary font-semibold hover:underline">
-              Sign in
+              {t('auth.signIn')}
             </Link>
           </p>
         </div>
@@ -81,8 +82,8 @@ export default function Signup() {
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary mb-4 shadow-pill">
             <span className="text-primary-foreground font-bold text-xl">M</span>
           </div>
-          <h1 className="text-2xl font-bold text-foreground">Create your account</h1>
-          <p className="text-muted-foreground text-sm mt-1">Start saving together with Monto</p>
+          <h1 className="text-2xl font-bold text-foreground">{t('auth.createAccount')}</h1>
+          <p className="text-muted-foreground text-sm mt-1">{t('auth.startSaving')}</p>
         </div>
 
         <div className="bg-card rounded-2xl shadow-card p-6 border border-border space-y-4">
@@ -90,26 +91,26 @@ export default function Signup() {
 
           <form onSubmit={handleSignup} className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="firstName">First name</Label>
+              <Label htmlFor="firstName">{t('auth.firstName')}</Label>
               <Input id="firstName" type="text" placeholder="Alex" value={firstName} onChange={(e) => setFirstName(e.target.value)} required className="h-11 rounded-xl" />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('auth.email')}</Label>
               <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="h-11 rounded-xl" />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t('auth.password')}</Label>
               <Input id="password" type="password" placeholder="Min. 6 characters" value={password} onChange={(e) => setPassword(e.target.value)} required className="h-11 rounded-xl" />
             </div>
             <Button type="submit" className="w-full h-11 rounded-xl mt-2" disabled={loading}>
-              {loading ? "Creating account…" : "Create account"}
+              {loading ? t('auth.creatingAccount') : t('auth.createAccount')}
             </Button>
           </form>
         </div>
 
         <p className="text-center text-sm text-muted-foreground mt-6">
-          Already have an account?{" "}
-          <Link to="/login" className="text-primary font-semibold hover:underline">Sign in</Link>
+          {t('auth.hasAccount')}{" "}
+          <Link to="/login" className="text-primary font-semibold hover:underline">{t('auth.signIn')}</Link>
         </p>
       </div>
     </div>
