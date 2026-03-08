@@ -224,7 +224,7 @@ export default function PotDetail() {
       .channel(`pot-${id}`)
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'pots', filter: `id=eq.${id}` }, () => refetch())
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'transactions', filter: `pot_id=eq.${id}` }, () => refetch())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'withdrawals', filter: `pot_id=eq.${id}` }, () => fetchWithdrawals())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'withdrawals', filter: `pot_id=eq.${id}` }, () => { setTimeout(fetchWithdrawals, 500); })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [id, refetch]);
@@ -687,7 +687,7 @@ export default function PotDetail() {
                                   ) : isCreator ? (
                                     <button
                                       onClick={() => navigate(`/expenses/${w.id}`)}
-                                      className="text-xs flex items-center gap-1.5 text-muted-foreground font-semibold bg-muted px-3 py-1.5 rounded-lg hover:bg-muted/80 transition-colors mt-0.5"
+                                      className="text-xs flex items-center gap-1.5 text-primary-foreground font-semibold bg-primary px-3 py-1.5 rounded-lg hover:bg-primary/90 transition-colors mt-0.5"
                                     >
                                       <Receipt size={12} />
                                       View justified expenses
