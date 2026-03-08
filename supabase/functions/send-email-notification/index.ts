@@ -150,14 +150,26 @@ async function handleNotification(payload: EmailPayload) {
 
     case 'expense_reminder': {
       if (!payload.user_id) break;
-      const recipientEmail = await getUserEmail(payload.user_id);
-      if (!recipientEmail) break;
       const creatorName = payload.creator_name || 'The pot creator';
-      await sendEmail(
-        recipientEmail,
-        `Justify your withdrawal in ${pot.name}`,
-        `${creatorName} is requesting you to justify your withdrawal of <strong>${formatCurrency(payload.amount ?? 0, currency)}</strong> from <strong>${pot.name}</strong>. Please add your expenses and receipts.`,
-      );
+      const reminderMessage = `${pot.name}: ${creatorName} is requesting you to justify your withdrawal of ${formatCurrency(payload.amount ?? 0, currency)}. Please add your expenses and receipts.`;
+
+      // Insert in-app notification
+      await supabaseAdmin.from('notifications').insert({
+        user_id: payload.user_id,
+        pot_id: payload.pot_id,
+        type: 'expense_reminder',
+        message: reminderMessage,
+      });
+
+      // Send email
+      const recipientEmail = await getUserEmail(payload.user_id);
+      if (recipientEmail) {
+        await sendEmail(
+          recipientEmail,
+          `Justify your withdrawal in ${pot.name}`,
+          `${creatorName} is requesting you to justify your withdrawal of <strong>${formatCurrency(payload.amount ?? 0, currency)}</strong> from <strong>${pot.name}</strong>. Please add your expenses and receipts.`,
+        );
+      }
       break;
     }
   }

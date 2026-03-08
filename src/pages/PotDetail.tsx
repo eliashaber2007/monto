@@ -701,17 +701,8 @@ export default function PotDetail() {
                                         try {
                                           const creatorProfile = getMemberProfile(user!.id);
                                           const creatorName = creatorProfile?.first_name || 'The pot creator';
-                                          const message = `${pot.name}: ${creatorName} is requesting you to justify your withdrawal of ${formatCurrency(Number(w.amount), currency)}. Please add your expenses and receipts.`;
 
-                                          // Insert notification
-                                          await supabase.from('notifications').insert({
-                                            user_id: w.user_id,
-                                            pot_id: pot.id,
-                                            type: 'expense_reminder',
-                                            message,
-                                          } as any);
-
-                                          // Send email via edge function
+                                          // Send reminder via edge function (handles both notification insert and email)
                                           const { data: sessionData } = await supabase.auth.getSession();
                                           const token = sessionData?.session?.access_token;
                                           await fetch(
