@@ -10,6 +10,13 @@ import SocialLoginButtons from '@/components/SocialLoginButtons';
 import { CheckCircle2, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+const LANGUAGES = [
+  { code: 'en', flag: '🇬🇧' },
+  { code: 'fr', flag: '🇫🇷' },
+  { code: 'de', flag: '🇩🇪' },
+  { code: 'es', flag: '🇪🇸' },
+];
+
 export default function Login() {
   const { t } = useTranslation();
   const [email, setEmail] = useState('');
