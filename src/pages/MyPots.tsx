@@ -106,17 +106,22 @@ export default function MyPots() {
            <button
                 type="button"
                 onClick={() => navigate('/profile')}
-                className="w-10 h-10 rounded-full flex items-center justify-center shadow-sm overflow-hidden ring-2 ring-primary/30 hover:ring-primary/60 transition-all cursor-pointer"
-                style={{ backgroundColor: (profile as any)?.avatar_url ? undefined : ((profile as any)?.avatar_color ?? 'hsl(var(--primary))') }}
+                className="flex items-center gap-2.5 cursor-pointer group"
                 aria-label="Go to profile"
               >
-                {(profile as any)?.avatar_url ? (
-                  <img src={(profile as any).avatar_url} alt="Avatar" className="w-full h-full object-cover pointer-events-none" />
-                ) : (
-                  <span className="text-white font-bold text-sm pointer-events-none">
-                    {displayName?.[0]?.toUpperCase() ?? '?'}
-                  </span>
-                )}
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center shadow-sm overflow-hidden ring-2 ring-primary/30 group-hover:ring-primary/60 transition-all"
+                  style={{ backgroundColor: (profile as any)?.avatar_url ? undefined : ((profile as any)?.avatar_color ?? 'hsl(var(--primary))') }}
+                >
+                  {(profile as any)?.avatar_url ? (
+                    <img src={(profile as any).avatar_url} alt="Avatar" className="w-full h-full object-cover pointer-events-none" />
+                  ) : (
+                    <span className="text-white font-bold text-sm pointer-events-none">
+                      {displayName?.[0]?.toUpperCase() ?? '?'}
+                    </span>
+                  )}
+                </div>
+                <span className="font-semibold text-foreground text-sm group-hover:text-primary transition-colors">My Profile</span>
               </button>
           <div className="flex items-center gap-1">
             <NotificationBell />
