@@ -46,7 +46,8 @@ export function usePots() {
             require_receipt,
             withdrawal_rule,
             status,
-            emoji
+            emoji,
+            contributions_restricted
           )
         `)
         .eq('user_id', user.id)

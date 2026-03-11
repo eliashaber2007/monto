@@ -531,8 +531,10 @@ export default function PotDetail() {
             <div className="flex items-center gap-2">
               {(pot as any).emoji && <span className="text-lg flex-shrink-0">{(pot as any).emoji}</span>}
               <h1 className="font-bold text-foreground truncate text-lg">{pot.name}</h1>
-              <span className="flex-shrink-0 text-[11px] px-2 py-0.5 rounded-full bg-accent text-primary border border-primary/20 font-semibold">
-                {isCreator ? '👑 Creator' : '👤 Member'}
+              <span className={`flex-shrink-0 text-[11px] px-2 py-0.5 rounded-full font-semibold border ${
+                isCreator ? 'bg-accent text-primary border-primary/20' : isLeader ? 'bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700' : 'bg-accent text-primary border-primary/20'
+              }`}>
+                {isCreator ? '👑 Creator' : isLeader ? '⭐ Leader' : '👤 Member'}
               </span>
             </div>
           </div>
