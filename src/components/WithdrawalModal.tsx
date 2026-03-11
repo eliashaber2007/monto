@@ -93,9 +93,14 @@ export default function WithdrawalModal({
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
       const isCreator = user.id === createdBy;
+      // Only auto-payout for auto_approve or requires_password rules
+      // For requires_approval: creator's own withdrawals auto-payout, others go to pending
       const shouldAutoPayout = withdrawalRule === 'auto_approve' || withdrawalRule === 'requires_password' || (withdrawalRule === 'requires_approval' && isCreator);
 
+      console.log('[Withdrawal] Rule:', withdrawalRule, 'isCreator:', isCreator, 'shouldAutoPayout:', shouldAutoPayout, 'amount:', numAmount);
+
       if (shouldAutoPayout) {
+        console.log('[Withdrawal] Auto-payout: calling create-payout edge function');
         const response = await fetch(
           `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-payout`,
           {
@@ -105,11 +110,37 @@ export default function WithdrawalModal({
           }
         );
         const result = await response.json();
+        console.log('[Withdrawal] Auto-payout response:', result);
         if (!response.ok) throw new Error(result.error || 'Payout failed');
+
+        // Also insert a withdrawal record marked as approved for Activity tab
+        console.log('[Withdrawal] Inserting approved withdrawal record');
+        await supabase.from('withdrawals').insert({ pot_id: potId, user_id: user.id, amount: numAmount, note: note.trim(), status: 'approved', processed_at: new Date().toISOString() });
+
         toast({ title: t('withdrawalModal.withdrawalProcessing', { amount: formatCurrency(numAmount) }) });
       } else {
+        // requires_approval and user is NOT creator — insert pending, notify creator
+        console.log('[Withdrawal] Pending approval: inserting pending withdrawal');
         const { error: wErr } = await supabase.from('withdrawals').insert({ pot_id: potId, user_id: user.id, amount: numAmount, note: note.trim(), status: 'pending' });
         if (wErr) throw wErr;
+        console.log('[Withdrawal] Pending withdrawal inserted, notification trigger should fire');
+
+        // Also send email notification to creator (belt-and-suspenders)
+        try {
+          console.log('[Withdrawal] Sending email notification to creator');
+          await fetch(
+            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email-notification`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
+              body: JSON.stringify({ type: 'withdrawal_requested', pot_id: potId, user_id: user.id, amount: numAmount, currency }),
+            }
+          );
+          console.log('[Withdrawal] Email notification sent');
+        } catch (emailErr) {
+          console.error('[Withdrawal] Email notification failed:', emailErr);
+        }
+
         toast({ title: t('withdrawalModal.requestSent') });
       }
 
@@ -117,6 +148,7 @@ export default function WithdrawalModal({
       queryClient.invalidateQueries({ queryKey: ['pots'] });
       handleClose(false);
     } catch (err: any) {
+      console.error('[Withdrawal] Error:', err);
       toast({ title: t('common.error'), description: err.message, variant: 'destructive' });
     } finally {
       setLoading(false);
