@@ -169,6 +169,7 @@ export type Database = {
       pots: {
         Row: {
           balance: number
+          contributions_restricted: boolean
           created_at: string
           created_by: string
           currency: string
@@ -188,6 +189,7 @@ export type Database = {
         }
         Insert: {
           balance?: number
+          contributions_restricted?: boolean
           created_at?: string
           created_by: string
           currency?: string
@@ -207,6 +209,7 @@ export type Database = {
         }
         Update: {
           balance?: number
+          contributions_restricted?: boolean
           created_at?: string
           created_by?: string
           currency?: string
