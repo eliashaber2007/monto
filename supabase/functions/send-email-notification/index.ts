@@ -212,10 +212,48 @@ async function handleNotification(payload: EmailPayload) {
       if (!payload.user_id) break;
       const senderName = payload.creator_name || 'Someone';
       const mentionMessage = `${senderName} mentioned you in ${pot.name}`;
+      await sendPush(payload.user_id, pot.name, mentionMessage, potUrl);
+      break;
+    }
+
+    case 'leader_assigned': {
+      if (!payload.user_id) break;
+      const creatorName = payload.creator_name || 'The creator';
+      const message = `You've been made a leader of ${pot.name} by ${creatorName}.`;
+      
+      // In-app notification
+      await supabaseAdmin.from('notifications').insert({
+        user_id: payload.user_id,
+        pot_id: payload.pot_id,
+        type: 'leader_assigned',
+        message,
+      });
       
       const recipientEmail = await getUserEmail(payload.user_id);
-      // No email for mentions, just push
-      await sendPush(payload.user_id, pot.name, mentionMessage, potUrl);
+      if (recipientEmail) {
+        await sendEmail(recipientEmail, `You're now a leader of ${pot.name}`, `${creatorName} has made you a leader of <strong>${pot.name}</strong>. You can now approve withdrawals and manage the pot.`);
+      }
+      await sendPush(payload.user_id, pot.name, message, potUrl);
+      break;
+    }
+
+    case 'leader_removed': {
+      if (!payload.user_id) break;
+      const removedMessage = `You are no longer a leader of ${pot.name}.`;
+      
+      // In-app notification
+      await supabaseAdmin.from('notifications').insert({
+        user_id: payload.user_id,
+        pot_id: payload.pot_id,
+        type: 'leader_removed',
+        message: removedMessage,
+      });
+      
+      const removedEmail = await getUserEmail(payload.user_id);
+      if (removedEmail) {
+        await sendEmail(removedEmail, `Leader role removed in ${pot.name}`, `You are no longer a leader of <strong>${pot.name}</strong>.`);
+      }
+      await sendPush(payload.user_id, pot.name, removedMessage, potUrl);
       break;
     }
   }
