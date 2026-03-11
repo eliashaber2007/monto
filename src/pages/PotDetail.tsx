@@ -386,6 +386,47 @@ export default function PotDetail() {
     }
   };
 
+  const handleAssignLeader = async (member: any) => {
+    setAssigningLeader(member.id);
+    try {
+      const memberProfile = (member as any)?.profiles;
+      const memberName = memberProfile?.first_name || 'Member';
+      const { count } = await supabase.from('pot_members').select('id', { count: 'exact', head: true }).eq('pot_id', id!).eq('role', 'leader');
+      if ((count ?? 0) >= 3) { toast({ title: 'You can only have up to 3 leaders per pot.', variant: 'destructive' }); setAssigningLeader(null); return; }
+      const { error } = await supabase.from('pot_members').update({ role: 'leader' }).eq('id', member.id);
+      if (error) throw error;
+      try {
+        const { data: creatorProfile } = await supabase.from('profiles').select('first_name').eq('id', user!.id).single();
+        const { data: sessionData } = await supabase.auth.getSession();
+        await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email-notification`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${sessionData?.session?.access_token}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+          body: JSON.stringify({ type: 'leader_assigned', pot_id: id, user_id: member.user_id, creator_name: creatorProfile?.first_name || 'The creator' }),
+        });
+      } catch (e) { console.error('Leader notification failed:', e); }
+      toast({ title: `${memberName} is now a leader of this pot.` });
+      refetch();
+    } catch (err: any) { toast({ title: 'Error', description: err.message, variant: 'destructive' }); } finally { setAssigningLeader(null); }
+  };
+
+  const handleRemoveLeader = async (member: any) => {
+    setAssigningLeader(member.id);
+    try {
+      const memberProfile = (member as any)?.profiles;
+      const memberName = memberProfile?.first_name || 'Member';
+      const { error } = await supabase.from('pot_members').update({ role: 'member' }).eq('id', member.id);
+      if (error) throw error;
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email-notification`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${sessionData?.session?.access_token}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+          body: JSON.stringify({ type: 'leader_removed', pot_id: id, user_id: member.user_id }),
+        });
+      } catch (e) { console.error('Leader removal notification failed:', e); }
+      toast({ title: `${memberName} is no longer a leader.` });
+      refetch();
+    } catch (err: any) { toast({ title: 'Error', description: err.message, variant: 'destructive' }); } finally { setAssigningLeader(null); }
+  };
+
   const handleLeavePot = async () => {
     setLeaving(true);
     const { error } = await supabase
