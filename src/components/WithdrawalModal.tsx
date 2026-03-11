@@ -22,6 +22,7 @@ interface WithdrawalModalProps {
   createdBy: string;
   maxWithdrawalAmount?: number | null;
   maxWithdrawalsPerDay?: number | null;
+  myRole?: string;
 }
 
 export default function WithdrawalModal({
