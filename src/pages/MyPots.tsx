@@ -103,10 +103,9 @@ export default function MyPots() {
     <div className="min-h-screen bg-background relative overflow-hidden">
       <div className="bg-card border-b border-border sticky top-0 z-20">
         <div className="max-w-lg mx-auto px-5 py-4 flex items-center justify-between">
-           <div className="flex items-center gap-3">
-              <button
+           <button
                 onClick={() => navigate('/profile')}
-                className="w-10 h-10 rounded-full flex items-center justify-center shadow-sm overflow-hidden"
+                className="w-10 h-10 rounded-full flex items-center justify-center shadow-sm overflow-hidden ring-2 ring-primary/30 hover:ring-primary/60 transition-all"
                 style={{ backgroundColor: (profile as any)?.avatar_url ? undefined : ((profile as any)?.avatar_color ?? 'hsl(var(--primary))') }}
               >
                 {(profile as any)?.avatar_url ? (
@@ -117,8 +116,6 @@ export default function MyPots() {
                   </span>
                 )}
               </button>
-              <span className="font-bold text-foreground text-lg">{t('myPots.title')}</span>
-          </div>
           <div className="flex items-center gap-1">
             <NotificationBell />
             <button
