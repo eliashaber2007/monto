@@ -61,8 +61,10 @@ Deno.serve(async (req) => {
       });
     }
 
-    // ✅ Auth check: requester must be pot creator OR the recipient themselves
-    if (pot.created_by !== requestingUserId && requestingUserId !== recipient_user_id) {
+    // ✅ Auth check: requester must be pot creator, a leader, OR the recipient themselves
+    const { data: requesterMember } = await supabaseAdmin.from("pot_members").select("role").eq("pot_id", pot_id).eq("user_id", requestingUserId).single();
+    const isCreatorOrLeader = pot.created_by === requestingUserId || requesterMember?.role === 'leader';
+    if (!isCreatorOrLeader && requestingUserId !== recipient_user_id) {
       return new Response(JSON.stringify({ error: "Not authorized" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
