@@ -192,6 +192,9 @@ export default function PotDetail() {
   const [withdrawalExpenses, setWithdrawalExpenses] = useState<Record<string, number>>({});
   const [sendingReminder, setSendingReminder] = useState<string | null>(null);
   const [assigningLeader, setAssigningLeader] = useState<string | null>(null);
+  const [approveConfirm, setApproveConfirm] = useState<any | null>(null);
+  const [rejectConfirm, setRejectConfirm] = useState<any | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -318,22 +321,23 @@ export default function PotDetail() {
 
   const handleApproveWithdrawal = async (withdrawal: any) => {
     console.log('[Approve] Starting approval for withdrawal:', withdrawal.id, 'amount:', withdrawal.amount, 'status:', withdrawal.status);
+    if (withdrawal.user_id === user?.id) {
+      toast({ title: 'Error', description: 'You cannot approve your own withdrawal request.', variant: 'destructive' });
+      return;
+    }
     if (withdrawal.status !== 'pending') {
-      console.error('[Approve] ABORT: withdrawal status is', withdrawal.status, 'not pending');
       toast({ title: 'Error', description: 'This withdrawal is no longer pending.', variant: 'destructive' });
       return;
     }
     setProcessingWithdrawal(withdrawal.id);
     try {
       // 1. Mark withdrawal as approved FIRST
-      console.log('[Approve] Marking withdrawal as approved in DB');
       const { error: updateErr } = await supabase.from('withdrawals').update({ status: 'approved', processed_at: new Date().toISOString() }).eq('id', withdrawal.id);
       if (updateErr) throw updateErr;
 
       // 2. Call create-payout to trigger bank transfer
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
-      console.log('[Approve] Calling create-payout edge function');
 
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-payout`,
@@ -354,32 +358,45 @@ export default function PotDetail() {
       );
 
       const result = await response.json();
-      console.log('[Approve] create-payout response:', result);
       if (!response.ok) throw new Error(result.error || 'Payout failed');
 
       toast({ title: 'Withdrawal approved ✅' });
-      console.log('[Approve] Success, re-fetching data');
+      setApproveConfirm(null);
       refetch();
       fetchWithdrawals();
     } catch (err: any) {
-      console.error('[Approve] Error:', err);
       toast({ title: 'Error', description: err.message, variant: 'destructive' });
     } finally {
       setProcessingWithdrawal(null);
     }
   };
 
-  const handleRejectWithdrawal = async (withdrawal: any) => {
-    console.log('[Reject] Rejecting withdrawal:', withdrawal.id);
+  const handleRejectWithdrawal = async (withdrawal: any, reason: string) => {
+    if (withdrawal.user_id === user?.id) {
+      toast({ title: 'Error', description: 'You cannot reject your own withdrawal request.', variant: 'destructive' });
+      return;
+    }
     setProcessingWithdrawal(withdrawal.id);
     try {
       await supabase.from('withdrawals').update({ status: 'rejected', processed_at: new Date().toISOString() }).eq('id', withdrawal.id);
-      console.log('[Reject] Withdrawal rejected successfully');
+
+      // Send rejection notification to the requester
+      try {
+        const potName = data?.pot?.name || 'the pot';
+        const { data: sessionData } = await supabase.auth.getSession();
+        await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email-notification`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${sessionData?.session?.access_token}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+          body: JSON.stringify({ type: 'withdrawal_rejected', pot_id: id, user_id: withdrawal.user_id, amount: withdrawal.amount, reason }),
+        });
+      } catch (e) { console.error('Rejection notification failed:', e); }
+
       toast({ title: 'Withdrawal rejected ❌' });
+      setRejectConfirm(null);
+      setRejectReason('');
       refetch();
       fetchWithdrawals();
     } catch (err: any) {
-      console.error('[Reject] Error:', err);
       toast({ title: 'Error', description: err.message, variant: 'destructive' });
     } finally {
       setProcessingWithdrawal(null);
@@ -828,14 +845,14 @@ export default function PotDetail() {
                               {isPending && isCreatorOrLeader && !isMyRequest && (
                                 <div className="flex gap-2 ml-11">
                                   <button
-                                    onClick={() => handleApproveWithdrawal(w)}
+                                    onClick={() => setApproveConfirm(w)}
                                     disabled={processingWithdrawal === w.id}
                                     className="flex-1 text-xs font-semibold py-2 rounded-lg bg-success/10 text-success border border-success/20 hover:bg-success/20 transition-colors disabled:opacity-50"
                                   >
                                     {processingWithdrawal === w.id ? 'Processing…' : 'Approve ✅'}
                                   </button>
                                   <button
-                                    onClick={() => handleRejectWithdrawal(w)}
+                                    onClick={() => { setRejectConfirm(w); setRejectReason(''); }}
                                     disabled={processingWithdrawal === w.id}
                                     className="flex-1 text-xs font-semibold py-2 rounded-lg bg-destructive/10 text-destructive border border-destructive/20 hover:bg-destructive/20 transition-colors disabled:opacity-50"
                                   >
@@ -1210,6 +1227,58 @@ export default function PotDetail() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Approve Withdrawal Confirmation */}
+      <AlertDialog open={!!approveConfirm} onOpenChange={(v) => { if (!v) setApproveConfirm(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Approve withdrawal?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to approve this withdrawal of {approveConfirm ? formatCurrency(Number(approveConfirm.amount), currency) : ''}? This will trigger a bank transfer to the member and deduct the amount from the pot balance.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => approveConfirm && handleApproveWithdrawal(approveConfirm)}
+              disabled={!!processingWithdrawal}
+              className="bg-success text-success-foreground hover:bg-success/90"
+            >
+              {processingWithdrawal ? 'Processing…' : 'Approve ✅'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Reject Withdrawal Confirmation */}
+      <Dialog open={!!rejectConfirm} onOpenChange={(v) => { if (!v) { setRejectConfirm(null); setRejectReason(''); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reject withdrawal</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Please provide a reason for rejecting this withdrawal of {rejectConfirm ? formatCurrency(Number(rejectConfirm.amount), currency) : ''}.
+            </p>
+            <textarea
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              placeholder="Reason for rejection…"
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm min-h-[80px] focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={() => { setRejectConfirm(null); setRejectReason(''); }}>Cancel</Button>
+              <Button
+                variant="destructive"
+                disabled={!rejectReason.trim() || !!processingWithdrawal}
+                onClick={() => rejectConfirm && handleRejectWithdrawal(rejectConfirm, rejectReason.trim())}
+              >
+                {processingWithdrawal ? 'Processing…' : 'Reject ❌'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Modals */}
       <WithdrawalModal

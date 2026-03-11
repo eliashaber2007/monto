@@ -71,6 +71,14 @@ Deno.serve(async (req) => {
       });
     }
 
+    // 🚫 Self-approval check: approver cannot be the withdrawal recipient
+    if (requestingUserId === recipient_user_id && pot.withdrawal_rule === 'requires_approval') {
+      return new Response(JSON.stringify({ error: "You cannot approve your own withdrawal request." }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     if (amount > pot.balance) {
       return new Response(JSON.stringify({ error: "Insufficient balance" }), {
         status: 400,
