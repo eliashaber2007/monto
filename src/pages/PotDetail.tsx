@@ -1046,6 +1046,28 @@ export default function PotDetail() {
                           })}
                         </>
                       )}
+                      {/* Leader assignment - creator only */}
+                      {isCreator && m.role !== 'creator' && m.user_id !== user?.id && (
+                        <div className="pt-2 border-t border-border">
+                          {m.role === 'member' ? (
+                            <button
+                              onClick={() => handleAssignLeader(m)}
+                              disabled={assigningLeader === m.id}
+                              className="text-xs flex items-center gap-1.5 font-semibold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-700 px-3 py-1.5 rounded-lg hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-colors disabled:opacity-50"
+                            >
+                              ⭐ {assigningLeader === m.id ? 'Assigning…' : 'Assign as Leader'}
+                            </button>
+                          ) : m.role === 'leader' ? (
+                            <button
+                              onClick={() => handleRemoveLeader(m)}
+                              disabled={assigningLeader === m.id}
+                              className="text-xs flex items-center gap-1.5 font-semibold text-destructive bg-destructive/10 border border-destructive/20 px-3 py-1.5 rounded-lg hover:bg-destructive/20 transition-colors disabled:opacity-50"
+                            >
+                              {assigningLeader === m.id ? 'Removing…' : 'Remove as Leader'}
+                            </button>
+                          ) : null}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
