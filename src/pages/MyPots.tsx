@@ -104,14 +104,16 @@ export default function MyPots() {
       <div className="bg-card border-b border-border sticky top-0 z-20">
         <div className="max-w-lg mx-auto px-5 py-4 flex items-center justify-between">
            <button
+                type="button"
                 onClick={() => navigate('/profile')}
-                className="w-10 h-10 rounded-full flex items-center justify-center shadow-sm overflow-hidden ring-2 ring-primary/30 hover:ring-primary/60 transition-all"
+                className="w-10 h-10 rounded-full flex items-center justify-center shadow-sm overflow-hidden ring-2 ring-primary/30 hover:ring-primary/60 transition-all cursor-pointer"
                 style={{ backgroundColor: (profile as any)?.avatar_url ? undefined : ((profile as any)?.avatar_color ?? 'hsl(var(--primary))') }}
+                aria-label="Go to profile"
               >
                 {(profile as any)?.avatar_url ? (
-                  <img src={(profile as any).avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                  <img src={(profile as any).avatar_url} alt="Avatar" className="w-full h-full object-cover pointer-events-none" />
                 ) : (
-                  <span className="text-white font-bold text-sm">
+                  <span className="text-white font-bold text-sm pointer-events-none">
                     {displayName?.[0]?.toUpperCase() ?? '?'}
                   </span>
                 )}
