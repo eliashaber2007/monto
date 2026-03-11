@@ -11,10 +11,10 @@ import { CheckCircle2, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 const LANGUAGES = [
-  { code: 'en', flag: '🇬🇧' },
-  { code: 'fr', flag: '🇫🇷' },
-  { code: 'de', flag: '🇩🇪' },
-  { code: 'es', flag: '🇪🇸' },
+  { code: 'en', flag: 'https://flagcdn.com/w40/gb.png' },
+  { code: 'fr', flag: 'https://flagcdn.com/w40/fr.png' },
+  { code: 'de', flag: 'https://flagcdn.com/w40/de.png' },
+  { code: 'es', flag: 'https://flagcdn.com/w40/es.png' },
 ];
 
 export default function Login() {
@@ -139,7 +139,7 @@ export default function Login() {
                   : 'hover:bg-muted'
               }`}
             >
-              {lang.flag}
+              <img src={lang.flag} alt={lang.code} className="w-6 h-5 rounded-sm object-cover" />
             </button>
           ))}
         </div>

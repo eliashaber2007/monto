@@ -21,10 +21,10 @@ const AVATAR_COLORS = [
 ];
 
 const LANGUAGES = [
-  { code: 'en', flag: '🇬🇧', label: 'English' },
-  { code: 'fr', flag: '🇫🇷', label: 'Français' },
-  { code: 'de', flag: '🇩🇪', label: 'Deutsch' },
-  { code: 'es', flag: '🇪🇸', label: 'Español' },
+  { code: 'en', flag: 'https://flagcdn.com/w40/gb.png', label: 'English' },
+  { code: 'fr', flag: 'https://flagcdn.com/w40/fr.png', label: 'Français' },
+  { code: 'de', flag: 'https://flagcdn.com/w40/de.png', label: 'Deutsch' },
+  { code: 'es', flag: 'https://flagcdn.com/w40/es.png', label: 'Español' },
 ];
 
 function formatCurrency(amount: number) {
@@ -471,7 +471,7 @@ export default function Profile() {
                     : 'border-border bg-secondary/50 text-muted-foreground hover:bg-secondary'
                 }`}
               >
-                <span className="text-lg">{lang.flag}</span>
+                <img src={lang.flag} alt={lang.code} className="w-6 h-5 rounded-sm object-cover" />
                 {lang.label}
               </button>
             ))}
