@@ -218,33 +218,51 @@ export default function PotDetail() {
     }
   }, [searchParams]);
 
+  const fetchReceipts = useCallback(() => {
+    if (!id) return;
+    supabase.from('receipts').select('*').eq('pot_id', id).order('created_at', { ascending: false })
+      .then(({ data }) => setReceipts(data ?? []));
+  }, [id]);
+
+  const fetchWithdrawals = useCallback(() => {
+    if (!id) return;
+    console.log('[Withdrawals] Fetching withdrawals for pot:', id);
+    supabase.from('withdrawals').select('*').eq('pot_id', id).order('created_at', { ascending: false })
+      .then(({ data }) => {
+        console.log('[Withdrawals] Fetched', data?.length ?? 0, 'withdrawals:', data?.map(w => ({ id: w.id, status: w.status, amount: w.amount })));
+        setWithdrawals(data ?? []);
+      });
+  }, [id]);
+
+  // Initial fetch
+  useEffect(() => {
+    fetchReceipts();
+    fetchWithdrawals();
+  }, [id, fetchReceipts, fetchWithdrawals]);
+
+  // Realtime subscriptions
   useEffect(() => {
     if (!id) return;
     const channel = supabase
       .channel(`pot-${id}`)
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'pots', filter: `id=eq.${id}` }, () => refetch())
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'transactions', filter: `pot_id=eq.${id}` }, () => refetch())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'withdrawals', filter: `pot_id=eq.${id}` }, () => { setTimeout(fetchWithdrawals, 500); })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'pots', filter: `id=eq.${id}` }, (payload) => {
+        console.log('[Realtime] Pot updated:', payload);
+        refetch();
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'transactions', filter: `pot_id=eq.${id}` }, (payload) => {
+        console.log('[Realtime] New transaction:', payload);
+        refetch();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'withdrawals', filter: `pot_id=eq.${id}` }, (payload) => {
+        console.log('[Realtime] Withdrawal change:', payload);
+        // Immediate fetch + delayed fetch to catch any lag
+        fetchWithdrawals();
+        refetch();
+        setTimeout(() => { fetchWithdrawals(); refetch(); }, 1000);
+      })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [id, refetch]);
-
-  const fetchReceipts = () => {
-    if (!id) return;
-    supabase.from('receipts').select('*').eq('pot_id', id).order('created_at', { ascending: false })
-      .then(({ data }) => setReceipts(data ?? []));
-  };
-
-  const fetchWithdrawals = () => {
-    if (!id) return;
-    supabase.from('withdrawals').select('*').eq('pot_id', id).order('created_at', { ascending: false })
-      .then(({ data }) => setWithdrawals(data ?? []));
-  };
-
-  useEffect(() => {
-    fetchReceipts();
-    fetchWithdrawals();
-  }, [id]);
+  }, [id, refetch, fetchWithdrawals]);
 
   // Fetch expense totals per withdrawal
   useEffect(() => {
