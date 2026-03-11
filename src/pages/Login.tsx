@@ -139,7 +139,7 @@ export default function Login() {
                   : 'hover:bg-muted'
               }`}
             >
-              {lang.flag}
+              <img src={lang.flag} alt={lang.code} className="w-6 h-5 rounded-sm object-cover" />
             </button>
           ))}
         </div>

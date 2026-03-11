@@ -471,7 +471,7 @@ export default function Profile() {
                     : 'border-border bg-secondary/50 text-muted-foreground hover:bg-secondary'
                 }`}
               >
-                <span className="text-lg">{lang.flag}</span>
+                <img src={lang.flag} alt={lang.code} className="w-6 h-5 rounded-sm object-cover" />
                 {lang.label}
               </button>
             ))}
