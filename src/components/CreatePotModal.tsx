@@ -123,7 +123,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
     if (!userId) { setCreating(false); toast({ title: t('createPot.notSignedIn'), variant: "destructive" }); return; }
 
     const { error: potError } = await supabase.from("pots").insert({
-      id: potConfig.id, name: potConfig.name, created_by: userId, visual_style: "progress_ring", currency: potConfig.currency, goal_amount: potConfig.goal_amount, withdrawal_rule: potConfig.withdrawal_rule, withdrawal_password: potConfig.withdrawal_password, require_receipt: potConfig.require_receipt, max_withdrawal_amount: potConfig.max_withdrawal_amount, max_withdrawals_per_day: potConfig.max_withdrawals_per_day, emoji: potConfig.emoji,
+      id: potConfig.id, name: potConfig.name, created_by: userId, visual_style: "progress_ring", currency: potConfig.currency, goal_amount: potConfig.goal_amount, withdrawal_rule: potConfig.withdrawal_rule, withdrawal_password: potConfig.withdrawal_password, require_receipt: potConfig.require_receipt, max_withdrawal_amount: potConfig.max_withdrawal_amount, max_withdrawals_per_day: potConfig.max_withdrawals_per_day, emoji: potConfig.emoji, contributions_restricted: potConfig.contributions_restricted,
     } as any);
 
     if (potError) { setCreating(false); toast({ title: t('common.error'), description: potError.message, variant: "destructive" }); return; }
