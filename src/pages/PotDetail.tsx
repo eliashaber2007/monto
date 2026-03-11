@@ -321,22 +321,23 @@ export default function PotDetail() {
 
   const handleApproveWithdrawal = async (withdrawal: any) => {
     console.log('[Approve] Starting approval for withdrawal:', withdrawal.id, 'amount:', withdrawal.amount, 'status:', withdrawal.status);
+    if (withdrawal.user_id === user?.id) {
+      toast({ title: 'Error', description: 'You cannot approve your own withdrawal request.', variant: 'destructive' });
+      return;
+    }
     if (withdrawal.status !== 'pending') {
-      console.error('[Approve] ABORT: withdrawal status is', withdrawal.status, 'not pending');
       toast({ title: 'Error', description: 'This withdrawal is no longer pending.', variant: 'destructive' });
       return;
     }
     setProcessingWithdrawal(withdrawal.id);
     try {
       // 1. Mark withdrawal as approved FIRST
-      console.log('[Approve] Marking withdrawal as approved in DB');
       const { error: updateErr } = await supabase.from('withdrawals').update({ status: 'approved', processed_at: new Date().toISOString() }).eq('id', withdrawal.id);
       if (updateErr) throw updateErr;
 
       // 2. Call create-payout to trigger bank transfer
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
-      console.log('[Approve] Calling create-payout edge function');
 
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-payout`,
@@ -357,32 +358,45 @@ export default function PotDetail() {
       );
 
       const result = await response.json();
-      console.log('[Approve] create-payout response:', result);
       if (!response.ok) throw new Error(result.error || 'Payout failed');
 
       toast({ title: 'Withdrawal approved ✅' });
-      console.log('[Approve] Success, re-fetching data');
+      setApproveConfirm(null);
       refetch();
       fetchWithdrawals();
     } catch (err: any) {
-      console.error('[Approve] Error:', err);
       toast({ title: 'Error', description: err.message, variant: 'destructive' });
     } finally {
       setProcessingWithdrawal(null);
     }
   };
 
-  const handleRejectWithdrawal = async (withdrawal: any) => {
-    console.log('[Reject] Rejecting withdrawal:', withdrawal.id);
+  const handleRejectWithdrawal = async (withdrawal: any, reason: string) => {
+    if (withdrawal.user_id === user?.id) {
+      toast({ title: 'Error', description: 'You cannot reject your own withdrawal request.', variant: 'destructive' });
+      return;
+    }
     setProcessingWithdrawal(withdrawal.id);
     try {
       await supabase.from('withdrawals').update({ status: 'rejected', processed_at: new Date().toISOString() }).eq('id', withdrawal.id);
-      console.log('[Reject] Withdrawal rejected successfully');
+
+      // Send rejection notification to the requester
+      try {
+        const potName = data?.pot?.name || 'the pot';
+        const { data: sessionData } = await supabase.auth.getSession();
+        await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email-notification`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${sessionData?.session?.access_token}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+          body: JSON.stringify({ type: 'withdrawal_rejected', pot_id: id, user_id: withdrawal.user_id, amount: withdrawal.amount, reason }),
+        });
+      } catch (e) { console.error('Rejection notification failed:', e); }
+
       toast({ title: 'Withdrawal rejected ❌' });
+      setRejectConfirm(null);
+      setRejectReason('');
       refetch();
       fetchWithdrawals();
     } catch (err: any) {
-      console.error('[Reject] Error:', err);
       toast({ title: 'Error', description: err.message, variant: 'destructive' });
     } finally {
       setProcessingWithdrawal(null);
