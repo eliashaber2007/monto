@@ -509,6 +509,8 @@ export default function PotDetail() {
 
   const { pot, members, transactions, myRole } = data;
   const isCreator = myRole === 'creator';
+  const isLeader = myRole === 'leader';
+  const isCreatorOrLeader = isCreator || isLeader;
   const currency = pot.currency ?? 'EUR';
 
   const receiptByTx: Record<string, any> = {};
