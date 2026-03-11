@@ -43,6 +43,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
   const [maxWithdrawalAmount, setMaxWithdrawalAmount] = useState("");
   const [maxWithdrawalsPerDay, setMaxWithdrawalsPerDay] = useState("");
   const [selectedEmoji, setSelectedEmoji] = useState<string | null>(null);
+  const [contributionsRestricted, setContributionsRestricted] = useState(false);
 
   const POT_EMOJIS = [
     "💰", "🏖️", "🎉", "🎁", "✈️", "🏠", "🚗", "🎓", "💍", "🍕",
@@ -51,19 +52,19 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
   ];
 
   const reset = () => {
-    setStep(1); setPotName(""); setCurrency("EUR"); setGoalAmount(""); setWithdrawalRule("auto_approve"); setWithdrawalPassword(""); setInitialDeposit(""); setRequireReceipt(false); setMaxWithdrawalAmount(""); setMaxWithdrawalsPerDay(""); setSelectedEmoji(null);
+    setStep(1); setPotName(""); setCurrency("EUR"); setGoalAmount(""); setWithdrawalRule("auto_approve"); setWithdrawalPassword(""); setInitialDeposit(""); setRequireReceipt(false); setMaxWithdrawalAmount(""); setMaxWithdrawalsPerDay(""); setSelectedEmoji(null); setContributionsRestricted(false);
   };
 
   const handleClose = (val: boolean) => { if (!val) reset(); onOpenChange(val); };
 
   const buildPotConfig = () => ({
-    id: crypto.randomUUID(), name: potName.trim(), currency, goal_amount: goalAmount ? parseFloat(goalAmount) : null, withdrawal_rule: withdrawalRule, withdrawal_password: withdrawalRule === "requires_password" ? withdrawalPassword : null, require_receipt: requireReceipt, max_withdrawal_amount: maxWithdrawalAmount ? parseFloat(maxWithdrawalAmount) : null, max_withdrawals_per_day: maxWithdrawalsPerDay ? parseInt(maxWithdrawalsPerDay) : null, emoji: selectedEmoji,
+    id: crypto.randomUUID(), name: potName.trim(), currency, goal_amount: goalAmount ? parseFloat(goalAmount) : null, withdrawal_rule: withdrawalRule, withdrawal_password: withdrawalRule === "requires_password" ? withdrawalPassword : null, require_receipt: requireReceipt, max_withdrawal_amount: maxWithdrawalAmount ? parseFloat(maxWithdrawalAmount) : null, max_withdrawals_per_day: maxWithdrawalsPerDay ? parseInt(maxWithdrawalsPerDay) : null, emoji: selectedEmoji, contributions_restricted: contributionsRestricted,
   });
 
   const redirectToCheckout = async (potConfig: ReturnType<typeof buildPotConfig>, amountEuros: number) => {
     localStorage.setItem('pendingPotData', JSON.stringify(potConfig));
     const res = await supabase.functions.invoke("create-checkout-session", {
-      body: { pot_id: potConfig.id, amount_cents: Math.round(amountEuros * 100), is_new_pot: true, pot_config: { name: potConfig.name, currency: potConfig.currency, goal_amount: potConfig.goal_amount, withdrawal_rule: potConfig.withdrawal_rule, withdrawal_password: potConfig.withdrawal_password, require_receipt: potConfig.require_receipt, max_withdrawal_amount: potConfig.max_withdrawal_amount, max_withdrawals_per_day: potConfig.max_withdrawals_per_day, emoji: potConfig.emoji } },
+      body: { pot_id: potConfig.id, amount_cents: Math.round(amountEuros * 100), is_new_pot: true, pot_config: { name: potConfig.name, currency: potConfig.currency, goal_amount: potConfig.goal_amount, withdrawal_rule: potConfig.withdrawal_rule, withdrawal_password: potConfig.withdrawal_password, require_receipt: potConfig.require_receipt, max_withdrawal_amount: potConfig.max_withdrawal_amount, max_withdrawals_per_day: potConfig.max_withdrawals_per_day, emoji: potConfig.emoji, contributions_restricted: potConfig.contributions_restricted } },
     });
     if (res.error) throw res.error;
     const { url } = res.data as { url: string };
@@ -122,7 +123,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
     if (!userId) { setCreating(false); toast({ title: t('createPot.notSignedIn'), variant: "destructive" }); return; }
 
     const { error: potError } = await supabase.from("pots").insert({
-      id: potConfig.id, name: potConfig.name, created_by: userId, visual_style: "progress_ring", currency: potConfig.currency, goal_amount: potConfig.goal_amount, withdrawal_rule: potConfig.withdrawal_rule, withdrawal_password: potConfig.withdrawal_password, require_receipt: potConfig.require_receipt, max_withdrawal_amount: potConfig.max_withdrawal_amount, max_withdrawals_per_day: potConfig.max_withdrawals_per_day, emoji: potConfig.emoji,
+      id: potConfig.id, name: potConfig.name, created_by: userId, visual_style: "progress_ring", currency: potConfig.currency, goal_amount: potConfig.goal_amount, withdrawal_rule: potConfig.withdrawal_rule, withdrawal_password: potConfig.withdrawal_password, require_receipt: potConfig.require_receipt, max_withdrawal_amount: potConfig.max_withdrawal_amount, max_withdrawals_per_day: potConfig.max_withdrawals_per_day, emoji: potConfig.emoji, contributions_restricted: potConfig.contributions_restricted,
     } as any);
 
     if (potError) { setCreating(false); toast({ title: t('common.error'), description: potError.message, variant: "destructive" }); return; }
@@ -243,6 +244,24 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
               <div className="space-y-1.5">
                 <Label htmlFor="maxWdDay">{t('createPot.maxWithdrawalsPerDay')}</Label>
                 <Input id="maxWdDay" type="number" min="1" step="1" placeholder={t('createPot.noLimit')} value={maxWithdrawalsPerDay} onChange={(e) => setMaxWithdrawalsPerDay(e.target.value)} className="h-11" />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Who can add funds to this pot?</Label>
+                <button type="button" onClick={() => setContributionsRestricted(false)} className={`w-full flex items-center gap-3 p-3.5 rounded-xl border transition-all text-left ${!contributionsRestricted ? "border-primary bg-accent shadow-sm" : "border-border bg-card hover:border-primary/40"}`}>
+                  <div>
+                    <div className="text-sm font-semibold text-foreground">Anyone</div>
+                    <div className="text-xs text-muted-foreground">All members can contribute</div>
+                  </div>
+                  {!contributionsRestricted && (<div className="ml-auto w-5 h-5 rounded-full bg-primary flex items-center justify-center flex-shrink-0"><div className="w-2 h-2 rounded-full bg-white" /></div>)}
+                </button>
+                <button type="button" onClick={() => setContributionsRestricted(true)} className={`w-full flex items-center gap-3 p-3.5 rounded-xl border transition-all text-left ${contributionsRestricted ? "border-primary bg-accent shadow-sm" : "border-border bg-card hover:border-primary/40"}`}>
+                  <div>
+                    <div className="text-sm font-semibold text-foreground">Leaders only</div>
+                    <div className="text-xs text-muted-foreground">Only you and your leaders can add funds</div>
+                  </div>
+                  {contributionsRestricted && (<div className="ml-auto w-5 h-5 rounded-full bg-primary flex items-center justify-center flex-shrink-0"><div className="w-2 h-2 rounded-full bg-white" /></div>)}
+                </button>
               </div>
 
               <Button className="w-full h-11 rounded-xl" disabled={withdrawalRule === "requires_password" && !withdrawalPassword.trim()} onClick={handleCreate}>

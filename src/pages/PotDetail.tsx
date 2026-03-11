@@ -191,6 +191,7 @@ export default function PotDetail() {
   const [expandedMembers, setExpandedMembers] = useState<Record<string, boolean>>({});
   const [withdrawalExpenses, setWithdrawalExpenses] = useState<Record<string, number>>({});
   const [sendingReminder, setSendingReminder] = useState<string | null>(null);
+  const [assigningLeader, setAssigningLeader] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -385,6 +386,47 @@ export default function PotDetail() {
     }
   };
 
+  const handleAssignLeader = async (member: any) => {
+    setAssigningLeader(member.id);
+    try {
+      const memberProfile = (member as any)?.profiles;
+      const memberName = memberProfile?.first_name || 'Member';
+      const { count } = await supabase.from('pot_members').select('id', { count: 'exact', head: true }).eq('pot_id', id!).eq('role', 'leader');
+      if ((count ?? 0) >= 3) { toast({ title: 'You can only have up to 3 leaders per pot.', variant: 'destructive' }); setAssigningLeader(null); return; }
+      const { error } = await supabase.from('pot_members').update({ role: 'leader' }).eq('id', member.id);
+      if (error) throw error;
+      try {
+        const { data: creatorProfile } = await supabase.from('profiles').select('first_name').eq('id', user!.id).single();
+        const { data: sessionData } = await supabase.auth.getSession();
+        await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email-notification`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${sessionData?.session?.access_token}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+          body: JSON.stringify({ type: 'leader_assigned', pot_id: id, user_id: member.user_id, creator_name: creatorProfile?.first_name || 'The creator' }),
+        });
+      } catch (e) { console.error('Leader notification failed:', e); }
+      toast({ title: `${memberName} is now a leader of this pot.` });
+      refetch();
+    } catch (err: any) { toast({ title: 'Error', description: err.message, variant: 'destructive' }); } finally { setAssigningLeader(null); }
+  };
+
+  const handleRemoveLeader = async (member: any) => {
+    setAssigningLeader(member.id);
+    try {
+      const memberProfile = (member as any)?.profiles;
+      const memberName = memberProfile?.first_name || 'Member';
+      const { error } = await supabase.from('pot_members').update({ role: 'member' }).eq('id', member.id);
+      if (error) throw error;
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email-notification`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${sessionData?.session?.access_token}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+          body: JSON.stringify({ type: 'leader_removed', pot_id: id, user_id: member.user_id }),
+        });
+      } catch (e) { console.error('Leader removal notification failed:', e); }
+      toast({ title: `${memberName} is no longer a leader.` });
+      refetch();
+    } catch (err: any) { toast({ title: 'Error', description: err.message, variant: 'destructive' }); } finally { setAssigningLeader(null); }
+  };
+
   const handleLeavePot = async () => {
     setLeaving(true);
     const { error } = await supabase
@@ -509,6 +551,8 @@ export default function PotDetail() {
 
   const { pot, members, transactions, myRole } = data;
   const isCreator = myRole === 'creator';
+  const isLeader = myRole === 'leader';
+  const isCreatorOrLeader = isCreator || isLeader;
   const currency = pot.currency ?? 'EUR';
 
   const receiptByTx: Record<string, any> = {};
@@ -529,8 +573,10 @@ export default function PotDetail() {
             <div className="flex items-center gap-2">
               {(pot as any).emoji && <span className="text-lg flex-shrink-0">{(pot as any).emoji}</span>}
               <h1 className="font-bold text-foreground truncate text-lg">{pot.name}</h1>
-              <span className="flex-shrink-0 text-[11px] px-2 py-0.5 rounded-full bg-accent text-primary border border-primary/20 font-semibold">
-                {isCreator ? '👑 Creator' : '👤 Member'}
+              <span className={`flex-shrink-0 text-[11px] px-2 py-0.5 rounded-full font-semibold border ${
+                isCreator ? 'bg-accent text-primary border-primary/20' : isLeader ? 'bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700' : 'bg-accent text-primary border-primary/20'
+              }`}>
+                {isCreator ? '👑 Creator' : isLeader ? '⭐ Leader' : '👤 Member'}
               </span>
             </div>
           </div>
@@ -578,10 +624,16 @@ export default function PotDetail() {
           <Button variant="outline" className="flex-1 h-12 rounded-xl font-semibold border-primary text-primary hover:bg-primary/10" onClick={() => setShowWithdrawal(true)}>
             Request Withdrawal
           </Button>
-          <Button variant="secondary" className="flex-1 h-12 rounded-xl font-semibold bg-muted text-foreground hover:bg-muted/80" onClick={() => setShowAddFunds(true)}>
-            <Plus size={16} className="mr-1" />
-            Add Funds
-          </Button>
+          {(!(pot as any).contributions_restricted || isCreatorOrLeader) ? (
+            <Button variant="secondary" className="flex-1 h-12 rounded-xl font-semibold bg-muted text-foreground hover:bg-muted/80" onClick={() => setShowAddFunds(true)}>
+              <Plus size={16} className="mr-1" />
+              Add Funds
+            </Button>
+          ) : (
+            <div className="flex-1 h-12 rounded-xl bg-muted/50 flex items-center justify-center text-xs text-muted-foreground text-center px-2">
+              Contributions restricted to leaders only
+            </div>
+          )}
         </div>
 
         {/* Tabs */}
@@ -715,7 +767,7 @@ export default function PotDetail() {
                                       <Receipt size={12} />
                                       Justify expenses
                                     </button>
-                                  ) : isCreator ? (
+                                  ) : isCreatorOrLeader ? (
                                     <button
                                       onClick={() => navigate(`/expenses/${w.id}`)}
                                       className="text-xs flex items-center gap-1.5 text-primary-foreground font-semibold bg-primary px-3 py-1.5 rounded-lg hover:bg-primary/90 transition-colors mt-0.5"
@@ -724,8 +776,8 @@ export default function PotDetail() {
                                       View justified expenses
                                     </button>
                                   ) : null}
-                                  {/* Send reminder button for creator when expenses not fully justified */}
-                                  {isCreator && !isMyRequest && w.status === 'approved' && (withdrawalExpenses[w.id] ?? 0) < Number(w.amount) && (
+                                  {/* Send reminder button for creator/leader when expenses not fully justified */}
+                                  {isCreatorOrLeader && !isMyRequest && w.status === 'approved' && (withdrawalExpenses[w.id] ?? 0) < Number(w.amount) && (
                                     <button
                                       onClick={async () => {
                                         setSendingReminder(w.id);
@@ -772,8 +824,8 @@ export default function PotDetail() {
                                 </div>
                               </div>
 
-                              {/* Creator approve/reject for pending */}
-                              {isPending && isCreator && !isMyRequest && (
+                              {/* Creator/Leader approve/reject for pending (not own requests) */}
+                              {isPending && isCreatorOrLeader && !isMyRequest && (
                                 <div className="flex gap-2 ml-11">
                                   <button
                                     onClick={() => handleApproveWithdrawal(w)}
@@ -924,6 +976,11 @@ export default function PotDetail() {
                         👑 Creator
                       </span>
                     )}
+                    {m.role === 'leader' && (
+                      <span className="text-[11px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-300 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700 font-semibold">
+                        ⭐ Leader
+                      </span>
+                    )}
                     <ChevronDown
                       size={16}
                       className={`text-muted-foreground transition-transform duration-200 flex-shrink-0 ${isExpanded ? 'rotate-0' : '-rotate-90'}`}
@@ -975,7 +1032,7 @@ export default function PotDetail() {
                                     <Receipt size={12} />
                                     Justify expenses
                                   </button>
-                                ) : isCreator ? (
+                                ) : isCreatorOrLeader ? (
                                   <button
                                     onClick={() => navigate(`/expenses/${w.id}`)}
                                     className="text-xs flex items-center gap-1.5 text-muted-foreground font-semibold bg-muted px-3 py-1.5 rounded-lg hover:bg-muted/80 transition-colors"
@@ -988,6 +1045,28 @@ export default function PotDetail() {
                             );
                           })}
                         </>
+                      )}
+                      {/* Leader assignment - creator only */}
+                      {isCreator && m.role !== 'creator' && m.user_id !== user?.id && (
+                        <div className="pt-2 border-t border-border">
+                          {m.role === 'member' ? (
+                            <button
+                              onClick={() => handleAssignLeader(m)}
+                              disabled={assigningLeader === m.id}
+                              className="text-xs flex items-center gap-1.5 font-semibold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-700 px-3 py-1.5 rounded-lg hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-colors disabled:opacity-50"
+                            >
+                              ⭐ {assigningLeader === m.id ? 'Assigning…' : 'Assign as Leader'}
+                            </button>
+                          ) : m.role === 'leader' ? (
+                            <button
+                              onClick={() => handleRemoveLeader(m)}
+                              disabled={assigningLeader === m.id}
+                              className="text-xs flex items-center gap-1.5 font-semibold text-destructive bg-destructive/10 border border-destructive/20 px-3 py-1.5 rounded-lg hover:bg-destructive/20 transition-colors disabled:opacity-50"
+                            >
+                              {assigningLeader === m.id ? 'Removing…' : 'Remove as Leader'}
+                            </button>
+                          ) : null}
+                        </div>
                       )}
                     </div>
                   )}
@@ -1151,6 +1230,7 @@ export default function PotDetail() {
         createdBy={pot.created_by}
         maxWithdrawalAmount={(pot as any).max_withdrawal_amount}
         maxWithdrawalsPerDay={(pot as any).max_withdrawals_per_day}
+        myRole={myRole}
       />
 
       <AddFundsModal

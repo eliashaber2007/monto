@@ -44,7 +44,7 @@ function formatCurrency(amount: number, currency = 'EUR') {
 }
 
 interface EmailPayload {
-  type: 'member_joined' | 'withdrawal_requested' | 'withdrawal_approved' | 'funds_added' | 'pot_closed' | 'expense_reminder' | 'mention';
+  type: 'member_joined' | 'withdrawal_requested' | 'withdrawal_approved' | 'funds_added' | 'pot_closed' | 'expense_reminder' | 'mention' | 'leader_assigned' | 'leader_removed';
   pot_id: string;
   user_id?: string;
   amount?: number;
@@ -119,14 +119,24 @@ async function handleNotification(payload: EmailPayload) {
     case 'withdrawal_requested': {
       const profile = payload.user_id ? await getProfile(payload.user_id) : null;
       const name = profile?.first_name || 'Someone';
+      
+      // Notify creator
       const creatorEmail = await getUserEmail(pot.created_by);
-      if (!creatorEmail) break;
-      await sendEmail(
-        creatorEmail,
-        `Withdrawal request in ${pot.name}`,
-        `${name} has requested a withdrawal of <strong>${formatCurrency(payload.amount ?? 0, currency)}</strong> from <strong>${pot.name}</strong>. Log in to approve or reject it.`,
-      );
-      await sendPush(pot.created_by, pot.name, `${name} requested a withdrawal of ${formatCurrency(payload.amount ?? 0, currency)}`, potUrl);
+      if (creatorEmail) {
+        await sendEmail(creatorEmail, `Withdrawal request in ${pot.name}`, `${name} has requested a withdrawal of <strong>${formatCurrency(payload.amount ?? 0, currency)}</strong> from <strong>${pot.name}</strong>. Log in to approve or reject it.`);
+        await sendPush(pot.created_by, pot.name, `${name} requested a withdrawal of ${formatCurrency(payload.amount ?? 0, currency)}`, potUrl);
+      }
+      
+      // Also notify all leaders
+      const { data: leaders } = await supabaseAdmin.from('pot_members').select('user_id').eq('pot_id', payload.pot_id).eq('role', 'leader');
+      for (const leader of (leaders ?? [])) {
+        if (leader.user_id === payload.user_id) continue; // Don't notify the requester
+        const leaderEmail = await getUserEmail(leader.user_id);
+        if (leaderEmail) {
+          await sendEmail(leaderEmail, `Withdrawal request in ${pot.name}`, `${name} has requested a withdrawal of <strong>${formatCurrency(payload.amount ?? 0, currency)}</strong> from <strong>${pot.name}</strong>. Log in to approve or reject it.`);
+        }
+        await sendPush(leader.user_id, pot.name, `${name} requested a withdrawal of ${formatCurrency(payload.amount ?? 0, currency)}`, potUrl);
+      }
       break;
     }
 
@@ -202,10 +212,48 @@ async function handleNotification(payload: EmailPayload) {
       if (!payload.user_id) break;
       const senderName = payload.creator_name || 'Someone';
       const mentionMessage = `${senderName} mentioned you in ${pot.name}`;
+      await sendPush(payload.user_id, pot.name, mentionMessage, potUrl);
+      break;
+    }
+
+    case 'leader_assigned': {
+      if (!payload.user_id) break;
+      const creatorName = payload.creator_name || 'The creator';
+      const message = `You've been made a leader of ${pot.name} by ${creatorName}.`;
+      
+      // In-app notification
+      await supabaseAdmin.from('notifications').insert({
+        user_id: payload.user_id,
+        pot_id: payload.pot_id,
+        type: 'leader_assigned',
+        message,
+      });
       
       const recipientEmail = await getUserEmail(payload.user_id);
-      // No email for mentions, just push
-      await sendPush(payload.user_id, pot.name, mentionMessage, potUrl);
+      if (recipientEmail) {
+        await sendEmail(recipientEmail, `You're now a leader of ${pot.name}`, `${creatorName} has made you a leader of <strong>${pot.name}</strong>. You can now approve withdrawals and manage the pot.`);
+      }
+      await sendPush(payload.user_id, pot.name, message, potUrl);
+      break;
+    }
+
+    case 'leader_removed': {
+      if (!payload.user_id) break;
+      const removedMessage = `You are no longer a leader of ${pot.name}.`;
+      
+      // In-app notification
+      await supabaseAdmin.from('notifications').insert({
+        user_id: payload.user_id,
+        pot_id: payload.pot_id,
+        type: 'leader_removed',
+        message: removedMessage,
+      });
+      
+      const removedEmail = await getUserEmail(payload.user_id);
+      if (removedEmail) {
+        await sendEmail(removedEmail, `Leader role removed in ${pot.name}`, `You are no longer a leader of <strong>${pot.name}</strong>.`);
+      }
+      await sendPush(payload.user_id, pot.name, removedMessage, potUrl);
       break;
     }
   }

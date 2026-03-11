@@ -51,6 +51,8 @@ export default function PotSuccess() {
           require_receipt: potConfig.require_receipt ?? false,
           max_withdrawal_amount: potConfig.max_withdrawal_amount,
           max_withdrawals_per_day: potConfig.max_withdrawals_per_day,
+          emoji: potConfig.emoji,
+          contributions_restricted: potConfig.contributions_restricted ?? false,
         } as any);
 
         if (potError) {
