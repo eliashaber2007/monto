@@ -369,15 +369,16 @@ export default function PotDetail() {
   };
 
   const handleRejectWithdrawal = async (withdrawal: any) => {
+    console.log('[Reject] Rejecting withdrawal:', withdrawal.id);
     setProcessingWithdrawal(withdrawal.id);
     try {
-      // No balance refund needed since balance was never deducted on request
       await supabase.from('withdrawals').update({ status: 'rejected', processed_at: new Date().toISOString() }).eq('id', withdrawal.id);
-
-      toast({ title: 'Withdrawal rejected ❌', description: 'Funds returned to pot.' });
+      console.log('[Reject] Withdrawal rejected successfully');
+      toast({ title: 'Withdrawal rejected ❌' });
       refetch();
       fetchWithdrawals();
     } catch (err: any) {
+      console.error('[Reject] Error:', err);
       toast({ title: 'Error', description: err.message, variant: 'destructive' });
     } finally {
       setProcessingWithdrawal(null);
