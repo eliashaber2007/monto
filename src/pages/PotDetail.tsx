@@ -316,11 +316,23 @@ export default function PotDetail() {
   }, [id, user, showChat]);
 
   const handleApproveWithdrawal = async (withdrawal: any) => {
+    console.log('[Approve] Starting approval for withdrawal:', withdrawal.id, 'amount:', withdrawal.amount, 'status:', withdrawal.status);
+    if (withdrawal.status !== 'pending') {
+      console.error('[Approve] ABORT: withdrawal status is', withdrawal.status, 'not pending');
+      toast({ title: 'Error', description: 'This withdrawal is no longer pending.', variant: 'destructive' });
+      return;
+    }
     setProcessingWithdrawal(withdrawal.id);
     try {
-      // Call create-payout to trigger bank transfer (balance deduction happens inside the edge function)
+      // 1. Mark withdrawal as approved FIRST
+      console.log('[Approve] Marking withdrawal as approved in DB');
+      const { error: updateErr } = await supabase.from('withdrawals').update({ status: 'approved', processed_at: new Date().toISOString() }).eq('id', withdrawal.id);
+      if (updateErr) throw updateErr;
+
+      // 2. Call create-payout to trigger bank transfer
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
+      console.log('[Approve] Calling create-payout edge function');
 
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-payout`,
@@ -341,15 +353,15 @@ export default function PotDetail() {
       );
 
       const result = await response.json();
+      console.log('[Approve] create-payout response:', result);
       if (!response.ok) throw new Error(result.error || 'Payout failed');
 
-      // 3. Mark withdrawal as approved
-      await supabase.from('withdrawals').update({ status: 'approved', processed_at: new Date().toISOString() }).eq('id', withdrawal.id);
-
       toast({ title: 'Withdrawal approved ✅' });
+      console.log('[Approve] Success, re-fetching data');
       refetch();
       fetchWithdrawals();
     } catch (err: any) {
+      console.error('[Approve] Error:', err);
       toast({ title: 'Error', description: err.message, variant: 'destructive' });
     } finally {
       setProcessingWithdrawal(null);
