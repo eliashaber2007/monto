@@ -1228,6 +1228,58 @@ export default function PotDetail() {
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Approve Withdrawal Confirmation */}
+      <AlertDialog open={!!approveConfirm} onOpenChange={(v) => { if (!v) setApproveConfirm(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Approve withdrawal?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to approve this withdrawal of {approveConfirm ? formatCurrency(Number(approveConfirm.amount), currency) : ''}? This will trigger a bank transfer to the member and deduct the amount from the pot balance.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => approveConfirm && handleApproveWithdrawal(approveConfirm)}
+              disabled={!!processingWithdrawal}
+              className="bg-success text-success-foreground hover:bg-success/90"
+            >
+              {processingWithdrawal ? 'Processing…' : 'Approve ✅'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Reject Withdrawal Confirmation */}
+      <Dialog open={!!rejectConfirm} onOpenChange={(v) => { if (!v) { setRejectConfirm(null); setRejectReason(''); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reject withdrawal</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Please provide a reason for rejecting this withdrawal of {rejectConfirm ? formatCurrency(Number(rejectConfirm.amount), currency) : ''}.
+            </p>
+            <textarea
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              placeholder="Reason for rejection…"
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm min-h-[80px] focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={() => { setRejectConfirm(null); setRejectReason(''); }}>Cancel</Button>
+              <Button
+                variant="destructive"
+                disabled={!rejectReason.trim() || !!processingWithdrawal}
+                onClick={() => rejectConfirm && handleRejectWithdrawal(rejectConfirm, rejectReason.trim())}
+              >
+                {processingWithdrawal ? 'Processing…' : 'Reject ❌'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Modals */}
       <WithdrawalModal
         open={showWithdrawal}
