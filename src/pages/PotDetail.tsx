@@ -990,7 +990,7 @@ export default function PotDetail() {
                                     <Receipt size={12} />
                                     Justify expenses
                                   </button>
-                                ) : isCreator ? (
+                                ) : isCreatorOrLeader ? (
                                   <button
                                     onClick={() => navigate(`/expenses/${w.id}`)}
                                     className="text-xs flex items-center gap-1.5 text-muted-foreground font-semibold bg-muted px-3 py-1.5 rounded-lg hover:bg-muted/80 transition-colors"
