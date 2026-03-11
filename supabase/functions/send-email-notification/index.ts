@@ -119,14 +119,24 @@ async function handleNotification(payload: EmailPayload) {
     case 'withdrawal_requested': {
       const profile = payload.user_id ? await getProfile(payload.user_id) : null;
       const name = profile?.first_name || 'Someone';
+      
+      // Notify creator
       const creatorEmail = await getUserEmail(pot.created_by);
-      if (!creatorEmail) break;
-      await sendEmail(
-        creatorEmail,
-        `Withdrawal request in ${pot.name}`,
-        `${name} has requested a withdrawal of <strong>${formatCurrency(payload.amount ?? 0, currency)}</strong> from <strong>${pot.name}</strong>. Log in to approve or reject it.`,
-      );
-      await sendPush(pot.created_by, pot.name, `${name} requested a withdrawal of ${formatCurrency(payload.amount ?? 0, currency)}`, potUrl);
+      if (creatorEmail) {
+        await sendEmail(creatorEmail, `Withdrawal request in ${pot.name}`, `${name} has requested a withdrawal of <strong>${formatCurrency(payload.amount ?? 0, currency)}</strong> from <strong>${pot.name}</strong>. Log in to approve or reject it.`);
+        await sendPush(pot.created_by, pot.name, `${name} requested a withdrawal of ${formatCurrency(payload.amount ?? 0, currency)}`, potUrl);
+      }
+      
+      // Also notify all leaders
+      const { data: leaders } = await supabaseAdmin.from('pot_members').select('user_id').eq('pot_id', payload.pot_id).eq('role', 'leader');
+      for (const leader of (leaders ?? [])) {
+        if (leader.user_id === payload.user_id) continue; // Don't notify the requester
+        const leaderEmail = await getUserEmail(leader.user_id);
+        if (leaderEmail) {
+          await sendEmail(leaderEmail, `Withdrawal request in ${pot.name}`, `${name} has requested a withdrawal of <strong>${formatCurrency(payload.amount ?? 0, currency)}</strong> from <strong>${pot.name}</strong>. Log in to approve or reject it.`);
+        }
+        await sendPush(leader.user_id, pot.name, `${name} requested a withdrawal of ${formatCurrency(payload.amount ?? 0, currency)}`, potUrl);
+      }
       break;
     }
 
