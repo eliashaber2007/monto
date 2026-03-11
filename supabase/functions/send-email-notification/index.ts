@@ -44,7 +44,7 @@ function formatCurrency(amount: number, currency = 'EUR') {
 }
 
 interface EmailPayload {
-  type: 'member_joined' | 'withdrawal_requested' | 'withdrawal_approved' | 'funds_added' | 'pot_closed' | 'expense_reminder' | 'mention';
+  type: 'member_joined' | 'withdrawal_requested' | 'withdrawal_approved' | 'funds_added' | 'pot_closed' | 'expense_reminder' | 'mention' | 'leader_assigned' | 'leader_removed';
   pot_id: string;
   user_id?: string;
   amount?: number;
