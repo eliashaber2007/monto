@@ -1230,6 +1230,7 @@ export default function PotDetail() {
         createdBy={pot.created_by}
         maxWithdrawalAmount={(pot as any).max_withdrawal_amount}
         maxWithdrawalsPerDay={(pot as any).max_withdrawals_per_day}
+        myRole={myRole}
       />
 
       <AddFundsModal
