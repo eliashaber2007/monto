@@ -20,6 +20,7 @@ import PotSuccess from "./pages/PotSuccess";
 import FAQ from "./pages/FAQ";
 import WithdrawalExpenses from "./pages/WithdrawalExpenses";
 import Onboarding from "./pages/Onboarding";
+import Verified from "./pages/Verified";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -111,6 +112,7 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route path="/verified" element={<Verified />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
