@@ -782,8 +782,8 @@ export default function PotDetail() {
                                 </div>
                               </div>
 
-                              {/* Creator approve/reject for pending */}
-                              {isPending && isCreator && !isMyRequest && (
+                              {/* Creator/Leader approve/reject for pending (not own requests) */}
+                              {isPending && isCreatorOrLeader && !isMyRequest && (
                                 <div className="flex gap-2 ml-11">
                                   <button
                                     onClick={() => handleApproveWithdrawal(w)}
