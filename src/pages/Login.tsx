@@ -53,7 +53,7 @@ export default function Login() {
     const { error } = await supabase.auth.resend({
       type: 'signup',
       email,
-      options: { emailRedirectTo: `${window.location.origin}/login?verified=true` },
+      options: { emailRedirectTo: `${window.location.origin}/verified` },
     });
     setResending(false);
     if (error) {

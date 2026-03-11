@@ -64,7 +64,12 @@ export default function Signup() {
           <p className="text-muted-foreground text-sm leading-relaxed">
             {t('auth.verificationSent')} <span className="font-semibold text-foreground">{email}</span>{t('auth.clickToActivate')}
           </p>
-          <p className="text-center text-sm text-muted-foreground mt-8">
+          <p className="text-center text-sm text-muted-foreground mt-6">
+            <Link to="/login" className="text-primary font-semibold hover:underline">
+              Already verified? Log in here
+            </Link>
+          </p>
+          <p className="text-center text-sm text-muted-foreground mt-2">
             {t('auth.alreadyVerified')}{" "}
             <Link to="/login" className="text-primary font-semibold hover:underline">
               {t('auth.signIn')}
