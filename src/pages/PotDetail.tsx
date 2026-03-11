@@ -734,8 +734,8 @@ export default function PotDetail() {
                                       View justified expenses
                                     </button>
                                   ) : null}
-                                  {/* Send reminder button for creator when expenses not fully justified */}
-                                  {isCreator && !isMyRequest && w.status === 'approved' && (withdrawalExpenses[w.id] ?? 0) < Number(w.amount) && (
+                                  {/* Send reminder button for creator/leader when expenses not fully justified */}
+                                  {isCreatorOrLeader && !isMyRequest && w.status === 'approved' && (withdrawalExpenses[w.id] ?? 0) < Number(w.amount) && (
                                     <button
                                       onClick={async () => {
                                         setSendingReminder(w.id);
