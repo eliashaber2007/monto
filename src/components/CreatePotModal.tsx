@@ -93,7 +93,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
     const potConfig = buildPotConfig();
     setCreatedPotId(potConfig.id);
     localStorage.setItem('pendingPotData', JSON.stringify(potConfig));
-    setStep(3);
+    setStep(4);
     setCreating(false);
   };
 
@@ -139,19 +139,19 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
   };
 
   const currencySymbol = currency === "EUR" ? "€" : currency === "GBP" ? "£" : "$";
-  const totalSteps = 2;
+  const totalSteps = 3;
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-sm rounded-2xl p-0 overflow-hidden gap-0">
-        <div className="h-1 bg-muted">
+      <DialogContent className="max-w-sm rounded-2xl p-0 overflow-hidden gap-0 max-h-[90vh] flex flex-col">
+        <div className="h-1 bg-muted flex-shrink-0">
           <div className="h-full bg-primary transition-all duration-300 ease-out" style={{ width: `${(Math.min(step, totalSteps) / totalSteps) * 100}%` }} />
         </div>
 
-        <div className="p-6">
+        <div className="p-6 overflow-y-auto">
           <DialogHeader className="mb-5">
             <div className="flex items-center gap-2">
-              {step > 1 && step <= 3 && (
+              {step > 1 && step <= 4 && (
                 <button onClick={() => setStep((s) => s - 1)} className="w-7 h-7 rounded-full flex items-center justify-center text-muted-foreground hover:bg-secondary transition-colors -ml-1" type="button">
                   <ChevronLeft size={16} />
                 </button>
@@ -159,12 +159,14 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
               <DialogTitle className="text-base">
                 {step === 1 && t('createPot.setupPot')}
                 {step === 2 && t('createPot.withdrawalRules')}
-                {step === 3 && t('createPot.initialDeposit')}
+                {step === 3 && "Receipt & Verification"}
+                {step === 4 && t('createPot.initialDeposit')}
               </DialogTitle>
-              {step <= 2 && <span className="ml-auto text-xs text-muted-foreground font-medium">{step}/{totalSteps}</span>}
+              {step <= 3 && <span className="ml-auto text-xs text-muted-foreground font-medium">{step}/{totalSteps}</span>}
             </div>
           </DialogHeader>
 
+          {/* Step 1: Pot basics */}
           {step === 1 && (
             <div className="space-y-4">
               <div className="space-y-1.5">
@@ -202,6 +204,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
             </div>
           )}
 
+          {/* Step 2: Withdrawal rules & limits */}
           {step === 2 && (
             <div className="space-y-4">
               <div className="space-y-2">
@@ -223,16 +226,6 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
                 </div>
               )}
 
-              <div className="flex items-center justify-between p-3.5 rounded-xl border border-border bg-card">
-                <div>
-                  <div className="text-sm font-semibold text-foreground">{t('createPot.requireReceipt')}</div>
-                  <div className="text-xs text-muted-foreground">{t('createPot.requireReceiptDesc')}</div>
-                </div>
-                <button type="button" role="switch" aria-checked={requireReceipt} onClick={() => setRequireReceipt(!requireReceipt)} className={`relative inline-flex h-[28px] w-[48px] shrink-0 cursor-pointer rounded-full transition-colors duration-200 ${requireReceipt ? 'bg-primary' : 'bg-muted'}`}>
-                  <span className={`pointer-events-none inline-block h-[24px] w-[24px] rounded-full bg-white shadow-lg transition-transform duration-200 ${requireReceipt ? 'translate-x-[22px]' : 'translate-x-[2px]'} mt-[2px]`} />
-                </button>
-              </div>
-
               <div className="space-y-1.5">
                 <Label htmlFor="maxWdAmount">{t('createPot.maxWithdrawalAmount')}</Label>
                 <div className="relative">
@@ -242,8 +235,28 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="maxWdDay">{t('createPot.maxWithdrawalsPerDay')}</Label>
+                <Label htmlFor="maxWdDay">Max withdrawals per day (number of times)</Label>
                 <Input id="maxWdDay" type="number" min="1" step="1" placeholder={t('createPot.noLimit')} value={maxWithdrawalsPerDay} onChange={(e) => setMaxWithdrawalsPerDay(e.target.value)} className="h-11" />
+                <p className="text-xs text-muted-foreground">e.g. set to 3 to allow a maximum of 3 withdrawal requests per day</p>
+              </div>
+
+              <Button className="w-full h-11 rounded-xl" disabled={withdrawalRule === "requires_password" && !withdrawalPassword.trim()} onClick={() => setStep(3)}>{t('common.next')}</Button>
+            </div>
+          )}
+
+          {/* Step 3: Receipt & Verification */}
+          {step === 3 && (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">These settings help you keep track of how funds are spent.</p>
+
+              <div className="flex items-center justify-between p-3.5 rounded-xl border border-border bg-card">
+                <div>
+                  <div className="text-sm font-semibold text-foreground">{t('createPot.requireReceipt')}</div>
+                  <div className="text-xs text-muted-foreground">{t('createPot.requireReceiptDesc')}</div>
+                </div>
+                <button type="button" role="switch" aria-checked={requireReceipt} onClick={() => setRequireReceipt(!requireReceipt)} className={`relative inline-flex h-[28px] w-[48px] shrink-0 cursor-pointer rounded-full transition-colors duration-200 ${requireReceipt ? 'bg-primary' : 'bg-muted'}`}>
+                  <span className={`pointer-events-none inline-block h-[24px] w-[24px] rounded-full bg-white shadow-lg transition-transform duration-200 ${requireReceipt ? 'translate-x-[22px]' : 'translate-x-[2px]'} mt-[2px]`} />
+                </button>
               </div>
 
               <div className="space-y-2">
@@ -264,13 +277,14 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
                 </button>
               </div>
 
-              <Button className="w-full h-11 rounded-xl" disabled={withdrawalRule === "requires_password" && !withdrawalPassword.trim()} onClick={handleCreate}>
+              <Button className="w-full h-11 rounded-xl" onClick={handleCreate} disabled={creating}>
                 {creating ? t('createPot.creating') : t('createPot.createPot')}
               </Button>
             </div>
           )}
 
-          {step === 3 && (
+          {/* Step 4: Initial deposit */}
+          {step === 4 && (
             <div className="space-y-5">
               <p className="text-sm text-muted-foreground">{t('createPot.almostReady')}</p>
               <div className="space-y-1.5">
