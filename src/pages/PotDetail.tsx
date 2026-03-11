@@ -845,14 +845,14 @@ export default function PotDetail() {
                               {isPending && isCreatorOrLeader && !isMyRequest && (
                                 <div className="flex gap-2 ml-11">
                                   <button
-                                    onClick={() => handleApproveWithdrawal(w)}
+                                    onClick={() => setApproveConfirm(w)}
                                     disabled={processingWithdrawal === w.id}
                                     className="flex-1 text-xs font-semibold py-2 rounded-lg bg-success/10 text-success border border-success/20 hover:bg-success/20 transition-colors disabled:opacity-50"
                                   >
                                     {processingWithdrawal === w.id ? 'Processing…' : 'Approve ✅'}
                                   </button>
                                   <button
-                                    onClick={() => handleRejectWithdrawal(w)}
+                                    onClick={() => { setRejectConfirm(w); setRejectReason(''); }}
                                     disabled={processingWithdrawal === w.id}
                                     className="flex-1 text-xs font-semibold py-2 rounded-lg bg-destructive/10 text-destructive border border-destructive/20 hover:bg-destructive/20 transition-colors disabled:opacity-50"
                                   >
