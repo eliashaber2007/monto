@@ -582,10 +582,16 @@ export default function PotDetail() {
           <Button variant="outline" className="flex-1 h-12 rounded-xl font-semibold border-primary text-primary hover:bg-primary/10" onClick={() => setShowWithdrawal(true)}>
             Request Withdrawal
           </Button>
-          <Button variant="secondary" className="flex-1 h-12 rounded-xl font-semibold bg-muted text-foreground hover:bg-muted/80" onClick={() => setShowAddFunds(true)}>
-            <Plus size={16} className="mr-1" />
-            Add Funds
-          </Button>
+          {(!(pot as any).contributions_restricted || isCreatorOrLeader) ? (
+            <Button variant="secondary" className="flex-1 h-12 rounded-xl font-semibold bg-muted text-foreground hover:bg-muted/80" onClick={() => setShowAddFunds(true)}>
+              <Plus size={16} className="mr-1" />
+              Add Funds
+            </Button>
+          ) : (
+            <div className="flex-1 h-12 rounded-xl bg-muted/50 flex items-center justify-center text-xs text-muted-foreground text-center px-2">
+              Contributions restricted to leaders only
+            </div>
+          )}
         </div>
 
         {/* Tabs */}
