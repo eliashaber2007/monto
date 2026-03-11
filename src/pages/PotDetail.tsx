@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Users, Plus, CheckCircle2, Image as ImageIcon, Upload, X, LogOut, Copy, Check, Landmark, ThumbsUp, ThumbsDown, MessageCircle, KeyRound, ChevronDown, ChevronRight, Receipt, Bell } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -218,33 +218,51 @@ export default function PotDetail() {
     }
   }, [searchParams]);
 
+  const fetchReceipts = useCallback(() => {
+    if (!id) return;
+    supabase.from('receipts').select('*').eq('pot_id', id).order('created_at', { ascending: false })
+      .then(({ data }) => setReceipts(data ?? []));
+  }, [id]);
+
+  const fetchWithdrawals = useCallback(() => {
+    if (!id) return;
+    console.log('[Withdrawals] Fetching withdrawals for pot:', id);
+    supabase.from('withdrawals').select('*').eq('pot_id', id).order('created_at', { ascending: false })
+      .then(({ data }) => {
+        console.log('[Withdrawals] Fetched', data?.length ?? 0, 'withdrawals:', data?.map(w => ({ id: w.id, status: w.status, amount: w.amount })));
+        setWithdrawals(data ?? []);
+      });
+  }, [id]);
+
+  // Initial fetch
+  useEffect(() => {
+    fetchReceipts();
+    fetchWithdrawals();
+  }, [id, fetchReceipts, fetchWithdrawals]);
+
+  // Realtime subscriptions
   useEffect(() => {
     if (!id) return;
     const channel = supabase
       .channel(`pot-${id}`)
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'pots', filter: `id=eq.${id}` }, () => refetch())
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'transactions', filter: `pot_id=eq.${id}` }, () => refetch())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'withdrawals', filter: `pot_id=eq.${id}` }, () => { setTimeout(fetchWithdrawals, 500); })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'pots', filter: `id=eq.${id}` }, (payload) => {
+        console.log('[Realtime] Pot updated:', payload);
+        refetch();
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'transactions', filter: `pot_id=eq.${id}` }, (payload) => {
+        console.log('[Realtime] New transaction:', payload);
+        refetch();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'withdrawals', filter: `pot_id=eq.${id}` }, (payload) => {
+        console.log('[Realtime] Withdrawal change:', payload);
+        // Immediate fetch + delayed fetch to catch any lag
+        fetchWithdrawals();
+        refetch();
+        setTimeout(() => { fetchWithdrawals(); refetch(); }, 1000);
+      })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [id, refetch]);
-
-  const fetchReceipts = () => {
-    if (!id) return;
-    supabase.from('receipts').select('*').eq('pot_id', id).order('created_at', { ascending: false })
-      .then(({ data }) => setReceipts(data ?? []));
-  };
-
-  const fetchWithdrawals = () => {
-    if (!id) return;
-    supabase.from('withdrawals').select('*').eq('pot_id', id).order('created_at', { ascending: false })
-      .then(({ data }) => setWithdrawals(data ?? []));
-  };
-
-  useEffect(() => {
-    fetchReceipts();
-    fetchWithdrawals();
-  }, [id]);
+  }, [id, refetch, fetchWithdrawals]);
 
   // Fetch expense totals per withdrawal
   useEffect(() => {
@@ -298,11 +316,23 @@ export default function PotDetail() {
   }, [id, user, showChat]);
 
   const handleApproveWithdrawal = async (withdrawal: any) => {
+    console.log('[Approve] Starting approval for withdrawal:', withdrawal.id, 'amount:', withdrawal.amount, 'status:', withdrawal.status);
+    if (withdrawal.status !== 'pending') {
+      console.error('[Approve] ABORT: withdrawal status is', withdrawal.status, 'not pending');
+      toast({ title: 'Error', description: 'This withdrawal is no longer pending.', variant: 'destructive' });
+      return;
+    }
     setProcessingWithdrawal(withdrawal.id);
     try {
-      // Call create-payout to trigger bank transfer (balance deduction happens inside the edge function)
+      // 1. Mark withdrawal as approved FIRST
+      console.log('[Approve] Marking withdrawal as approved in DB');
+      const { error: updateErr } = await supabase.from('withdrawals').update({ status: 'approved', processed_at: new Date().toISOString() }).eq('id', withdrawal.id);
+      if (updateErr) throw updateErr;
+
+      // 2. Call create-payout to trigger bank transfer
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
+      console.log('[Approve] Calling create-payout edge function');
 
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-payout`,
@@ -323,15 +353,15 @@ export default function PotDetail() {
       );
 
       const result = await response.json();
+      console.log('[Approve] create-payout response:', result);
       if (!response.ok) throw new Error(result.error || 'Payout failed');
 
-      // 3. Mark withdrawal as approved
-      await supabase.from('withdrawals').update({ status: 'approved', processed_at: new Date().toISOString() }).eq('id', withdrawal.id);
-
       toast({ title: 'Withdrawal approved ✅' });
+      console.log('[Approve] Success, re-fetching data');
       refetch();
       fetchWithdrawals();
     } catch (err: any) {
+      console.error('[Approve] Error:', err);
       toast({ title: 'Error', description: err.message, variant: 'destructive' });
     } finally {
       setProcessingWithdrawal(null);
@@ -339,15 +369,16 @@ export default function PotDetail() {
   };
 
   const handleRejectWithdrawal = async (withdrawal: any) => {
+    console.log('[Reject] Rejecting withdrawal:', withdrawal.id);
     setProcessingWithdrawal(withdrawal.id);
     try {
-      // No balance refund needed since balance was never deducted on request
       await supabase.from('withdrawals').update({ status: 'rejected', processed_at: new Date().toISOString() }).eq('id', withdrawal.id);
-
-      toast({ title: 'Withdrawal rejected ❌', description: 'Funds returned to pot.' });
+      console.log('[Reject] Withdrawal rejected successfully');
+      toast({ title: 'Withdrawal rejected ❌' });
       refetch();
       fetchWithdrawals();
     } catch (err: any) {
+      console.error('[Reject] Error:', err);
       toast({ title: 'Error', description: err.message, variant: 'destructive' });
     } finally {
       setProcessingWithdrawal(null);
@@ -554,7 +585,7 @@ export default function PotDetail() {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="activity">
+        <Tabs defaultValue="activity" onValueChange={(val) => { if (val === 'activity') { console.log('[Tabs] Activity tab focused, re-fetching withdrawals'); fetchWithdrawals(); refetch(); } }}>
           <TabsList className="w-full bg-secondary rounded-xl p-1 h-11">
             <TabsTrigger value="activity" className="flex-1 rounded-lg text-sm data-[state=inactive]:text-muted-foreground dark:data-[state=inactive]:text-[#B0B8C9]">Activity</TabsTrigger>
             <TabsTrigger value="leaderboard" className="flex-1 rounded-lg text-sm data-[state=inactive]:text-muted-foreground dark:data-[state=inactive]:text-[#B0B8C9]">Leaderboard</TabsTrigger>
