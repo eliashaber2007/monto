@@ -37,7 +37,7 @@ export default function Signup() {
       password,
       options: {
         data: { first_name: firstName },
-        emailRedirectTo: `${window.location.origin}/login?verified=true`,
+        emailRedirectTo: `${window.location.origin}/verified`,
       },
     });
 
