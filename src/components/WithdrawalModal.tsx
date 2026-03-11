@@ -26,7 +26,7 @@ interface WithdrawalModalProps {
 }
 
 export default function WithdrawalModal({
-  open, onOpenChange, potId, potBalance, currency, withdrawalRule, withdrawalPassword, potName, createdBy, maxWithdrawalAmount, maxWithdrawalsPerDay,
+  open, onOpenChange, potId, potBalance, currency, withdrawalRule, withdrawalPassword, potName, createdBy, maxWithdrawalAmount, maxWithdrawalsPerDay, myRole,
 }: WithdrawalModalProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
