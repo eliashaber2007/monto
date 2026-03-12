@@ -953,7 +953,7 @@ export default function PotDetail() {
             })()}
           </TabsContent>
 
-          <TabsContent value="members" className="mt-5 space-y-3">
+          <TabsContent value="members" className="mt-5 space-y-3 max-w-sm mx-auto">
             {members.map((m) => {
               const memberProfile = (m as any).profiles;
               const memberName = memberProfile?.first_name || 'Member';
