@@ -655,10 +655,9 @@ export default function PotDetail() {
 
         {/* Tabs */}
         <Tabs defaultValue="activity" onValueChange={(val) => { if (val === 'activity') { console.log('[Tabs] Activity tab focused, re-fetching withdrawals'); fetchWithdrawals(); refetch(); } }}>
-          <TabsList className="w-full bg-secondary rounded-xl p-1 h-11">
-            <TabsTrigger value="activity" className="flex-1 rounded-lg text-sm data-[state=inactive]:text-foreground/70">Activity</TabsTrigger>
-            <TabsTrigger value="leaderboard" className="flex-1 rounded-lg text-sm data-[state=inactive]:text-foreground/70">Leaderboard</TabsTrigger>
-            <TabsTrigger value="members" className="flex-1 rounded-lg text-sm data-[state=inactive]:text-foreground/70">Members</TabsTrigger>
+          <TabsList className="w-full rounded-xl p-1 h-11" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
+            <TabsTrigger value="activity" className="flex-1 rounded-lg text-sm" style={{ color: 'rgba(255,255,255,0.6)' }} data-style-active>Activity</TabsTrigger>
+            <TabsTrigger value="members" className="flex-1 rounded-lg text-sm" style={{ color: 'rgba(255,255,255,0.6)' }} data-style-active>Members</TabsTrigger>
           </TabsList>
 
           <TabsContent value="activity" className="mt-5 space-y-3">
