@@ -136,13 +136,15 @@
 
 /* Pot detail tab styling */
 .pot-tabs-list {
-  background-color: rgba(255, 255, 255, 0.1) !important;
+  background-color: rgba(255, 255, 255, 0.08) !important;
 }
 .pot-tab-trigger {
-  color: rgba(255, 255, 255, 0.6) !important;
+  color: #FFFFFF !important;
 }
 .pot-tab-trigger[data-state="active"] {
   color: #FFFFFF !important;
+  background-color: hsl(var(--primary)) !important;
+  box-shadow: none !important;
 }
 
 @keyframes wave {
