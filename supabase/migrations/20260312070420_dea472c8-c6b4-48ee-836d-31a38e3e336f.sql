@@ -1,0 +1,1 @@
+ALTER TABLE pot_members DROP CONSTRAINT IF EXISTS pot_members_role_check; ALTER TABLE pot_members ADD CONSTRAINT pot_members_role_check CHECK (role IN ('creator', 'leader', 'member'));
