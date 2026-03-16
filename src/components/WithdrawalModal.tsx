@@ -118,7 +118,7 @@ export default function WithdrawalModal({
         console.log('[Withdrawal] Inserting approved withdrawal record');
         await supabase.from('withdrawals').insert({ pot_id: potId, user_id: user.id, amount: numAmount, note: note.trim(), status: 'approved', processed_at: new Date().toISOString() });
 
-        toast({ title: t('withdrawalModal.withdrawalProcessing', { amount: formatCurrency(numAmount) }) });
+        toast({ title: t('withdrawalModal.withdrawalApproved') });
       } else {
         // requires_approval and user is NOT creator — insert pending, notify creator
         console.log('[Withdrawal] Pending approval: inserting pending withdrawal');
@@ -142,7 +142,7 @@ export default function WithdrawalModal({
           console.error('[Withdrawal] Email notification failed:', emailErr);
         }
 
-        toast({ title: t('withdrawalModal.requestSent') });
+        toast({ title: t('withdrawalModal.requestSentApproval') });
       }
 
       queryClient.invalidateQueries({ queryKey: ['pot', potId] });

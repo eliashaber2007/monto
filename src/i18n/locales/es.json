@@ -227,7 +227,9 @@
     "bankRequired": "Cuenta bancaria requerida",
     "bankRequiredDesc": "Conecta tu cuenta bancaria en tu Perfil antes de retirar.",
     "withdrawalProcessing": "El retiro de {{amount}} está siendo procesado",
-    "requestSent": "Solicitud de retiro enviada al creador del bote"
+    "requestSent": "Solicitud de retiro enviada al creador del bote",
+    "withdrawalApproved": "¡Retiro aprobado!",
+    "requestSentApproval": "Solicitud de retiro enviada — esperando aprobación."
   },
   "profile": {
     "title": "Perfil",

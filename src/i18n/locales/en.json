@@ -227,7 +227,9 @@
     "bankRequired": "Bank account required",
     "bankRequiredDesc": "Please connect your bank account in your Profile before withdrawing.",
     "withdrawalProcessing": "Withdrawal of {{amount}} is being processed",
-    "requestSent": "Withdrawal request sent to the pot creator"
+    "requestSent": "Withdrawal request sent to the pot creator",
+    "withdrawalApproved": "Withdrawal approved!",
+    "requestSentApproval": "Withdrawal request sent — waiting for approval."
   },
   "profile": {
     "title": "Profile",

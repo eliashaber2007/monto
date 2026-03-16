@@ -227,7 +227,9 @@
     "bankRequired": "Bankkonto erforderlich",
     "bankRequiredDesc": "Bitte verbinden Sie Ihr Bankkonto in Ihrem Profil vor der Auszahlung.",
     "withdrawalProcessing": "Auszahlung von {{amount}} wird verarbeitet",
-    "requestSent": "Auszahlungsanfrage an den Kassenersteller gesendet"
+    "requestSent": "Auszahlungsanfrage an den Kassenersteller gesendet",
+    "withdrawalApproved": "Auszahlung genehmigt!",
+    "requestSentApproval": "Auszahlungsanfrage gesendet — wartet auf Genehmigung."
   },
   "profile": {
     "title": "Profil",
