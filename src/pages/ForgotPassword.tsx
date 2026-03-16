@@ -18,7 +18,7 @@ export default function ForgotPassword() {
     e.preventDefault();
     setLoading(true);
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: 'https://monto.lovable.app/reset-password',
+      redirectTo: 'https://montofinance.app/reset-password',
     });
     setLoading(false);
     if (error) {
