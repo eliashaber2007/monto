@@ -133,7 +133,7 @@ Deno.serve(async (req) => {
     const origin =
       req.headers.get("origin") ||
       req.headers.get("referer")?.replace(/\/$/, "") ||
-      "https://id-preview--59da60b6-faa4-4fa4-890f-0b571d3b5fa7.lovable.app";
+      "https://montofinance.app";
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
       return_url: `${origin}/profile?connect=success`,
