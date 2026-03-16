@@ -11,10 +11,10 @@ import { CheckCircle2, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 const LANGUAGES = [
-  { code: 'en', flag: 'https://flagcdn.com/w40/gb.png' },
-  { code: 'fr', flag: 'https://flagcdn.com/w40/fr.png' },
-  { code: 'de', flag: 'https://flagcdn.com/w40/de.png' },
-  { code: 'es', flag: 'https://flagcdn.com/w40/es.png' },
+  { code: 'en', emoji: '🇬🇧', label: 'EN' },
+  { code: 'fr', emoji: '🇫🇷', label: 'FR' },
+  { code: 'de', emoji: '🇩🇪', label: 'DE' },
+  { code: 'es', emoji: '🇪🇸', label: 'ES' },
 ];
 
 export default function Login() {
