@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
       apiVersion: '2024-06-20',
     });
 
-    const origin = req.headers.get('origin') ?? 'https://id-preview--59da60b6-faa4-4fa4-890f-0b571d3b5fa7.lovable.app';
+    const origin = req.headers.get('origin') ?? 'https://montofinance.app';
 
     // Build metadata
     const metadata: Record<string, string> = {
