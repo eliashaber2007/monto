@@ -185,7 +185,7 @@ export default function WithdrawalModal({
           )}
 
           {withdrawalRule === 'requires_approval' && (
-            <p className="text-xs text-muted-foreground bg-secondary rounded-lg p-3">{t('withdrawalModal.requiresApprovalInfo')}</p>
+            <p className="text-xs rounded-lg p-3" style={{ color: '#FFFFFF', backgroundColor: 'hsl(var(--primary))' }}>{t('withdrawalModal.requiresApprovalInfo')}</p>
           )}
 
           <Button onClick={handleSubmit} disabled={loading || !amount || !note.trim()} className="w-full h-11 rounded-xl font-semibold">
