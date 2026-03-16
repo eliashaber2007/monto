@@ -128,18 +128,19 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
-        <div className="flex justify-center gap-1 mb-4">
+        <div className="flex justify-center gap-2 mb-4">
           {LANGUAGES.map((lang) => (
             <button
               key={lang.code}
               onClick={() => i18n.changeLanguage(lang.code)}
-              className={`text-2xl p-1.5 rounded-lg transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
                 i18n.language === lang.code
-                  ? 'bg-primary/10 ring-2 ring-primary'
-                  : 'hover:bg-muted'
+                  ? 'bg-primary text-primary-foreground ring-2 ring-primary/30'
+                  : 'bg-muted text-muted-foreground hover:bg-accent'
               }`}
             >
-              <img src={lang.flag} alt={lang.code} className="w-6 h-5 rounded-sm object-cover" />
+              <span aria-hidden="true">{lang.emoji}</span>
+              <span>{lang.label}</span>
             </button>
           ))}
         </div>

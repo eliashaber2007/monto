@@ -465,14 +465,14 @@ export default function Profile() {
               <button
                 key={lang.code}
                 onClick={() => handleLanguageChange(lang.code)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-all text-sm font-medium ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-full border-2 transition-all text-sm font-medium ${
                   i18n.language === lang.code
                     ? 'border-primary bg-primary/10 text-foreground'
                     : 'border-border bg-secondary/50 text-muted-foreground hover:bg-secondary'
                 }`}
               >
-                <img src={lang.flag} alt={lang.code} className="w-6 h-5 rounded-sm object-cover" />
-                {lang.label}
+                <span aria-hidden="true">{lang.emoji}</span>
+                <span>{lang.fullName}</span>
               </button>
             ))}
           </div>
