@@ -227,7 +227,9 @@
     "bankRequired": "Compte bancaire requis",
     "bankRequiredDesc": "Veuillez connecter votre compte bancaire dans votre Profil avant de retirer.",
     "withdrawalProcessing": "Le retrait de {{amount}} est en cours de traitement",
-    "requestSent": "Demande de retrait envoyée au créateur de la cagnotte"
+    "requestSent": "Demande de retrait envoyée au créateur de la cagnotte",
+    "withdrawalApproved": "Retrait approuvé !",
+    "requestSentApproval": "Demande de retrait envoyée — en attente d'approbation."
   },
   "profile": {
     "title": "Profil",
