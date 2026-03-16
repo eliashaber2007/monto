@@ -238,6 +238,7 @@
     "uploadFailed": "Error de carga",
     "appearance": "Apariencia",
     "darkMode": "Modo oscuro",
+    "lightMode": "Modo claro",
     "payoutAccount": "Cuenta de pago",
     "bankConnected": "Cuenta bancaria conectada ✅",
     "changeBankAccount": "Cambiar cuenta bancaria",
