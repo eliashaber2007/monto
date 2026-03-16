@@ -61,7 +61,7 @@ async function createJWT(endpoint: string, privateKey: CryptoKey): Promise<strin
   const payload = {
     aud: origin,
     exp: Math.floor(Date.now() / 1000) + 12 * 60 * 60,
-    sub: 'mailto:notifications@monto.lovable.app',
+    sub: 'mailto:notifications@montofinance.app',
   };
 
   const encoder = new TextEncoder();
