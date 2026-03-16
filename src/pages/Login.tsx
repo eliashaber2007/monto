@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import SocialLoginButtons from '@/components/SocialLoginButtons';
-import { CheckCircle2, AlertCircle } from 'lucide-react';
+import { CheckCircle2, AlertCircle, ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 const LANGUAGES = [
@@ -17,8 +17,55 @@ const LANGUAGES = [
   { code: 'es', emoji: '🇪🇸', label: 'ES' },
 ];
 
+function LanguageSelector() {
+  const { i18n } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  const current = LANGUAGES.find((l) => l.code === i18n.language) ?? LANGUAGES[0];
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-card border border-border text-foreground hover:bg-accent transition-colors"
+      >
+        <span aria-hidden="true">{current.emoji}</span>
+        <span>{current.label}</span>
+        <ChevronDown size={14} className={`text-muted-foreground transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-xl shadow-modal py-1 z-50 min-w-[100px]">
+          {LANGUAGES.map((lang) => (
+            <button
+              key={lang.code}
+              onClick={() => { i18n.changeLanguage(lang.code); setOpen(false); }}
+              className={`flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors ${
+                i18n.language === lang.code
+                  ? 'text-primary font-semibold bg-accent'
+                  : 'text-foreground hover:bg-accent'
+              }`}
+            >
+              <span aria-hidden="true">{lang.emoji}</span>
+              <span>{lang.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Login() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -126,37 +173,27 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-5">
+      {/* Language selector — top right */}
+      <div className="fixed top-4 right-4 z-50">
+        <LanguageSelector />
+      </div>
+
       <div className="w-full max-w-sm">
-        <div className="flex justify-center gap-2 mb-4">
-          {LANGUAGES.map((lang) => (
-            <button
-              key={lang.code}
-              onClick={() => i18n.changeLanguage(lang.code)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                i18n.language === lang.code
-                  ? 'bg-primary text-primary-foreground ring-2 ring-primary/30'
-                  : 'bg-muted text-muted-foreground hover:bg-accent'
-              }`}
-            >
-              <span aria-hidden="true">{lang.emoji}</span>
-              <span>{lang.label}</span>
-            </button>
-          ))}
-        </div>
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-foreground">{t('common.monto')}</h1>
+        {/* Brand title — above the card */}
+        <div className="text-center mb-10">
+          <h1 className="text-4xl font-extrabold tracking-tight text-foreground">{t('common.monto')}</h1>
         </div>
 
         {isVerified && (
-          <div className="flex items-center gap-2 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 rounded-xl px-4 py-3 mb-4 text-sm">
+          <div className="flex items-center gap-2 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 rounded-xl px-4 py-3 mb-5 text-sm">
             <CheckCircle2 size={18} className="flex-shrink-0" />
             <span>{t('auth.emailVerified')}</span>
           </div>
         )}
 
         {showUnverified && (
-          <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 rounded-xl px-4 py-3 mb-4 text-sm space-y-2">
+          <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 rounded-xl px-4 py-3 mb-5 text-sm space-y-2">
             <div className="flex items-center gap-2">
               <AlertCircle size={18} className="flex-shrink-0" />
               <span>{t('auth.verifyEmail')}</span>
@@ -173,28 +210,28 @@ export default function Login() {
           </div>
         )}
 
-        <div className="bg-card rounded-2xl shadow-card p-6 border border-border space-y-4">
+        <div className="bg-card rounded-2xl shadow-card p-7 border border-border space-y-5">
           <SocialLoginButtons />
 
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-1.5">
+          <form onSubmit={handleLogin} className="space-y-5">
+            <div className="space-y-2">
               <Label htmlFor="email">{t('auth.email')}</Label>
-              <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="h-11 rounded-xl" />
+              <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="h-12 rounded-xl" />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="password">{t('auth.password')}</Label>
-              <Input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required className="h-11 rounded-xl" />
+              <Input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required className="h-12 rounded-xl" />
             </div>
             <div className="flex justify-end">
               <Link to="/forgot-password" className="text-xs text-primary hover:underline">{t('auth.forgotPassword')}</Link>
             </div>
-            <Button type="submit" className="w-full h-11 rounded-xl mt-2" disabled={loading}>
+            <Button type="submit" className="w-full h-12 rounded-xl mt-1" disabled={loading}>
               {loading ? t('auth.signingIn') : t('auth.signIn')}
             </Button>
           </form>
         </div>
 
-        <p className="text-center text-sm text-muted-foreground mt-6">
+        <p className="text-center text-sm text-muted-foreground mt-8">
           {t('auth.noAccount')}{' '}
           <Link to="/signup" className="text-primary font-semibold hover:underline">{t('auth.createOne')}</Link>
         </p>
