@@ -21,10 +21,10 @@ const AVATAR_COLORS = [
 ];
 
 const LANGUAGES = [
-  { code: 'en', flag: 'https://flagcdn.com/w40/gb.png', label: 'English' },
-  { code: 'fr', flag: 'https://flagcdn.com/w40/fr.png', label: 'Français' },
-  { code: 'de', flag: 'https://flagcdn.com/w40/de.png', label: 'Deutsch' },
-  { code: 'es', flag: 'https://flagcdn.com/w40/es.png', label: 'Español' },
+  { code: 'en', emoji: '🇬🇧', label: 'EN', fullName: 'English' },
+  { code: 'fr', emoji: '🇫🇷', label: 'FR', fullName: 'Français' },
+  { code: 'de', emoji: '🇩🇪', label: 'DE', fullName: 'Deutsch' },
+  { code: 'es', emoji: '🇪🇸', label: 'ES', fullName: 'Español' },
 ];
 
 function formatCurrency(amount: number) {
