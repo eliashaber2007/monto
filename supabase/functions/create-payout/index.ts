@@ -71,13 +71,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    // 🚫 Self-approval check: approver cannot be the withdrawal recipient
-    if (requestingUserId === recipient_user_id && pot.withdrawal_rule === 'requires_approval') {
-      return new Response(JSON.stringify({ error: "You cannot approve your own withdrawal request." }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    // Self-approval check removed — this function handles payout execution,
+    // not approval. The approval gate is handled client-side and in the approve flow.
 
     if (amount > pot.balance) {
       return new Response(JSON.stringify({ error: "Insufficient balance" }), {
