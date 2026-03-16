@@ -21,10 +21,10 @@ const AVATAR_COLORS = [
 ];
 
 const LANGUAGES = [
-  { code: 'en', flag: 'https://flagcdn.com/w40/gb.png', label: 'English' },
-  { code: 'fr', flag: 'https://flagcdn.com/w40/fr.png', label: 'Français' },
-  { code: 'de', flag: 'https://flagcdn.com/w40/de.png', label: 'Deutsch' },
-  { code: 'es', flag: 'https://flagcdn.com/w40/es.png', label: 'Español' },
+  { code: 'en', emoji: '🇬🇧', label: 'EN', fullName: 'English' },
+  { code: 'fr', emoji: '🇫🇷', label: 'FR', fullName: 'Français' },
+  { code: 'de', emoji: '🇩🇪', label: 'DE', fullName: 'Deutsch' },
+  { code: 'es', emoji: '🇪🇸', label: 'ES', fullName: 'Español' },
 ];
 
 function formatCurrency(amount: number) {
@@ -465,14 +465,14 @@ export default function Profile() {
               <button
                 key={lang.code}
                 onClick={() => handleLanguageChange(lang.code)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-all text-sm font-medium ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-full border-2 transition-all text-sm font-medium ${
                   i18n.language === lang.code
                     ? 'border-primary bg-primary/10 text-foreground'
                     : 'border-border bg-secondary/50 text-muted-foreground hover:bg-secondary'
                 }`}
               >
-                <img src={lang.flag} alt={lang.code} className="w-6 h-5 rounded-sm object-cover" />
-                {lang.label}
+                <span aria-hidden="true">{lang.emoji}</span>
+                <span>{lang.fullName}</span>
               </button>
             ))}
           </div>
