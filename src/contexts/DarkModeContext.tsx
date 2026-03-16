@@ -20,16 +20,21 @@ function applyDarkClass(dark: boolean) {
 
 export function DarkModeProvider({ children }: { children: ReactNode }) {
   const { user, loading: authLoading } = useAuth();
-  const [darkMode, setDarkModeState] = useState(false);
+  const [darkMode, setDarkModeState] = useState(true);
   const [loading, setLoading] = useState(true);
+
+  // Apply dark mode immediately on mount (before DB loads)
+  useEffect(() => {
+    applyDarkClass(true);
+  }, []);
 
   // Load preference from DB on auth ready
   useEffect(() => {
     if (authLoading) return;
 
     if (!user) {
-      applyDarkClass(false);
-      setDarkModeState(false);
+      applyDarkClass(true);
+      setDarkModeState(true);
       setLoading(false);
       return;
     }
@@ -40,7 +45,8 @@ export function DarkModeProvider({ children }: { children: ReactNode }) {
       .eq('id', user.id)
       .maybeSingle()
       .then(({ data }) => {
-        const isDark = data?.dark_mode ?? false;
+        // Default to dark (true) if no preference saved
+        const isDark = data?.dark_mode ?? true;
         setDarkModeState(isDark);
         applyDarkClass(isDark);
         setLoading(false);

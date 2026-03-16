@@ -238,6 +238,7 @@
     "uploadFailed": "Upload failed",
     "appearance": "Appearance",
     "darkMode": "Dark Mode",
+    "lightMode": "Light Mode",
     "payoutAccount": "Payout Account",
     "bankConnected": "Bank account connected ✅",
     "changeBankAccount": "Change bank account",

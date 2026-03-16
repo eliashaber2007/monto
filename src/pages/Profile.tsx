@@ -34,24 +34,25 @@ function formatCurrency(amount: number) {
 function DarkModeToggle() {
   const { darkMode, setDarkMode } = useDarkMode();
   const { t } = useTranslation();
+  const lightMode = !darkMode;
 
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-3">
-        {darkMode ? <Moon size={18} className="text-muted-foreground" /> : <Sun size={18} className="text-muted-foreground" />}
-        <span className="text-sm font-medium text-foreground">{t('profile.darkMode')}</span>
+        {lightMode ? <Sun size={18} className="text-muted-foreground" /> : <Moon size={18} className="text-muted-foreground" />}
+        <span className="text-sm font-medium text-foreground">{t('profile.lightMode')}</span>
       </div>
       <button
         role="switch"
-        aria-checked={darkMode}
+        aria-checked={lightMode}
         onClick={() => setDarkMode(!darkMode)}
         className={`relative inline-flex h-[31px] w-[51px] shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
-          darkMode ? 'bg-primary' : 'bg-muted'
+          lightMode ? 'bg-primary' : 'bg-muted'
         }`}
       >
         <span
           className={`pointer-events-none inline-block h-[27px] w-[27px] rounded-full bg-white shadow-lg ring-0 transition-transform duration-200 ease-in-out ${
-            darkMode ? 'translate-x-[22px]' : 'translate-x-[2px]'
+            lightMode ? 'translate-x-[22px]' : 'translate-x-[2px]'
           } mt-[2px]`}
         />
       </button>

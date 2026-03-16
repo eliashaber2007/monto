@@ -238,6 +238,7 @@
     "uploadFailed": "Upload fehlgeschlagen",
     "appearance": "Erscheinungsbild",
     "darkMode": "Dunkelmodus",
+    "lightMode": "Hellmodus",
     "payoutAccount": "Auszahlungskonto",
     "bankConnected": "Bankkonto verbunden ✅",
     "changeBankAccount": "Bankkonto ändern",
