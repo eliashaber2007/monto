@@ -142,7 +142,7 @@ export default function WithdrawalModal({
           console.error('[Withdrawal] Email notification failed:', emailErr);
         }
 
-        toast({ title: t('withdrawalModal.requestSent') });
+        toast({ title: t('withdrawalModal.requestSentApproval') });
       }
 
       queryClient.invalidateQueries({ queryKey: ['pot', potId] });
