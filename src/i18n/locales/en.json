@@ -237,7 +237,9 @@
     "withdrawalProcessing": "Withdrawal of {{amount}} is being processed",
     "requestSent": "Withdrawal request sent to the pot creator",
     "withdrawalApproved": "Withdrawal approved!",
-    "requestSentApproval": "Withdrawal request sent — waiting for approval."
+    "requestSentApproval": "Withdrawal request sent — waiting for approval.",
+    "payoutFee": "Payout fee: {{fee}} (0.25% + €0.25)",
+    "amountReceived": "Amount received in bank: {{amount}}"
   },
   "profile": {
     "title": "Profile",
