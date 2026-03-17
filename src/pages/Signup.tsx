@@ -53,28 +53,59 @@ export default function Signup() {
     setVerificationSent(true);
   };
 
+  const navigate = useNavigate();
+
+  const handleResendVerification = async () => {
+    setResending(true);
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+      options: { emailRedirectTo: `${window.location.origin}/verified` },
+    });
+    setResending(false);
+    toast({
+      title: error ? t('auth.resendFailed') : t('auth.resendSuccess'),
+      description: error ? error.message : t('auth.resendSuccessDesc'),
+      variant: error ? 'destructive' : 'default',
+    });
+  };
+
   if (verificationSent) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
-        <div className="w-full max-w-sm text-center">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary mb-4 shadow-pill">
-            <Mail className="text-primary-foreground" size={24} />
+        <div className="w-full max-w-sm">
+          <div className="bg-card rounded-2xl shadow-card border border-border p-8 text-center space-y-5">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/15 mx-auto">
+              <Mail className="text-primary" size={30} />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground mb-2">{t('auth.checkInbox')}</h1>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                {t('auth.verificationSent')} <span className="font-semibold text-foreground">{email}</span>{t('auth.clickToActivate')}
+              </p>
+            </div>
+            <Button
+              onClick={handleResendVerification}
+              variant="outline"
+              className="w-full h-12 rounded-xl"
+              disabled={resending}
+            >
+              {resending ? t('auth.resending') : t('auth.resendVerification')}
+            </Button>
+            <Link to="/login" className="block text-primary font-semibold text-sm hover:underline">
+              {t('auth.alreadyVerifiedLogin')}
+            </Link>
+            <button
+              onClick={async () => {
+                await supabase.auth.signOut();
+                sessionStorage.removeItem('auth_active');
+                navigate('/login');
+              }}
+              className="block w-full text-muted-foreground text-sm hover:text-foreground transition-colors"
+            >
+              {t('auth.logout')}
+            </button>
           </div>
-          <h1 className="text-2xl font-bold text-foreground mb-2">{t('auth.checkInbox')}</h1>
-          <p className="text-muted-foreground text-sm leading-relaxed">
-            {t('auth.verificationSent')} <span className="font-semibold text-foreground">{email}</span>{t('auth.clickToActivate')}
-          </p>
-          <p className="text-center text-sm text-muted-foreground mt-6">
-            <Link to="/login" className="text-primary font-semibold hover:underline">
-              Already verified? Log in here
-            </Link>
-          </p>
-          <p className="text-center text-sm text-muted-foreground mt-2">
-            {t('auth.alreadyVerified')}{" "}
-            <Link to="/login" className="text-primary font-semibold hover:underline">
-              {t('auth.signIn')}
-            </Link>
-          </p>
         </div>
       </div>
     );
