@@ -209,6 +209,8 @@
     "youllAdd": "Vous ajouterez",
     "invalidAmount": "Montant invalide",
     "invalidAmountDesc": "Veuillez entrer un montant supérieur à 0.",
+    "processingFee": "Frais de traitement : {{fee}} (1,5% + 0,25€)",
+    "amountToPot": "Montant ajouté à la cagnotte : {{amount}}",
     "payWithStripe": "Payer avec Stripe",
     "redirecting": "Redirection…"
   },
