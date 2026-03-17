@@ -209,6 +209,8 @@
     "youllAdd": "You'll add",
     "invalidAmount": "Invalid amount",
     "invalidAmountDesc": "Please enter an amount greater than 0.",
+    "processingFee": "Processing fee: {{fee}} (1.5% + €0.25)",
+    "amountToPot": "Amount added to pot: {{amount}}",
     "payWithStripe": "Pay with Stripe",
     "redirecting": "Redirecting…"
   },
