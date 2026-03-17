@@ -103,14 +103,21 @@ export default function AddFundsModal({
             />
           </div>
 
-          {amount && amount > 0 && (
-            <div className="bg-surface rounded-xl p-3 flex justify-between text-sm">
-              <span className="text-muted-foreground">{t('addFunds.youllAdd')}</span>
-              <span className="font-bold text-primary">
-                {new Intl.NumberFormat('en-IE', { style: 'currency', currency }).format(amount)}
-              </span>
-            </div>
-          )}
+          {amount && amount > 0 && (() => {
+            const fee = parseFloat(((amount * 0.015) + 0.25).toFixed(2));
+            const netAmount = parseFloat((amount - fee).toFixed(2));
+            const fmt = (v: number) => new Intl.NumberFormat('en-IE', { style: 'currency', currency }).format(v);
+            return (
+              <div className="space-y-2">
+                <div className="text-xs text-muted-foreground">
+                  {t('addFunds.processingFee', { fee: fmt(fee) })}
+                </div>
+                <div className="text-sm text-foreground font-medium">
+                  {t('addFunds.amountToPot', { amount: fmt(netAmount) })}
+                </div>
+              </div>
+            );
+          })()}
 
           <div className="flex gap-3">
             <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>

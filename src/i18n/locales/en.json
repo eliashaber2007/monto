@@ -209,6 +209,8 @@
     "youllAdd": "You'll add",
     "invalidAmount": "Invalid amount",
     "invalidAmountDesc": "Please enter an amount greater than 0.",
+    "processingFee": "Processing fee: {{fee}} (1.5% + €0.25)",
+    "amountToPot": "Amount added to pot: {{amount}}",
     "payWithStripe": "Pay with Stripe",
     "redirecting": "Redirecting…"
   },
@@ -412,7 +414,7 @@
     "q2": "How do withdrawals work?",
     "a2": "The pot creator can withdraw funds at any time. Depending on the pot settings, members can also request withdrawals which the creator approves or rejects. Once approved, the money is sent directly to the creator's connected bank account, usually within 1–5 business days.",
     "q3": "Are there any fees?",
-    "a3": "Monto charges no fees for adding money to a pot. Standard Stripe processing fees may apply on transactions. Withdrawals to your bank account are free.",
+    "a3": "Monto charges no fees. Standard card processing fees of 1.5% + €0.25 per transaction are charged by Stripe, our payment provider. These are shown clearly before every payment.",
     "q4": "Is my money safe?",
     "a4": "Yes. All payments are processed by Stripe, which is PCI DSS compliant and uses bank-level encryption. Monto never stores your card or bank details directly.",
     "q5": "How do I connect my bank account?",

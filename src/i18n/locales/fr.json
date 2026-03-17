@@ -209,6 +209,8 @@
     "youllAdd": "Vous ajouterez",
     "invalidAmount": "Montant invalide",
     "invalidAmountDesc": "Veuillez entrer un montant supérieur à 0.",
+    "processingFee": "Frais de traitement : {{fee}} (1,5% + 0,25€)",
+    "amountToPot": "Montant ajouté à la cagnotte : {{amount}}",
     "payWithStripe": "Payer avec Stripe",
     "redirecting": "Redirection…"
   },
@@ -412,7 +414,7 @@
     "q2": "Comment fonctionnent les retraits ?",
     "a2": "Le créateur de la cagnotte peut retirer des fonds à tout moment. Selon les paramètres, les membres peuvent aussi demander des retraits que le créateur approuve ou rejette. Une fois approuvé, l'argent est envoyé directement sur le compte bancaire connecté, généralement sous 1 à 5 jours ouvrés.",
     "q3": "Y a-t-il des frais ?",
-    "a3": "Monto ne facture aucun frais pour ajouter de l'argent. Des frais de traitement Stripe standard peuvent s'appliquer. Les retraits vers votre compte bancaire sont gratuits.",
+    "a3": "Monto ne facture aucun frais. Des frais de traitement standard de 1,5% + 0,25€ par transaction sont facturés par Stripe, notre prestataire de paiement. Ils sont affichés clairement avant chaque paiement.",
     "q4": "Mon argent est-il en sécurité ?",
     "a4": "Oui. Tous les paiements sont traités par Stripe, conforme PCI DSS et utilisant un chiffrement de niveau bancaire. Monto ne stocke jamais directement vos coordonnées bancaires.",
     "q5": "Comment connecter mon compte bancaire ?",
