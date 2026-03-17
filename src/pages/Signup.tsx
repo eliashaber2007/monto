@@ -16,6 +16,7 @@ export default function Signup() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [verificationSent, setVerificationSent] = useState(false);
+  const [resending, setResending] = useState(false);
   const { toast } = useToast();
 
   const handleSignup = async (e: React.FormEvent) => {
