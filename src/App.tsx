@@ -114,6 +114,7 @@ const App = () => (
               }
             />
             <Route path="/verified" element={<Verified />} />
+            <Route path="/privacy" element={<Privacy />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
