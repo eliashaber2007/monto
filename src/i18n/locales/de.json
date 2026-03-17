@@ -237,7 +237,9 @@
     "withdrawalProcessing": "Auszahlung von {{amount}} wird verarbeitet",
     "requestSent": "Auszahlungsanfrage an den Kassenersteller gesendet",
     "withdrawalApproved": "Auszahlung genehmigt!",
-    "requestSentApproval": "Auszahlungsanfrage gesendet — wartet auf Genehmigung."
+    "requestSentApproval": "Auszahlungsanfrage gesendet — wartet auf Genehmigung.",
+    "payoutFee": "Auszahlungsgebühr: {{fee}} (0,25% + 0,25€)",
+    "amountReceived": "Betrag auf dem Bankkonto: {{amount}}"
   },
   "profile": {
     "title": "Profil",
