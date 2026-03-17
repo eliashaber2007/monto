@@ -9,7 +9,6 @@ export default function Verified() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    // Immediately destroy any session Supabase created from the verification link
     supabase.auth.signOut().then(() => {
       sessionStorage.removeItem('auth_active');
       setReady(true);
@@ -26,20 +25,24 @@ export default function Verified() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
-      <div className="w-full max-w-sm text-center">
-        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-green-100 dark:bg-green-950/30 mb-4">
-          <CheckCircle2 className="text-green-600 dark:text-green-400" size={28} />
+      <div className="w-full max-w-sm">
+        <div className="bg-card rounded-2xl shadow-card border border-border p-8 text-center space-y-5">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-success/15 mx-auto">
+            <CheckCircle2 className="text-success" size={30} />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground mb-2">Email verified!</h1>
+            <p className="text-muted-foreground text-sm leading-relaxed">
+              You're all set. Head back to Monto and log in to get started.
+            </p>
+          </div>
+          <Button
+            onClick={() => navigate('/login')}
+            className="w-full h-12 rounded-xl"
+          >
+            Go to login
+          </Button>
         </div>
-        <h1 className="text-2xl font-bold text-foreground mb-2">Email Verified! ✅</h1>
-        <p className="text-muted-foreground text-sm leading-relaxed mb-8">
-          Your account has been confirmed. Head back to Monto and log in to get started.
-        </p>
-        <Button
-          onClick={() => navigate('/login')}
-          className="w-full h-11 rounded-xl"
-        >
-          Go to login
-        </Button>
       </div>
     </div>
   );
