@@ -414,7 +414,7 @@
     "q2": "¿Cómo funcionan los retiros?",
     "a2": "El creador del bote puede retirar fondos en cualquier momento. Dependiendo de la configuración, los miembros también pueden solicitar retiros que el creador aprueba o rechaza. Una vez aprobado, el dinero se envía directamente a la cuenta bancaria conectada, generalmente en 1–5 días hábiles.",
     "q3": "¿Hay alguna tarifa?",
-    "a3": "Monto no cobra tarifas por agregar dinero. Pueden aplicarse tarifas de procesamiento estándar de Stripe. Los retiros a tu cuenta bancaria son gratuitos.",
+    "a3": "Monto no cobra tarifas. Stripe, nuestro proveedor de pagos, cobra tarifas estándar de procesamiento de tarjeta de 1,5% + 0,25€ por transacción. Estas se muestran claramente antes de cada pago.",
     "q4": "¿Mi dinero está seguro?",
     "a4": "Sí. Todos los pagos son procesados por Stripe, que cumple con PCI DSS y usa encriptación de nivel bancario. Monto nunca almacena directamente tus datos bancarios o de tarjeta.",
     "q5": "¿Cómo conecto mi cuenta bancaria?",
