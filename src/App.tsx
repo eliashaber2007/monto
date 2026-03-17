@@ -22,6 +22,7 @@ import WithdrawalExpenses from "./pages/WithdrawalExpenses";
 import Onboarding from "./pages/Onboarding";
 import Verified from "./pages/Verified";
 import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
