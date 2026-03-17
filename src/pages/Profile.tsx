@@ -131,9 +131,10 @@ export default function Profile() {
     }
   }, [profile, user]);
 
-  // Fetch stats
+  // Fetch stats fresh on every mount
   useEffect(() => {
     if (!user) return;
+    // Total deposited: completed transactions
     supabase
       .from('transactions')
       .select('amount')
@@ -142,6 +143,16 @@ export default function Profile() {
       .then(({ data }) => {
         const total = (data ?? []).reduce((sum, t) => sum + Number(t.amount), 0);
         setTotalDeposits(total);
+      });
+    // Total withdrawn: approved withdrawals only
+    supabase
+      .from('withdrawals')
+      .select('amount')
+      .eq('user_id', user.id)
+      .eq('status', 'approved')
+      .then(({ data }) => {
+        const total = (data ?? []).reduce((sum, w) => sum + Number(w.amount), 0);
+        setTotalWithdrawals(total);
       });
   }, [user]);
 
