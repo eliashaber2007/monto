@@ -237,7 +237,9 @@
     "withdrawalProcessing": "El retiro de {{amount}} está siendo procesado",
     "requestSent": "Solicitud de retiro enviada al creador del bote",
     "withdrawalApproved": "¡Retiro aprobado!",
-    "requestSentApproval": "Solicitud de retiro enviada — esperando aprobación."
+    "requestSentApproval": "Solicitud de retiro enviada — esperando aprobación.",
+    "payoutFee": "Tarifa de pago: {{fee}} (0,25% + 0,25€)",
+    "amountReceived": "Monto recibido en el banco: {{amount}}"
   },
   "profile": {
     "title": "Perfil",
