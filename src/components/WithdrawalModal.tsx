@@ -168,6 +168,22 @@ export default function WithdrawalModal({
             <Label htmlFor="withdrawal-amount" className="text-sm font-medium">{t('withdrawalModal.amountToWithdraw')}</Label>
             <Input id="withdrawal-amount" type="number" step="0.01" min="0.01" max={potBalance} placeholder={t('withdrawalModal.max', { amount: formatCurrency(potBalance) })} value={amount} onChange={(e) => setAmount(e.target.value)} className="mt-1" />
             <p className="text-xs text-muted-foreground mt-1">{t('withdrawalModal.available', { amount: formatCurrency(potBalance) })}</p>
+            {(() => {
+              const num = parseFloat(amount);
+              if (!num || num <= 0) return null;
+              const fee = parseFloat(((num * 0.0025) + 0.25).toFixed(2));
+              const received = parseFloat((num - fee).toFixed(2));
+              return (
+                <div className="space-y-1 mt-2">
+                  <div className="text-xs text-muted-foreground">
+                    {t('withdrawalModal.payoutFee', { fee: formatCurrency(fee) })}
+                  </div>
+                  <div className="text-sm text-foreground font-medium">
+                    {t('withdrawalModal.amountReceived', { amount: formatCurrency(received) })}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
           <div>

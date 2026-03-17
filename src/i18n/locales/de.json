@@ -237,7 +237,9 @@
     "withdrawalProcessing": "Auszahlung von {{amount}} wird verarbeitet",
     "requestSent": "Auszahlungsanfrage an den Kassenersteller gesendet",
     "withdrawalApproved": "Auszahlung genehmigt!",
-    "requestSentApproval": "Auszahlungsanfrage gesendet — wartet auf Genehmigung."
+    "requestSentApproval": "Auszahlungsanfrage gesendet — wartet auf Genehmigung.",
+    "payoutFee": "Auszahlungsgebühr: {{fee}} (0,25% + 0,25€)",
+    "amountReceived": "Betrag auf dem Bankkonto: {{amount}}"
   },
   "profile": {
     "title": "Profil",
@@ -414,7 +416,7 @@
     "q2": "Wie funktionieren Auszahlungen?",
     "a2": "Der Kassenersteller kann jederzeit Geld abheben. Abhängig von den Einstellungen können Mitglieder auch Auszahlungen beantragen, die der Ersteller genehmigt oder ablehnt. Nach Genehmigung wird das Geld direkt auf das verbundene Bankkonto überwiesen, normalerweise innerhalb von 1–5 Werktagen.",
     "q3": "Gibt es Gebühren?",
-    "a3": "Monto erhebt keine Gebühren. Standard-Kartenverarbeitungsgebühren von 1,5% + 0,25€ pro Transaktion werden von Stripe, unserem Zahlungsanbieter, erhoben. Diese werden vor jeder Zahlung deutlich angezeigt.",
+    "a3": "Monto erhebt keine Gebühren. Standard-Kartenverarbeitungsgebühren von 1,5% + 0,25€ pro Transaktion werden von Stripe, unserem Zahlungsanbieter, erhoben. Eine kleine Auszahlungsgebühr von 0,25% + 0,25€ fällt bei Überweisungen auf ein Bankkonto an. Diese werden vor jeder Zahlung deutlich angezeigt.",
     "q4": "Ist mein Geld sicher?",
     "a4": "Ja. Alle Zahlungen werden von Stripe verarbeitet, das PCI DSS-konform ist und Verschlüsselung auf Bankniveau verwendet. Monto speichert niemals direkt Ihre Bank- oder Kartendaten.",
     "q5": "Wie verbinde ich mein Bankkonto?",
