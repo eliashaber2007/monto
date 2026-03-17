@@ -215,15 +215,20 @@ export default function WithdrawalExpenses() {
           <p className="text-2xl font-bold text-foreground">
             {formatCurrency(withdrawalAmount, currency)}
           </p>
-          <div className="w-full max-w-[260px] mx-auto h-3 rounded-full bg-muted overflow-hidden">
+        <div className="w-full max-w-[260px] mx-auto h-3 rounded-full bg-muted overflow-hidden">
             <div
-              className="h-full rounded-full bg-primary transition-all duration-300"
+              className={`h-full rounded-full transition-all duration-300 ${totalJustified >= withdrawalAmount ? 'bg-green-500' : 'bg-primary'}`}
               style={{ width: `${Math.min((totalJustified / withdrawalAmount) * 100, 100)}%` }}
             />
           </div>
           <p className="text-sm font-semibold text-foreground">
             {formatCurrency(totalJustified, currency)} of {formatCurrency(withdrawalAmount, currency)} justified
           </p>
+          {totalJustified > withdrawalAmount && (
+            <p className="text-xs font-medium text-green-500">
+              +{formatCurrency(totalJustified - withdrawalAmount, currency)} over justified
+            </p>
+          )}
         </div>
 
         {/* Expenses list */}
