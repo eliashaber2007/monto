@@ -465,6 +465,7 @@ export type Database = {
           pot_id: string
           processed_at: string | null
           status: string
+          total_deducted: number | null
           user_id: string
         }
         Insert: {
@@ -475,6 +476,7 @@ export type Database = {
           pot_id: string
           processed_at?: string | null
           status?: string
+          total_deducted?: number | null
           user_id: string
         }
         Update: {
@@ -485,6 +487,7 @@ export type Database = {
           pot_id?: string
           processed_at?: string | null
           status?: string
+          total_deducted?: number | null
           user_id?: string
         }
         Relationships: [
