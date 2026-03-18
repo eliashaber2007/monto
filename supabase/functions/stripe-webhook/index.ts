@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
     const session = event.data.object as Stripe.Checkout.Session;
     const metadata = session.metadata ?? {};
     const { pot_id, user_id } = metadata;
-    const amountTotal = session.amount_total ?? 0; // cents
+    const amountTotal = session.amount_total ?? 0; // cents (total charged including fee)
 
     if (!pot_id || !user_id) {
       console.error('Missing metadata:', metadata);
@@ -49,9 +49,12 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     );
 
-    // Use base amount (what the user intended for the pot), not the total charged
+    // Use base_amount_cents from metadata (what the user intended for the pot)
+    // NOT the total charged amount (which includes the processing fee)
     const baseAmountCents = metadata.base_amount_cents ? parseInt(metadata.base_amount_cents) : amountTotal;
     const amountEur = baseAmountCents / 100;
+
+    console.log(`Payment received: total_charged=${amountTotal}c, base_amount=${baseAmountCents}c, pot_receives=€${amountEur}`);
 
     // If this is a new pot creation, create the pot first
     if (metadata.is_new_pot === 'true') {
@@ -101,7 +104,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Insert transaction
+    // Insert transaction with BASE amount (what goes to pot)
     const { error: txError } = await supabaseAdmin.from('transactions').insert({
       pot_id,
       user_id,
@@ -118,7 +121,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Update pot balance
+    // Update pot balance with BASE amount only
     const { error: balanceError } = await supabaseAdmin.rpc('increment_pot_balance', {
       p_pot_id: pot_id,
       p_amount: amountEur,
@@ -130,7 +133,7 @@ Deno.serve(async (req) => {
       await supabaseAdmin.from('pots').update({ balance: (pot?.balance ?? 0) + amountEur }).eq('id', pot_id);
     }
 
-    console.log(`Processed payment: pot=${pot_id} user=${user_id} amount=€${amountEur}`);
+    console.log(`Processed payment: pot=${pot_id} user=${user_id} pot_receives=€${amountEur}`);
 
     // Send email notification for funds added
     try {
