@@ -63,14 +63,14 @@
   }
 
   .dark {
-    /* Background: #0F1117 */
-    --background: 228 25% 7%;
+    /* Background: #1C1C1E */
+    --background: 240 3% 11%;
     --foreground: 220 13% 91%;          /* #E8EAED */
 
-    /* Cards/surfaces: #1A1D27 */
-    --card: 228 20% 13%;
+    /* Cards/surfaces: #2C2C2E */
+    --card: 240 2% 18%;
     --card-foreground: 220 13% 91%;
-    --surface: 228 20% 13%;
+    --surface: 240 2% 18%;
 
     /* Primary: #4D7EFF */
     --primary: 222 100% 65%;
