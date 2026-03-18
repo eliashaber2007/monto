@@ -49,7 +49,9 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     );
 
-    const amountEur = amountTotal / 100;
+    // Use base amount (what the user intended for the pot), not the total charged
+    const baseAmountCents = metadata.base_amount_cents ? parseInt(metadata.base_amount_cents) : amountTotal;
+    const amountEur = baseAmountCents / 100;
 
     // If this is a new pot creation, create the pot first
     if (metadata.is_new_pot === 'true') {

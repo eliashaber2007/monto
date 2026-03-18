@@ -75,6 +75,7 @@ Deno.serve(async (req) => {
     const metadata: Record<string, string> = {
       pot_id,
       user_id: userId,
+      base_amount_cents: String(base_amount_cents || amount_cents),
     };
 
     // If this is a new pot creation, store pot config in metadata

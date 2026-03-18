@@ -209,8 +209,9 @@
     "youllAdd": "Agregarás",
     "invalidAmount": "Monto inválido",
     "invalidAmountDesc": "Ingresa un monto mayor a 0.",
+    "addedToPot": "Añadido al bote: {{amount}}",
     "processingFee": "Tarifa de procesamiento: {{fee}} (1,5% + 0,25€)",
-    "amountToPot": "Monto añadido al bote: {{amount}}",
+    "totalCharged": "Total cobrado: {{total}}",
     "payWithStripe": "Pagar con Stripe",
     "redirecting": "Redirigiendo…"
   },
