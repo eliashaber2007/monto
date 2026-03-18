@@ -240,7 +240,8 @@
     "withdrawalApproved": "Withdrawal approved!",
     "requestSentApproval": "Withdrawal request sent — waiting for approval.",
     "payoutFee": "Payout fee: {{fee}} (0.25% + €0.25)",
-    "amountReceived": "Amount received in bank: {{amount}}"
+    "amountReceived": "Amount received in bank: {{amount}}",
+    "totalDeducted": "Total deducted from pot: {{amount}}"
   },
   "profile": {
     "title": "Profile",

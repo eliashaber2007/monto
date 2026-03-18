@@ -240,7 +240,8 @@
     "withdrawalApproved": "Auszahlung genehmigt!",
     "requestSentApproval": "Auszahlungsanfrage gesendet — wartet auf Genehmigung.",
     "payoutFee": "Auszahlungsgebühr: {{fee}} (0,25% + 0,25€)",
-    "amountReceived": "Betrag auf dem Bankkonto: {{amount}}"
+    "amountReceived": "Betrag auf dem Bankkonto: {{amount}}",
+    "totalDeducted": "Gesamt vom Topf abgezogen: {{amount}}"
   },
   "profile": {
     "title": "Profil",

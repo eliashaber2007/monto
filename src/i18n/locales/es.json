@@ -240,7 +240,8 @@
     "withdrawalApproved": "¡Retiro aprobado!",
     "requestSentApproval": "Solicitud de retiro enviada — esperando aprobación.",
     "payoutFee": "Tarifa de pago: {{fee}} (0,25% + 0,25€)",
-    "amountReceived": "Monto recibido en el banco: {{amount}}"
+    "amountReceived": "Monto recibido en el banco: {{amount}}",
+    "totalDeducted": "Total deducido de la olla: {{amount}}"
   },
   "profile": {
     "title": "Perfil",

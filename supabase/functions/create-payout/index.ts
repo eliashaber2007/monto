@@ -74,7 +74,9 @@ Deno.serve(async (req) => {
     // Self-approval check removed — this function handles payout execution,
     // not approval. The approval gate is handled client-side and in the approve flow.
 
-    if (amount > pot.balance) {
+    const feeCheck = parseFloat(((amount * 0.0025) + 0.25).toFixed(2));
+    const totalCheck = parseFloat((amount + feeCheck).toFixed(2));
+    if (totalCheck > pot.balance) {
       return new Response(JSON.stringify({ error: "Insufficient balance" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -96,7 +98,9 @@ Deno.serve(async (req) => {
     }
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, { apiVersion: "2024-06-20" });
-    const amountCents = Math.round(amount * 100);
+    const fee = parseFloat(((amount * 0.0025) + 0.25).toFixed(2));
+    const totalDeducted = parseFloat((amount + fee).toFixed(2));
+    const amountCents = Math.round(amount * 100); // base amount sent to bank
     const isTestMode = Deno.env.get("STRIPE_SECRET_KEY")!.startsWith("sk_test_");
 
     let transferId = "";
@@ -120,17 +124,17 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Deduct from pot balance
+    // Deduct total (base + fee) from pot balance
     await supabaseAdmin.rpc("increment_pot_balance", {
       p_pot_id: pot_id,
-      p_amount: -amount,
+      p_amount: -totalDeducted,
     });
 
-    // Record transaction
+    // Record transaction with total deducted amount
     await supabaseAdmin.from("transactions").insert({
       pot_id,
       user_id: recipient_user_id,
-      amount: -amount,
+      amount: -totalDeducted,
       status: "completed",
       stripe_session_id: transferId,
     });
