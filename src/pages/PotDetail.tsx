@@ -665,7 +665,7 @@ export default function PotDetail() {
               const deposits = transactions.filter((tx) => Number(tx.amount) > 0);
               const withdrawalTxs = transactions.filter((tx) => Number(tx.amount) < 0);
               const totalDeposits = deposits.reduce((s, tx) => s + Number(tx.amount), 0);
-              const totalWithdrawals = withdrawals.reduce((s, w) => s + Number(w.amount), 0);
+              const totalWithdrawals = withdrawals.reduce((s, w) => s + Number((w as any).total_deducted || w.amount), 0);
 
               const getMemberProfile = (userId: string) => {
                 const m = members.find((m) => m.user_id === userId);
