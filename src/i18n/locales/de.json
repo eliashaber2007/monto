@@ -210,8 +210,8 @@
     "invalidAmount": "Ungültiger Betrag",
     "invalidAmountDesc": "Bitte geben Sie einen Betrag größer als 0 ein.",
     "addedToPot": "In die Kasse: {{amount}}",
-    "processingFee": "Bearbeitungsgebühr: {{fee}} (1,5% + 0,25€)",
-    "totalCharged": "Gesamtbetrag: {{total}}",
+    "processingFee": "Inkl. {{fee}} Stripe-Bearbeitungsgebühr",
+    "totalCharged": "Dir wird berechnet: {{total}}",
     "payWithStripe": "Mit Stripe bezahlen",
     "redirecting": "Weiterleitung…"
   },
