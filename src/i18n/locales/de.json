@@ -210,8 +210,8 @@
     "invalidAmount": "Ungültiger Betrag",
     "invalidAmountDesc": "Bitte geben Sie einen Betrag größer als 0 ein.",
     "addedToPot": "In die Kasse: {{amount}}",
-    "processingFee": "Bearbeitungsgebühr: {{fee}} (1,5% + 0,25€)",
-    "totalCharged": "Gesamtbetrag: {{total}}",
+    "processingFee": "Inkl. {{fee}} Stripe-Bearbeitungsgebühr",
+    "totalCharged": "Dir wird berechnet: {{total}}",
     "payWithStripe": "Mit Stripe bezahlen",
     "redirecting": "Weiterleitung…"
   },
@@ -239,9 +239,9 @@
     "requestSent": "Auszahlungsanfrage an den Kassenersteller gesendet",
     "withdrawalApproved": "Auszahlung genehmigt!",
     "requestSentApproval": "Auszahlungsanfrage gesendet — wartet auf Genehmigung.",
-    "payoutFee": "Auszahlungsgebühr: {{fee}} (0,25% + 0,25€)",
-    "amountReceived": "Betrag auf dem Bankkonto: {{amount}}",
-    "totalDeducted": "Gesamt vom Topf abgezogen: {{amount}}"
+    "payoutFee": "Inkl. {{fee}} Stripe-Auszahlungsgebühr",
+    "amountReceived": "Du erhältst: {{amount}}",
+    "totalDeducted": "Vom Topf abgezogen: {{amount}}"
   },
   "profile": {
     "title": "Profil",

@@ -210,8 +210,8 @@
     "invalidAmount": "Invalid amount",
     "invalidAmountDesc": "Please enter an amount greater than 0.",
     "addedToPot": "Added to pot: {{amount}}",
-    "processingFee": "Processing fee: {{fee}} (1.5% + €0.25)",
-    "totalCharged": "Total charged: {{total}}",
+    "processingFee": "Includes {{fee}} Stripe processing fee",
+    "totalCharged": "You'll be charged: {{total}}",
     "payWithStripe": "Pay with Stripe",
     "redirecting": "Redirecting…"
   },
@@ -239,9 +239,9 @@
     "requestSent": "Withdrawal request sent to the pot creator",
     "withdrawalApproved": "Withdrawal approved!",
     "requestSentApproval": "Withdrawal request sent — waiting for approval.",
-    "payoutFee": "Payout fee: {{fee}} (0.25% + €0.25)",
-    "amountReceived": "Amount received in bank: {{amount}}",
-    "totalDeducted": "Total deducted from pot: {{amount}}"
+    "payoutFee": "Includes {{fee}} Stripe payout fee",
+    "amountReceived": "You'll receive: {{amount}}",
+    "totalDeducted": "Taken from pot: {{amount}}"
   },
   "profile": {
     "title": "Profile",
