@@ -136,18 +136,25 @@
 
 /* Pot detail tab styling */
 .pot-tabs-list {
-  background-color: rgba(255, 255, 255, 0.08) !important;
+  background-color: transparent !important;
+  gap: 0.5rem;
 }
 .pot-tab-trigger {
   color: #374151 !important;
+  background-color: #f3f4f6 !important;
 }
 .dark .pot-tab-trigger {
-  color: #FFFFFF !important;
+  color: #d1d5db !important;
+  background-color: #1f2937 !important;
 }
 .pot-tab-trigger[data-state="active"] {
   color: #FFFFFF !important;
   background-color: hsl(var(--primary)) !important;
   box-shadow: none !important;
+}
+.dark .pot-tab-trigger[data-state="active"] {
+  color: #FFFFFF !important;
+  background-color: hsl(var(--primary)) !important;
 }
 
 @keyframes wave {
