@@ -111,15 +111,15 @@ export default function AddFundsModal({
             const totalCharged = parseFloat((amount + fee).toFixed(2));
             const fmt = (v: number) => new Intl.NumberFormat('en-IE', { style: 'currency', currency }).format(v);
             return (
-              <div className="space-y-2">
-                <div className="text-xs text-muted-foreground">
+              <div className="space-y-1">
+                <div className="text-sm text-foreground font-semibold">
                   {t('addFunds.addedToPot', { amount: fmt(amount) })}
                 </div>
-                <div className="text-xs text-muted-foreground">
-                  {t('addFunds.processingFee', { fee: fmt(fee) })}
-                </div>
-                <div className="text-sm text-foreground font-medium">
+                <div className="text-sm text-muted-foreground">
                   {t('addFunds.totalCharged', { total: fmt(totalCharged) })}
+                </div>
+                <div className="text-xs text-muted-foreground/70">
+                  {t('addFunds.processingFee', { fee: fmt(fee) })}
                 </div>
               </div>
             );
