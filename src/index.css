@@ -74,7 +74,8 @@
     --surface: 228 20% 13%;
 
     /* Primary: #4D7EFF */
-    --primary: 222 100% 65%;
+    --primary: 225 75% 48%;             /* #1D4ED8 */
+    --primary-hover: 225 75% 43%;       /* #1A44C2 */
     --primary-foreground: 0 0% 100%;
 
     /* Muted */
