@@ -139,6 +139,17 @@ Deno.serve(async (req) => {
       stripe_session_id: transferId,
     });
 
+    // Update withdrawal record with total_deducted if a matching pending/approved withdrawal exists
+    await supabaseAdmin
+      .from("withdrawals")
+      .update({ total_deducted: totalDeducted })
+      .eq("pot_id", pot_id)
+      .eq("user_id", recipient_user_id)
+      .eq("amount", amount)
+      .is("total_deducted", null)
+      .order("created_at", { ascending: false })
+      .limit(1);
+
     // In-app notification
     await supabaseAdmin.from("notifications").insert({
       user_id: recipient_user_id,

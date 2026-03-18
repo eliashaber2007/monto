@@ -118,13 +118,13 @@ export default function WithdrawalModal({
 
         // Also insert a withdrawal record marked as approved for Activity tab
         console.log('[Withdrawal] Inserting approved withdrawal record');
-        await supabase.from('withdrawals').insert({ pot_id: potId, user_id: user.id, amount: numAmount, note: note.trim(), status: 'approved', processed_at: new Date().toISOString() });
+        await supabase.from('withdrawals').insert({ pot_id: potId, user_id: user.id, amount: numAmount, total_deducted: totalDeducted, note: note.trim(), status: 'approved', processed_at: new Date().toISOString() });
 
         toast({ title: t('withdrawalModal.withdrawalApproved') });
       } else {
         // requires_approval and user is NOT creator — insert pending, notify creator
         console.log('[Withdrawal] Pending approval: inserting pending withdrawal');
-        const { error: wErr } = await supabase.from('withdrawals').insert({ pot_id: potId, user_id: user.id, amount: numAmount, note: note.trim(), status: 'pending' });
+        const { error: wErr } = await supabase.from('withdrawals').insert({ pot_id: potId, user_id: user.id, amount: numAmount, total_deducted: totalDeducted, note: note.trim(), status: 'pending' });
         if (wErr) throw wErr;
         console.log('[Withdrawal] Pending withdrawal inserted, notification trigger should fire');
 

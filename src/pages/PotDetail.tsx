@@ -665,7 +665,7 @@ export default function PotDetail() {
               const deposits = transactions.filter((tx) => Number(tx.amount) > 0);
               const withdrawalTxs = transactions.filter((tx) => Number(tx.amount) < 0);
               const totalDeposits = deposits.reduce((s, tx) => s + Number(tx.amount), 0);
-              const totalWithdrawals = withdrawals.reduce((s, w) => s + Number(w.amount), 0);
+              const totalWithdrawals = withdrawals.reduce((s, w) => s + Number((w as any).total_deducted || w.amount), 0);
 
               const getMemberProfile = (userId: string) => {
                 const m = members.find((m) => m.user_id === userId);
@@ -771,7 +771,7 @@ export default function PotDetail() {
                                   {w.note && <p className="text-xs text-muted-foreground mt-0.5 italic">"{w.note}"</p>}
                                 </div>
                                 <div className="flex flex-col items-end gap-1.5">
-                                  <span className="text-sm font-bold text-destructive">-{formatCurrency(Number(w.amount), currency)}</span>
+                                  <span className="text-sm font-bold text-destructive">-{formatCurrency(Number((w as any).total_deducted || w.amount), currency)}</span>
                                   <span className={`text-[10px] px-2 py-0.5 rounded-full border font-semibold ${statusColor}`}>
                                     {statusLabel}
                                   </span>
