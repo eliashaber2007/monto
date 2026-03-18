@@ -71,11 +71,15 @@ Deno.serve(async (req) => {
 
     const origin = req.headers.get('origin') ?? 'https://montofinance.app';
 
+    // base_amount_cents = what the user wants in the pot
+    // amount_cents = total charged (base + processing fee)
+    const resolvedBaseCents = base_amount_cents || amount_cents;
+
     // Build metadata
     const metadata: Record<string, string> = {
       pot_id,
       user_id: userId,
-      base_amount_cents: String(base_amount_cents || amount_cents),
+      base_amount_cents: String(resolvedBaseCents),
     };
 
     // If this is a new pot creation, store pot config in metadata
@@ -101,6 +105,7 @@ Deno.serve(async (req) => {
       ? `${origin}/?pot_cancelled=true`
       : `${origin}/pots/${pot_id}?payment=cancelled`;
 
+    // Charge the TOTAL amount (base + fee) so the pot receives the exact base amount
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       line_items: [
