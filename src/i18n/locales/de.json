@@ -239,9 +239,9 @@
     "requestSent": "Auszahlungsanfrage an den Kassenersteller gesendet",
     "withdrawalApproved": "Auszahlung genehmigt!",
     "requestSentApproval": "Auszahlungsanfrage gesendet — wartet auf Genehmigung.",
-    "payoutFee": "Auszahlungsgebühr: {{fee}} (0,25% + 0,25€)",
-    "amountReceived": "Betrag auf dem Bankkonto: {{amount}}",
-    "totalDeducted": "Gesamt vom Topf abgezogen: {{amount}}"
+    "payoutFee": "Inkl. {{fee}} Stripe-Auszahlungsgebühr",
+    "amountReceived": "Du erhältst: {{amount}}",
+    "totalDeducted": "Vom Topf abgezogen: {{amount}}"
   },
   "profile": {
     "title": "Profil",

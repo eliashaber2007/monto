@@ -239,9 +239,9 @@
     "requestSent": "Solicitud de retiro enviada al creador del bote",
     "withdrawalApproved": "¡Retiro aprobado!",
     "requestSentApproval": "Solicitud de retiro enviada — esperando aprobación.",
-    "payoutFee": "Tarifa de pago: {{fee}} (0,25% + 0,25€)",
-    "amountReceived": "Monto recibido en el banco: {{amount}}",
-    "totalDeducted": "Total deducido de la olla: {{amount}}"
+    "payoutFee": "Incluye {{fee}} de tarifa de pago Stripe",
+    "amountReceived": "Recibirás: {{amount}}",
+    "totalDeducted": "Tomado del bote: {{amount}}"
   },
   "profile": {
     "title": "Perfil",

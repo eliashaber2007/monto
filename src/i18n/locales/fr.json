@@ -239,9 +239,9 @@
     "requestSent": "Demande de retrait envoyée au créateur de la cagnotte",
     "withdrawalApproved": "Retrait approuvé !",
     "requestSentApproval": "Demande de retrait envoyée — en attente d'approbation.",
-    "payoutFee": "Frais de virement : {{fee}} (0,25% + 0,25€)",
-    "amountReceived": "Montant reçu sur le compte : {{amount}}",
-    "totalDeducted": "Total déduit de la cagnotte : {{amount}}"
+    "payoutFee": "Inclut {{fee}} de frais de virement Stripe",
+    "amountReceived": "Vous recevrez : {{amount}}",
+    "totalDeducted": "Prélevé de la cagnotte : {{amount}}"
   },
   "profile": {
     "title": "Profil",
