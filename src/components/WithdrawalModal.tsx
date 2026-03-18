@@ -52,7 +52,9 @@ export default function WithdrawalModal({
       toast({ title: t('withdrawalModal.invalidAmount'), variant: 'destructive' });
       return;
     }
-    if (numAmount > potBalance) {
+    const fee = parseFloat(((numAmount * 0.0025) + 0.25).toFixed(2));
+    const totalDeducted = parseFloat((numAmount + fee).toFixed(2));
+    if (totalDeducted > potBalance) {
       toast({ title: t('withdrawalModal.exceedsBalance'), variant: 'destructive' });
       return;
     }

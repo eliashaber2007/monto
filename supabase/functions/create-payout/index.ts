@@ -124,17 +124,17 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Deduct from pot balance
+    // Deduct total (base + fee) from pot balance
     await supabaseAdmin.rpc("increment_pot_balance", {
       p_pot_id: pot_id,
-      p_amount: -amount,
+      p_amount: -totalDeducted,
     });
 
-    // Record transaction
+    // Record transaction with total deducted amount
     await supabaseAdmin.from("transactions").insert({
       pot_id,
       user_id: recipient_user_id,
-      amount: -amount,
+      amount: -totalDeducted,
       status: "completed",
       stripe_session_id: transferId,
     });
