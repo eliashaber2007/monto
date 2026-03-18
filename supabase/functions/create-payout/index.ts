@@ -74,7 +74,9 @@ Deno.serve(async (req) => {
     // Self-approval check removed — this function handles payout execution,
     // not approval. The approval gate is handled client-side and in the approve flow.
 
-    if (amount > pot.balance) {
+    const feeCheck = parseFloat(((amount * 0.0025) + 0.25).toFixed(2));
+    const totalCheck = parseFloat((amount + feeCheck).toFixed(2));
+    if (totalCheck > pot.balance) {
       return new Response(JSON.stringify({ error: "Insufficient balance" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
