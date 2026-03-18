@@ -210,8 +210,8 @@
     "invalidAmount": "Monto inválido",
     "invalidAmountDesc": "Ingresa un monto mayor a 0.",
     "addedToPot": "Añadido al bote: {{amount}}",
-    "processingFee": "Tarifa de procesamiento: {{fee}} (1,5% + 0,25€)",
-    "totalCharged": "Total cobrado: {{total}}",
+    "processingFee": "Incluye {{fee}} de tarifa de Stripe",
+    "totalCharged": "Se te cobrará: {{total}}",
     "payWithStripe": "Pagar con Stripe",
     "redirecting": "Redirigiendo…"
   },
