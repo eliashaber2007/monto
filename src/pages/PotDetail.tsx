@@ -214,7 +214,11 @@ export default function PotDetail() {
     const payment = searchParams.get('payment');
     if (payment === 'success') {
       toast({ title: '🎉 Payment successful!', description: 'Your balance will update shortly.' });
+      // Multiple staggered refetches to catch webhook processing
+      refetch();
+      setTimeout(() => refetch(), 1500);
       setTimeout(() => refetch(), 3000);
+      setTimeout(() => refetch(), 6000);
       setSearchParams({}, { replace: true });
     } else if (payment === 'cancelled') {
       toast({ title: 'Payment cancelled', description: 'No funds were added.', variant: 'destructive' });
@@ -237,6 +241,23 @@ export default function PotDetail() {
         setWithdrawals(data ?? []);
       });
   }, [id]);
+
+  // Re-fetch on window/tab focus
+  useEffect(() => {
+    const onFocus = () => {
+      refetch();
+      fetchWithdrawals();
+    };
+    const onVisChange = () => {
+      if (document.visibilityState === 'visible') onFocus();
+    };
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onVisChange);
+    return () => {
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onVisChange);
+    };
+  }, [refetch, fetchWithdrawals]);
 
   // Initial fetch
   useEffect(() => {
