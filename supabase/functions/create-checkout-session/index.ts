@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
 
     const userId = claimsData.claims.sub;
 
-    const { pot_id, amount_cents, is_new_pot, pot_config } = await req.json();
+    const { pot_id, amount_cents, base_amount_cents, is_new_pot, pot_config } = await req.json();
 
     if (!pot_id || !amount_cents || amount_cents < 100) {
       return new Response(JSON.stringify({ error: 'Invalid params' }), {
@@ -75,6 +75,7 @@ Deno.serve(async (req) => {
     const metadata: Record<string, string> = {
       pot_id,
       user_id: userId,
+      base_amount_cents: String(base_amount_cents || amount_cents),
     };
 
     // If this is a new pot creation, store pot config in metadata

@@ -209,8 +209,9 @@
     "youllAdd": "Sie fügen hinzu",
     "invalidAmount": "Ungültiger Betrag",
     "invalidAmountDesc": "Bitte geben Sie einen Betrag größer als 0 ein.",
+    "addedToPot": "In die Kasse: {{amount}}",
     "processingFee": "Bearbeitungsgebühr: {{fee}} (1,5% + 0,25€)",
-    "amountToPot": "Betrag in der Kasse: {{amount}}",
+    "totalCharged": "Gesamtbetrag: {{total}}",
     "payWithStripe": "Mit Stripe bezahlen",
     "redirecting": "Weiterleitung…"
   },

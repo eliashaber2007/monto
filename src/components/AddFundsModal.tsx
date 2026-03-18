@@ -45,9 +45,12 @@ export default function AddFundsModal({
 
     setLoading(true);
 
+    const fee = parseFloat(((amount * 0.015) + 0.25).toFixed(2));
+    const totalCharged = parseFloat((amount + fee).toFixed(2));
+
     try {
       const res = await supabase.functions.invoke('create-checkout-session', {
-        body: { pot_id: potId, amount_cents: Math.round(amount * 100) },
+        body: { pot_id: potId, amount_cents: Math.round(totalCharged * 100), base_amount_cents: Math.round(amount * 100) },
       });
 
       if (res.error) throw res.error;
@@ -105,15 +108,18 @@ export default function AddFundsModal({
 
           {amount && amount > 0 && (() => {
             const fee = parseFloat(((amount * 0.015) + 0.25).toFixed(2));
-            const netAmount = parseFloat((amount - fee).toFixed(2));
+            const totalCharged = parseFloat((amount + fee).toFixed(2));
             const fmt = (v: number) => new Intl.NumberFormat('en-IE', { style: 'currency', currency }).format(v);
             return (
               <div className="space-y-2">
                 <div className="text-xs text-muted-foreground">
+                  {t('addFunds.addedToPot', { amount: fmt(amount) })}
+                </div>
+                <div className="text-xs text-muted-foreground">
                   {t('addFunds.processingFee', { fee: fmt(fee) })}
                 </div>
                 <div className="text-sm text-foreground font-medium">
-                  {t('addFunds.amountToPot', { amount: fmt(netAmount) })}
+                  {t('addFunds.totalCharged', { total: fmt(totalCharged) })}
                 </div>
               </div>
             );
