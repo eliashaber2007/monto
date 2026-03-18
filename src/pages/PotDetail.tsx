@@ -226,6 +226,22 @@ export default function PotDetail() {
     }
   }, [searchParams]);
 
+  const fetchReceipts = useCallback(() => {
+    if (!id) return;
+    supabase.from('receipts').select('*').eq('pot_id', id).order('created_at', { ascending: false })
+      .then(({ data }) => setReceipts(data ?? []));
+  }, [id]);
+
+  const fetchWithdrawals = useCallback(() => {
+    if (!id) return;
+    console.log('[Withdrawals] Fetching withdrawals for pot:', id);
+    supabase.from('withdrawals').select('*').eq('pot_id', id).order('created_at', { ascending: false })
+      .then(({ data }) => {
+        console.log('[Withdrawals] Fetched', data?.length ?? 0, 'withdrawals:', data?.map(w => ({ id: w.id, status: w.status, amount: w.amount })));
+        setWithdrawals(data ?? []);
+      });
+  }, [id]);
+
   // Re-fetch on window/tab focus
   useEffect(() => {
     const onFocus = () => {
@@ -242,22 +258,6 @@ export default function PotDetail() {
       document.removeEventListener('visibilitychange', onVisChange);
     };
   }, [refetch, fetchWithdrawals]);
-
-  const fetchReceipts = useCallback(() => {
-    if (!id) return;
-    supabase.from('receipts').select('*').eq('pot_id', id).order('created_at', { ascending: false })
-      .then(({ data }) => setReceipts(data ?? []));
-  }, [id]);
-
-  const fetchWithdrawals = useCallback(() => {
-    if (!id) return;
-    console.log('[Withdrawals] Fetching withdrawals for pot:', id);
-    supabase.from('withdrawals').select('*').eq('pot_id', id).order('created_at', { ascending: false })
-      .then(({ data }) => {
-        console.log('[Withdrawals] Fetched', data?.length ?? 0, 'withdrawals:', data?.map(w => ({ id: w.id, status: w.status, amount: w.amount })));
-        setWithdrawals(data ?? []);
-      });
-  }, [id]);
 
   // Initial fetch
   useEffect(() => {
