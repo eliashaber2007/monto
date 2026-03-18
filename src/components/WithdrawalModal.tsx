@@ -172,14 +172,17 @@ export default function WithdrawalModal({
               const num = parseFloat(amount);
               if (!num || num <= 0) return null;
               const fee = parseFloat(((num * 0.0025) + 0.25).toFixed(2));
-              const received = parseFloat((num - fee).toFixed(2));
+              const totalDeducted = parseFloat((num + fee).toFixed(2));
               return (
                 <div className="space-y-1 mt-2">
+                  <div className="text-sm text-foreground font-medium">
+                    {t('withdrawalModal.amountReceived', { amount: formatCurrency(num) })}
+                  </div>
                   <div className="text-xs text-muted-foreground">
                     {t('withdrawalModal.payoutFee', { fee: formatCurrency(fee) })}
                   </div>
-                  <div className="text-sm text-foreground font-medium">
-                    {t('withdrawalModal.amountReceived', { amount: formatCurrency(received) })}
+                  <div className="text-xs text-muted-foreground">
+                    {t('withdrawalModal.totalDeducted', { amount: formatCurrency(totalDeducted) })}
                   </div>
                 </div>
               );
