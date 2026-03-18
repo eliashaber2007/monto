@@ -232,13 +232,14 @@ export default function PotDetail() {
       refetch();
       fetchWithdrawals();
     };
-    window.addEventListener('focus', onFocus);
-    document.addEventListener('visibilitychange', () => {
+    const onVisChange = () => {
       if (document.visibilityState === 'visible') onFocus();
-    });
+    };
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onVisChange);
     return () => {
       window.removeEventListener('focus', onFocus);
-      document.removeEventListener('visibilitychange', onFocus);
+      document.removeEventListener('visibilitychange', onVisChange);
     };
   }, [refetch, fetchWithdrawals]);
 
