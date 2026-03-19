@@ -244,9 +244,21 @@ export default function PotChat({ potId, potName, potEmoji, members, onClose }: 
   };
 
   const renderContent = (content: string) => {
-    const parts = content.split(/(@[\w\s]+?)(?=\s@|\s[^@]|$)/g);
+    // Build a list of known member names to match mentions exactly
+    const memberNames = members
+      .map((m) => m.profiles?.first_name)
+      .filter(Boolean)
+      .sort((a, b) => b!.length - a!.length); // longest first to avoid partial matches
+
+    if (memberNames.length === 0) return content;
+
+    // Build regex that matches @MemberName for each known member
+    const escaped = memberNames.map((n) => n!.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    const mentionRegex = new RegExp(`(@(?:${escaped.join('|')}))`, 'g');
+
+    const parts = content.split(mentionRegex);
     return parts.map((part, i) => {
-      if (part.startsWith('@')) {
+      if (part.startsWith('@') && memberNames.some((n) => part === `@${n}`)) {
         return (
           <span key={i} className="font-medium mention-tag px-1 rounded">
             {part}
