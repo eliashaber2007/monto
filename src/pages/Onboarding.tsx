@@ -58,7 +58,8 @@ export default function Onboarding() {
     } else {
       if (user?.id) {
         await supabase.from('profiles').update({ has_seen_onboarding: true } as any).eq('id', user.id);
-        queryClient.invalidateQueries({ queryKey: ['profile'] });
+        // Wait for profile cache to update before navigating, preventing stale data redirect loop
+        await queryClient.refetchQueries({ queryKey: ['profile'] });
       }
       navigate('/', { replace: true });
     }
