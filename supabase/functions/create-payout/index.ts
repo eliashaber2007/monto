@@ -23,7 +23,6 @@ Deno.serve(async (req) => {
 
     const token = authHeader.replace("Bearer ", "");
 
-    // ✅ FIXED: getUser() instead of getClaims()
     const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
       global: { headers: { Authorization: authHeader } },
     });
@@ -41,7 +40,7 @@ Deno.serve(async (req) => {
 
     const requestingUserId = user.id;
 
-    const { pot_id, amount, currency, recipient_user_id } = await req.json();
+    const { pot_id, amount, currency, recipient_user_id, withdrawal_id } = await req.json();
     if (!pot_id || !amount || !currency || !recipient_user_id) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
         status: 400,
@@ -61,7 +60,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // ✅ Auth check: requester must be pot creator, a leader, OR the recipient themselves
+    // Auth check: requester must be pot creator, a leader, OR the recipient themselves
     const { data: requesterMember } = await supabaseAdmin.from("pot_members").select("role").eq("pot_id", pot_id).eq("user_id", requestingUserId).single();
     const isCreatorOrLeader = pot.created_by === requestingUserId || requesterMember?.role === 'leader';
     if (!isCreatorOrLeader && requestingUserId !== recipient_user_id) {
@@ -70,9 +69,6 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-
-    // Self-approval check removed — this function handles payout execution,
-    // not approval. The approval gate is handled client-side and in the approve flow.
 
     const feeCheck = parseFloat(((amount * 0.0025) + 0.25).toFixed(2));
     const totalCheck = parseFloat((amount + feeCheck).toFixed(2));
@@ -100,12 +96,13 @@ Deno.serve(async (req) => {
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, { apiVersion: "2024-06-20" });
     const fee = parseFloat(((amount * 0.0025) + 0.25).toFixed(2));
     const totalDeducted = parseFloat((amount + fee).toFixed(2));
-    const amountCents = Math.round(amount * 100); // base amount sent to bank
+    const amountCents = Math.round(amount * 100);
     const isTestMode = Deno.env.get("STRIPE_SECRET_KEY")!.startsWith("sk_test_");
 
     let transferId = "";
     let simulated = false;
 
+    // 1. Execute Stripe transfer FIRST — if this fails, nothing else happens
     try {
       const transfer = await stripe.transfers.create({
         amount: amountCents,
@@ -120,17 +117,18 @@ Deno.serve(async (req) => {
         simulated = true;
         console.log("TEST MODE: Simulating successful payout due to insufficient Stripe balance");
       } else {
+        // Stripe transfer failed — do NOT deduct balance, do NOT mark approved
         throw transferErr;
       }
     }
 
-    // Deduct total (base + fee) from pot balance
+    // 2. Transfer succeeded — now deduct balance atomically
     await supabaseAdmin.rpc("increment_pot_balance", {
       p_pot_id: pot_id,
       p_amount: -totalDeducted,
     });
 
-    // Record transaction with total deducted amount
+    // 3. Record transaction
     await supabaseAdmin.from("transactions").insert({
       pot_id,
       user_id: recipient_user_id,
@@ -139,18 +137,26 @@ Deno.serve(async (req) => {
       stripe_session_id: transferId,
     });
 
-    // Update withdrawal record with total_deducted if a matching pending/approved withdrawal exists
-    await supabaseAdmin
-      .from("withdrawals")
-      .update({ total_deducted: totalDeducted })
-      .eq("pot_id", pot_id)
-      .eq("user_id", recipient_user_id)
-      .eq("amount", amount)
-      .is("total_deducted", null)
-      .order("created_at", { ascending: false })
-      .limit(1);
+    // 4. Mark the withdrawal as approved with total_deducted (if withdrawal_id provided)
+    if (withdrawal_id) {
+      await supabaseAdmin
+        .from("withdrawals")
+        .update({ status: "approved", processed_at: new Date().toISOString(), total_deducted: totalDeducted })
+        .eq("id", withdrawal_id);
+    } else {
+      // Fallback: update matching pending/approved withdrawal by pot/user/amount
+      await supabaseAdmin
+        .from("withdrawals")
+        .update({ total_deducted: totalDeducted })
+        .eq("pot_id", pot_id)
+        .eq("user_id", recipient_user_id)
+        .eq("amount", amount)
+        .is("total_deducted", null)
+        .order("created_at", { ascending: false })
+        .limit(1);
+    }
 
-    // In-app notification
+    // 5. In-app notification
     await supabaseAdmin.from("notifications").insert({
       user_id: recipient_user_id,
       pot_id,
@@ -158,7 +164,7 @@ Deno.serve(async (req) => {
       message: `You withdrew €${amount.toFixed(2)} from "${pot.name}". Funds arrive within 1-3 business days.`,
     });
 
-    // Email notification (non-blocking)
+    // 6. Email notification (non-blocking)
     try {
       await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-email-notification`, {
         method: "POST",
