@@ -72,7 +72,7 @@ export default function Onboarding() {
         <div className="text-center max-w-sm">
           <img src={montoLogo} alt="Monto logo" className="w-20 h-20 mx-auto mb-6" />
           <h1 className="text-3xl font-bold text-[#FFFFFF] mb-3">Welcome to Monto 👋</h1>
-          <p className="text-base text-[#E5E5E5] leading-relaxed">Your group savings app</p>
+          <p className="text-base text-[#E5E5E5] leading-relaxed">Group money management, simplified</p>
         </div>
         <div className="flex-1" />
         <button
