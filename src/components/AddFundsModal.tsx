@@ -20,6 +20,7 @@ interface AddFundsModalProps {
   potId: string;
   potName: string;
   currency: string;
+  restricted?: boolean;
 }
 
 export default function AddFundsModal({
@@ -28,6 +29,7 @@ export default function AddFundsModal({
   potId,
   potName,
   currency,
+  restricted,
 }: AddFundsModalProps) {
   const { t } = useTranslation();
   const [selected, setSelected] = useState<number | null>(null);
