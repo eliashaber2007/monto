@@ -96,9 +96,9 @@ export default function WithdrawalModal({
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
       const isCreator = user.id === createdBy;
-      const isCreatorOrLeader = isCreator || myRole === 'leader';
-      // Auto-payout for auto_approve, requires_password, or creator/leader in requires_approval
-      const shouldAutoPayout = withdrawalRule === 'auto_approve' || withdrawalRule === 'requires_password' || (withdrawalRule === 'requires_approval' && isCreatorOrLeader);
+      // Auto-payout for auto_approve, requires_password, or ONLY the creator in requires_approval
+      // Leaders must NOT self-approve — their requests go through the normal approval flow
+      const shouldAutoPayout = withdrawalRule === 'auto_approve' || withdrawalRule === 'requires_password' || (withdrawalRule === 'requires_approval' && isCreator);
 
       console.log('[Withdrawal] Rule:', withdrawalRule, 'isCreator:', isCreator, 'shouldAutoPayout:', shouldAutoPayout, 'amount:', numAmount);
 
