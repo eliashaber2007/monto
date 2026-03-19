@@ -67,7 +67,6 @@ export default function AddFundsModal({
     }
   };
 
-  return (
   if (restricted) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
