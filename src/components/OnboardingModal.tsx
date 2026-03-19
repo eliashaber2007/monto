@@ -12,7 +12,7 @@ const screens = [
   },
   {
     title: 'How it works',
-    body: "Create a pot, set a goal amount and share the link 🔗. Everyone contributes at their own pace and the pot owner withdraws when the time is right.",
+    body: "Create a pot and invite your group. Members add funds, request withdrawals, and you decide what gets approved.",
     Animation: ProgressRingAnimation,
   },
   {
