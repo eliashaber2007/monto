@@ -20,6 +20,7 @@ interface AddFundsModalProps {
   potId: string;
   potName: string;
   currency: string;
+  restricted?: boolean;
 }
 
 export default function AddFundsModal({
@@ -28,6 +29,7 @@ export default function AddFundsModal({
   potId,
   potName,
   currency,
+  restricted,
 }: AddFundsModalProps) {
   const { t } = useTranslation();
   const [selected, setSelected] = useState<number | null>(null);
@@ -64,6 +66,20 @@ export default function AddFundsModal({
       toast({ title: t('common.error'), description: err.message ?? 'Could not start checkout.', variant: 'destructive' });
     }
   };
+
+  if (restricted) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-sm rounded-2xl">
+          <DialogHeader>
+            <DialogTitle>Restricted</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground py-4">Only the creator and leaders can add funds to this pot.</p>
+          <Button variant="outline" className="w-full" onClick={() => onOpenChange(false)}>OK</Button>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
