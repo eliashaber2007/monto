@@ -1261,6 +1261,7 @@ export default function PotDetail() {
         potId={id!}
         potName={pot.name}
         currency={currency}
+        restricted={(pot as any).contributions_restricted && !isCreatorOrLeader}
       />
 
       {showUpload && (
