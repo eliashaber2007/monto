@@ -308,10 +308,12 @@
 
 /* Chat @mention inline highlight */
 .mention-tag {
-  background-color: rgba(37, 99, 235, 0.1);
+  background-color: rgba(37, 99, 235, 0.15);
   color: #1D4ED8;
+  border: 1px solid rgba(37, 99, 235, 0.3);
 }
 .dark .mention-tag {
-  background-color: rgba(37, 99, 235, 0.15);
-  color: #93C5FD;
+  background-color: rgba(37, 99, 235, 0.25);
+  color: #BFDBFE;
+  border: 1px solid rgba(37, 99, 235, 0.3);
 }
