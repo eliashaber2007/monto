@@ -69,7 +69,7 @@ export default function Onboarding() {
     return (
       <div className="fixed inset-0 z-50 bg-[#000000] flex flex-col items-center justify-center px-6 py-10">
         <div className="text-center max-w-sm">
-          <div className="text-7xl mb-6">💰</div>
+          <img src={montoLogo} alt="Monto logo" className="w-20 h-20 mx-auto mb-6" />
           <h1 className="text-3xl font-bold text-[#FFFFFF] mb-3">Welcome to Monto 👋</h1>
           <p className="text-base text-[#E5E5E5] leading-relaxed">Your group savings app</p>
         </div>
