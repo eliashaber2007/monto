@@ -68,6 +68,21 @@ export default function AddFundsModal({
   };
 
   return (
+  if (restricted) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-sm rounded-2xl">
+          <DialogHeader>
+            <DialogTitle>Restricted</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground py-4">Only the creator and leaders can add funds to this pot.</p>
+          <Button variant="outline" className="w-full" onClick={() => onOpenChange(false)}>OK</Button>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-sm rounded-2xl">
         <DialogHeader>
