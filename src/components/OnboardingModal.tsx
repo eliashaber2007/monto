@@ -7,7 +7,7 @@ import { CoinsPotAnimation, ProgressRingAnimation, BankConnectAnimation } from '
 const screens = [
   {
     title: 'Welcome to Monto',
-    body: "Monto gives your group one place to hold shared money. The pot owner stays in control. Members can request what they need, no awkward messages, no chasing anyone down 💸. Every transaction is logged and owners can request receipts to keep things clean ✅.",
+    body: "Group money management, simplified.",
     Animation: CoinsPotAnimation,
   },
   {
