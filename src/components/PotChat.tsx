@@ -248,7 +248,7 @@ export default function PotChat({ potId, potName, potEmoji, members, onClose }: 
     return parts.map((part, i) => {
       if (part.startsWith('@')) {
         return (
-          <span key={i} className="font-semibold text-primary">
+          <span key={i} className="font-medium mention-tag px-1 rounded">
             {part}
           </span>
         );
