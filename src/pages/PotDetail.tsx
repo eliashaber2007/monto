@@ -352,11 +352,8 @@ export default function PotDetail() {
     }
     setProcessingWithdrawal(withdrawal.id);
     try {
-      // 1. Mark withdrawal as approved FIRST
-      const { error: updateErr } = await supabase.from('withdrawals').update({ status: 'approved', processed_at: new Date().toISOString() }).eq('id', withdrawal.id);
-      if (updateErr) throw updateErr;
-
-      // 2. Call create-payout to trigger bank transfer
+      // 1. Call create-payout FIRST — this deducts balance and triggers bank transfer atomically
+      //    Do NOT mark as approved until payout succeeds
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
 
@@ -374,6 +371,7 @@ export default function PotDetail() {
             amount: withdrawal.amount,
             currency: (data?.pot.currency ?? 'EUR').toLowerCase(),
             recipient_user_id: withdrawal.user_id,
+            withdrawal_id: withdrawal.id,
           }),
         }
       );
@@ -381,11 +379,15 @@ export default function PotDetail() {
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || 'Payout failed');
 
+      // 2. Payout succeeded — mark withdrawal as approved
+      await supabase.from('withdrawals').update({ status: 'approved', processed_at: new Date().toISOString() }).eq('id', withdrawal.id);
+
       toast({ title: 'Withdrawal approved ✅' });
       setApproveConfirm(null);
       refetch();
       fetchWithdrawals();
     } catch (err: any) {
+      // Payout failed — withdrawal stays pending, balance untouched
       toast({ title: 'Error', description: err.message, variant: 'destructive' });
     } finally {
       setProcessingWithdrawal(null);
