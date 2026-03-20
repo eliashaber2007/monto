@@ -82,12 +82,12 @@ export default function Onboarding() {
           <h1
             className="text-2xl font-bold text-[#FFFFFF] mb-3 animate-[onboard-slide-up_400ms_ease-out_200ms_both]"
           >
-            Welcome to Monto 👋
+            {t('onboarding.welcomeTitle')}
           </h1>
           <p
             className="text-base text-[#E5E5E5] leading-relaxed animate-[onboard-fade_400ms_ease-out_400ms_both]"
           >
-            The simplest way to manage money with your group.
+            {t('onboarding.welcomeSubtitle')}
           </p>
         </div>
         <div className="flex-[2]" />
