@@ -307,9 +307,9 @@
 }
 
 /* Onboarding welcome entrance animations */
-@keyframes onboard-slide-down {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes onboard-logo-in {
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1); }
 }
 @keyframes onboard-slide-up {
   from { opacity: 0; transform: translateY(10px); }
@@ -318,6 +318,13 @@
 @keyframes onboard-fade {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+@keyframes onboard-logo-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+.onboarding-logo-pulse {
+  animation: onboard-logo-in 500ms ease-out both, onboard-logo-pulse 3s ease-in-out 500ms infinite;
 }
 
 /* Chat @mention inline highlight */
