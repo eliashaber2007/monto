@@ -74,13 +74,7 @@ export default function MyPots() {
 
   const displayName = profile?.first_name || user?.user_metadata?.first_name || user?.email?.split('@')[0] || '';
 
-  const hasSeenOnboarding = (profile as any)?.has_seen_onboarding ?? true;
-
-  useEffect(() => {
-    if (profile && !hasSeenOnboarding) {
-      navigate('/onboarding', { replace: true });
-    }
-  }, [profile, hasSeenOnboarding, navigate]);
+  // Onboarding redirect is now handled centrally in ProtectedRoute
 
   const activePots = (pots ?? [])
     .filter((p: any) => p.status !== 'closed')
