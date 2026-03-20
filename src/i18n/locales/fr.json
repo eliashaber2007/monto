@@ -81,6 +81,8 @@
   "onboarding": {
     "chooseLanguage": "Choisissez votre langue",
     "welcome": "Bienvenue sur Monto",
+    "welcomeTitle": "Bienvenue sur Monto 👋",
+    "welcomeSubtitle": "La façon la plus simple de gérer l'argent à plusieurs.",
     "welcomeBody": "Monto offre à votre groupe un seul endroit pour gérer l'argent partagé. Le propriétaire de la cagnotte garde le contrôle. Les membres peuvent demander ce dont ils ont besoin, sans messages gênants 💸. Chaque transaction est enregistrée et les propriétaires peuvent demander des justificatifs ✅.",
     "howItWorks": "Comment ça marche",
     "howItWorksBody": "Créez une cagnotte et invitez votre groupe. Les membres ajoutent des fonds, demandent des retraits, et vous décidez ce qui est approuvé.",

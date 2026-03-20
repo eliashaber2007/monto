@@ -81,6 +81,8 @@
   "onboarding": {
     "chooseLanguage": "Wählen Sie Ihre Sprache",
     "welcome": "Willkommen bei Monto",
+    "welcomeTitle": "Willkommen bei Monto 👋",
+    "welcomeSubtitle": "Der einfachste Weg, Geld gemeinsam zu verwalten.",
     "welcomeBody": "Monto bietet Ihrer Gruppe einen Ort für gemeinsames Geld. Der Kassen-Besitzer behält die Kontrolle. Mitglieder können anfordern, was sie brauchen – ohne peinliche Nachrichten 💸. Jede Transaktion wird protokolliert und Besitzer können Belege anfordern ✅.",
     "howItWorks": "So funktioniert's",
     "howItWorksBody": "Erstellen Sie eine Kasse und laden Sie Ihre Gruppe ein. Mitglieder fügen Geld hinzu, beantragen Auszahlungen, und Sie entscheiden, was genehmigt wird.",

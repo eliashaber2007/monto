@@ -81,6 +81,8 @@
   "onboarding": {
     "chooseLanguage": "Choose your language",
     "welcome": "Welcome to Monto",
+    "welcomeTitle": "Welcome to Monto 👋",
+    "welcomeSubtitle": "The simplest way to manage money with your group.",
     "welcomeBody": "Monto gives your group one place to hold shared money. The pot owner stays in control. Members can request what they need, no awkward messages, no chasing anyone down 💸. Every transaction is logged and owners can request receipts to keep things clean ✅.",
     "howItWorks": "How it works",
     "howItWorksBody": "Create a pot and invite your group. Members add funds, request withdrawals, and you decide what gets approved.",
