@@ -68,28 +68,32 @@ export default function Onboarding() {
   // Welcome screen (step 0)
   if (isWelcome) {
     return (
-      <div className="fixed inset-0 z-50 bg-[#000000] flex flex-col items-center justify-center px-6 py-10">
+      <div className="fixed inset-0 z-50 bg-[#000000] flex flex-col items-center px-6 py-10">
+        <div className="flex-1" />
+        {/* Logo */}
+        <div
+          className="w-24 h-24 rounded-2xl bg-[#1E3A5F] flex items-center justify-center mb-10 animate-[onboard-logo-in_500ms_ease-out_both] onboarding-logo-pulse"
+          style={{ boxShadow: '0 0 40px rgba(37, 99, 235, 0.4)' }}
+        >
+          <span className="text-4xl font-extrabold text-[#FFFFFF] select-none">M</span>
+        </div>
+        {/* Text */}
         <div className="text-center max-w-sm">
           <h1
-            className="text-4xl font-extrabold tracking-tight text-[#FFFFFF] mb-4 animate-[onboard-slide-down_400ms_ease-out_both]"
-          >
-            Monto
-          </h1>
-          <h2
-            className="text-2xl font-bold text-[#FFFFFF] mb-3 animate-[onboard-slide-up_400ms_ease-out_150ms_both]"
+            className="text-2xl font-bold text-[#FFFFFF] mb-3 animate-[onboard-slide-up_400ms_ease-out_200ms_both]"
           >
             Welcome to Monto 👋
-          </h2>
+          </h1>
           <p
-            className="text-base text-[#E5E5E5] leading-relaxed animate-[onboard-fade_400ms_ease-out_300ms_both]"
+            className="text-base text-[#E5E5E5] leading-relaxed animate-[onboard-fade_400ms_ease-out_400ms_both]"
           >
             The simplest way to manage money with your group.
           </p>
         </div>
-        <div className="flex-1" />
+        <div className="flex-[2]" />
         <button
           onClick={() => setStep(1)}
-          className="w-full max-w-sm h-14 rounded-2xl bg-primary text-primary-foreground font-semibold text-base hover:bg-primary/90 transition-colors active:scale-[0.98] animate-[onboard-fade_400ms_ease-out_450ms_both]"
+          className="w-full max-w-sm h-14 rounded-2xl bg-primary text-primary-foreground font-semibold text-base hover:bg-primary/90 transition-colors active:scale-[0.98] animate-[onboard-fade_400ms_ease-out_600ms_both]"
         >
           {t('onboarding.getStarted')}
         </button>
