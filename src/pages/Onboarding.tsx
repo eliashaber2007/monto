@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import montoLogo from '@/assets/monto-logo.png';
+
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -70,14 +70,26 @@ export default function Onboarding() {
     return (
       <div className="fixed inset-0 z-50 bg-[#000000] flex flex-col items-center justify-center px-6 py-10">
         <div className="text-center max-w-sm">
-          <img src={montoLogo} alt="Monto logo" className="w-20 h-20 mx-auto mb-6" />
-          <h1 className="text-3xl font-bold text-[#FFFFFF] mb-3">Welcome to Monto 👋</h1>
-          <p className="text-base text-[#E5E5E5] leading-relaxed">Group money management, simplified</p>
+          <h1
+            className="text-4xl font-extrabold tracking-tight text-[#FFFFFF] mb-4 animate-[onboard-slide-down_400ms_ease-out_both]"
+          >
+            Monto
+          </h1>
+          <h2
+            className="text-2xl font-bold text-[#FFFFFF] mb-3 animate-[onboard-slide-up_400ms_ease-out_150ms_both]"
+          >
+            Welcome to Monto 👋
+          </h2>
+          <p
+            className="text-base text-[#E5E5E5] leading-relaxed animate-[onboard-fade_400ms_ease-out_300ms_both]"
+          >
+            The simplest way to manage money with your group.
+          </p>
         </div>
         <div className="flex-1" />
         <button
           onClick={() => setStep(1)}
-          className="w-full max-w-sm h-14 rounded-2xl bg-primary text-primary-foreground font-semibold text-base hover:bg-primary/90 transition-colors active:scale-[0.98]"
+          className="w-full max-w-sm h-14 rounded-2xl bg-primary text-primary-foreground font-semibold text-base hover:bg-primary/90 transition-colors active:scale-[0.98] animate-[onboard-fade_400ms_ease-out_450ms_both]"
         >
           {t('onboarding.getStarted')}
         </button>
