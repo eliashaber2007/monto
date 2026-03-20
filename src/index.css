@@ -306,6 +306,20 @@
   animation: pulse-dot 1.5s ease-in-out infinite;
 }
 
+/* Onboarding welcome entrance animations */
+@keyframes onboard-slide-down {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes onboard-slide-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes onboard-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 /* Chat @mention inline highlight */
 .mention-tag {
   background-color: rgba(37, 99, 235, 0.15);
