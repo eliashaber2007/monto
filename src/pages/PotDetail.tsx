@@ -480,7 +480,7 @@ export default function PotDetail() {
       .eq('user_id', user!.id);
     setLeaving(false);
     if (error) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      toast({ title: t('common.error'), description: error.message, variant: 'destructive' });
       return;
     }
     queryClient.invalidateQueries({ queryKey: ['pots'] });
