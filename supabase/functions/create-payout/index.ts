@@ -162,6 +162,7 @@ Deno.serve(async (req) => {
       pot_id,
       type: "payout",
       message: `You withdrew €${amount.toFixed(2)} from "${pot.name}". Funds arrive within 1-3 business days.`,
+      variables: { amount: amount.toFixed(2), pot: pot.name },
     });
 
     // 6. Email notification (non-blocking)

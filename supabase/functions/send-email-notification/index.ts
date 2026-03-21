@@ -249,6 +249,7 @@ async function handleNotification(payload: EmailPayload) {
         pot_id: payload.pot_id,
         type: 'leader_removed',
         message: removedMessage,
+        variables: { pot: pot.name },
       });
       
       const removedEmail = await getUserEmail(payload.user_id);
