@@ -48,13 +48,13 @@ function formatDate(dateStr: string) {
   });
 }
 
-function ReceiptStatusBadge({ status }: { status: string }) {
-  const map: Record<string, { label: string; color: string }> = {
-    pending: { label: 'Receipt Pending', color: 'bg-warning/10 text-warning border-warning/20' },
-    submitted: { label: 'Submitted', color: 'bg-primary/10 text-primary border-primary/20' },
-    approved: { label: 'Approved', color: 'bg-success/10 text-success border-success/20' },
-    rejected: { label: 'Rejected', color: 'bg-destructive/10 text-destructive border-destructive/20' },
-    expired: { label: 'Unverified', color: 'bg-destructive/10 text-destructive border-destructive/20' },
+function ReceiptStatusBadge({ status, t }: { status: string; t: (key: string) => string }) {
+  const map: Record<string, { labelKey: string; color: string }> = {
+    pending: { labelKey: 'potDetail.receiptPending', color: 'bg-warning/10 text-warning border-warning/20' },
+    submitted: { labelKey: 'potDetail.submitted', color: 'bg-primary/10 text-primary border-primary/20' },
+    approved: { labelKey: 'potDetail.receiptApproved', color: 'bg-success/10 text-success border-success/20' },
+    rejected: { labelKey: 'potDetail.receiptRejected', color: 'bg-destructive/10 text-destructive border-destructive/20' },
+    expired: { labelKey: 'potDetail.unverified', color: 'bg-destructive/10 text-destructive border-destructive/20' },
   };
   const cfg = map[status] ?? map.pending;
   return (
