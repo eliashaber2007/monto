@@ -927,7 +927,7 @@ export default function PotDetail() {
                                     disabled={processingWithdrawal === w.id}
                                     className="flex-1 text-xs font-semibold py-2 rounded-lg bg-success/10 text-success border border-success/20 hover:bg-success/20 transition-colors disabled:opacity-50"
                                   >
-                                    {processingWithdrawal === w.id ? 'Processing…' : 'Approve ✅'}
+                                    {processingWithdrawal === w.id ? t('potDetail.processing') : t('potDetail.approve')}
                                   </button>
                                   <button
                                     onClick={() => { setRejectConfirm(w); setRejectReason(''); }}
