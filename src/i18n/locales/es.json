@@ -348,7 +348,22 @@
     "notificationDesc": "Recibe notificaciones cuando alguien se une a tu bote, solicita un retiro o te menciona en el chat.",
     "allowNotifications": "Permitir notificaciones",
     "requesting": "Solicitando…",
-    "notNow": "Ahora no"
+    "notNow": "Ahora no",
+    "justNow": "justo ahora",
+    "minutesAgo": "hace {{count}} min",
+    "hoursAgo": "hace {{count}} h",
+    "daysAgo": "hace {{count}} d",
+    "msg_payout": "Retiraste € {{amount}} de \"{{pot}}\". Los fondos llegarán en 1 a 3 días hábiles.",
+    "msg_withdrawal_requested": "{{name}} solicitó un retiro de € {{amount}} de {{pot}}",
+    "msg_member_joined": "{{name}} se unió a {{pot}}",
+    "msg_withdrawal_approved": "Tu retiro de € {{amount}} de {{pot}} fue aprobado",
+    "msg_withdrawal_rejected": "Tu retiro de € {{amount}} de {{pot}} fue rechazado",
+    "msg_funds_added": "{{name}} agregó € {{amount}} a {{pot}}",
+    "msg_receipt_uploaded": "{{name}} subió un comprobante en {{pot}}",
+    "msg_expense_reminder": "{{pot}}: {{name}} te pide que justifiques tu retiro de € {{amount}}. Por favor agrega tus gastos y comprobantes.",
+    "msg_leader_assigned": "Has sido nombrado líder de {{pot}} por {{name}}.",
+    "msg_leader_removed": "Ya no eres líder de {{pot}}.",
+    "msg_mention": "{{name}} te mencionó en {{pot}}"
   },
   "archive": {
     "title": "Archivo de botes 📦",

@@ -348,7 +348,22 @@
     "notificationDesc": "Soyez notifié quand quelqu'un rejoint votre cagnotte, demande un retrait ou vous mentionne dans le chat.",
     "allowNotifications": "Autoriser les notifications",
     "requesting": "Demande…",
-    "notNow": "Pas maintenant"
+    "notNow": "Pas maintenant",
+    "justNow": "à l'instant",
+    "minutesAgo": "il y a {{count}} min",
+    "hoursAgo": "il y a {{count}} h",
+    "daysAgo": "il y a {{count}} j",
+    "msg_payout": "Vous avez retiré € {{amount}} de « {{pot}} ». Les fonds arrivent sous 1 à 3 jours ouvrés.",
+    "msg_withdrawal_requested": "{{name}} a demandé un retrait de € {{amount}} de {{pot}}",
+    "msg_member_joined": "{{name}} a rejoint {{pot}}",
+    "msg_withdrawal_approved": "Votre retrait de € {{amount}} de {{pot}} a été approuvé",
+    "msg_withdrawal_rejected": "Votre retrait de € {{amount}} de {{pot}} a été rejeté",
+    "msg_funds_added": "{{name}} a ajouté € {{amount}} à {{pot}}",
+    "msg_receipt_uploaded": "{{name}} a téléchargé un reçu dans {{pot}}",
+    "msg_expense_reminder": "{{pot}} : {{name}} vous demande de justifier votre retrait de € {{amount}}. Veuillez ajouter vos dépenses et reçus.",
+    "msg_leader_assigned": "Vous avez été nommé responsable de {{pot}} par {{name}}.",
+    "msg_leader_removed": "Vous n'êtes plus responsable de {{pot}}.",
+    "msg_mention": "{{name}} vous a mentionné dans {{pot}}"
   },
   "archive": {
     "title": "Archives 📦",

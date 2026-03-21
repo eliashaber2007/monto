@@ -348,7 +348,22 @@
     "notificationDesc": "Erhalten Sie Benachrichtigungen, wenn jemand Ihrer Kasse beitritt, eine Auszahlung anfordert oder Sie im Chat erwähnt.",
     "allowNotifications": "Benachrichtigungen erlauben",
     "requesting": "Anforderung…",
-    "notNow": "Nicht jetzt"
+    "notNow": "Nicht jetzt",
+    "justNow": "gerade eben",
+    "minutesAgo": "vor {{count}} Min.",
+    "hoursAgo": "vor {{count}} Std.",
+    "daysAgo": "vor {{count}} T.",
+    "msg_payout": "Sie haben \u20ac {{amount}} aus \"{{pot}}\" abgehoben. Die Gelder treffen innerhalb von 1\u20133 Werktagen ein.",
+    "msg_withdrawal_requested": "{{name}} hat eine Auszahlung von € {{amount}} aus {{pot}} angefordert",
+    "msg_member_joined": "{{name}} ist {{pot}} beigetreten",
+    "msg_withdrawal_approved": "Ihre Auszahlung von € {{amount}} aus {{pot}} wurde genehmigt",
+    "msg_withdrawal_rejected": "Ihre Auszahlung von € {{amount}} aus {{pot}} wurde abgelehnt",
+    "msg_funds_added": "{{name}} hat € {{amount}} zu {{pot}} hinzugefügt",
+    "msg_receipt_uploaded": "{{name}} hat einen Beleg in {{pot}} hochgeladen",
+    "msg_expense_reminder": "{{pot}}: {{name}} bittet Sie, Ihre Auszahlung von € {{amount}} zu begründen. Bitte fügen Sie Ihre Ausgaben und Belege hinzu.",
+    "msg_leader_assigned": "Sie wurden von {{name}} zum Leiter von {{pot}} ernannt.",
+    "msg_leader_removed": "Sie sind kein Leiter von {{pot}} mehr.",
+    "msg_mention": "{{name}} hat Sie in {{pot}} erwähnt"
   },
   "archive": {
     "title": "Kassenarchiv 📦",

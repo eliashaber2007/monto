@@ -348,7 +348,22 @@
     "notificationDesc": "Get notified when someone joins your pot, requests a withdrawal, or mentions you in chat.",
     "allowNotifications": "Allow notifications",
     "requesting": "Requesting…",
-    "notNow": "Not now"
+    "notNow": "Not now",
+    "justNow": "just now",
+    "minutesAgo": "{{count}}m ago",
+    "hoursAgo": "{{count}}h ago",
+    "daysAgo": "{{count}}d ago",
+    "msg_payout": "You withdrew € {{amount}} from \"{{pot}}\". Funds arrive within 1-3 business days.",
+    "msg_withdrawal_requested": "{{name}} requested a withdrawal of € {{amount}} from {{pot}}",
+    "msg_member_joined": "{{name}} joined {{pot}}",
+    "msg_withdrawal_approved": "Your withdrawal of € {{amount}} from {{pot}} was approved",
+    "msg_withdrawal_rejected": "Your withdrawal of € {{amount}} from {{pot}} was rejected",
+    "msg_funds_added": "{{name}} added € {{amount}} to {{pot}}",
+    "msg_receipt_uploaded": "{{name}} uploaded a receipt in {{pot}}",
+    "msg_expense_reminder": "{{pot}}: {{name}} is requesting you to justify your withdrawal of € {{amount}}. Please add your expenses and receipts.",
+    "msg_leader_assigned": "You've been made a leader of {{pot}} by {{name}}.",
+    "msg_leader_removed": "You are no longer a leader of {{pot}}.",
+    "msg_mention": "{{name}} mentioned you in {{pot}}"
   },
   "archive": {
     "title": "Pot Archive 📦",
