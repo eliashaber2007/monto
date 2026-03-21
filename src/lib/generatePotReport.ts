@@ -170,7 +170,9 @@ export function generatePotReport(
     const deducted = Number(w.total_deducted || w.amount);
     const received = Number(w.amount);
     const wExpenses = expensesByWithdrawal[w.id] || [];
-    const expenseList = wExpenses.map(e => `${e.name}: ${fmt(e.amount)}`).join(', ') || '—';
+    const expenseList = wExpenses.length > 0
+      ? wExpenses.map(e => `${e.name} — ${fmt(e.amount)}`).join('\n')
+      : 'None';
     const expenseTotal = wExpenses.reduce((s, e) => s + Number(e.amount), 0);
     const justified = deducted > 0 ? Math.min(100, Math.round((expenseTotal / deducted) * 100)) : 0;
     return [name, date, fmt(deducted), fmt(received), expenseList, `${justified}%`];
