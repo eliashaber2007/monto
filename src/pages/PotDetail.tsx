@@ -678,6 +678,58 @@ export default function PotDetail() {
           )}
         </div>
 
+        {/* Generate Report - creator only */}
+        {isCreator && (
+          <div className="flex justify-end">
+            <button
+              onClick={async () => {
+                setGeneratingReport(true);
+                try {
+                  // Fetch all transactions (not just 50)
+                  const { data: allTx } = await supabase
+                    .from('transactions')
+                    .select('*')
+                    .eq('pot_id', id!)
+                    .eq('status', 'completed')
+                    .order('created_at', { ascending: false });
+
+                  // Fetch all approved withdrawals
+                  const { data: allW } = await supabase
+                    .from('withdrawals')
+                    .select('*')
+                    .eq('pot_id', id!)
+                    .eq('status', 'approved')
+                    .order('created_at', { ascending: false });
+
+                  // Fetch all expenses for approved withdrawals
+                  const approvedIds = (allW ?? []).map(w => w.id);
+                  let allExpenses: any[] = [];
+                  if (approvedIds.length > 0) {
+                    const { data: expData } = await supabase
+                      .from('withdrawal_expenses')
+                      .select('*')
+                      .in('withdrawal_id', approvedIds);
+                    allExpenses = expData ?? [];
+                  }
+
+                  generatePotReport(pot, members, allTx ?? [], allW ?? [], allExpenses);
+                  toast({ title: '📄 Report downloaded!' });
+                } catch (e) {
+                  console.error('Report generation failed:', e);
+                  toast({ title: 'Failed to generate report', variant: 'destructive' });
+                } finally {
+                  setGeneratingReport(false);
+                }
+              }}
+              disabled={generatingReport}
+              className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium hover:text-foreground transition-colors disabled:opacity-50"
+            >
+              <FileDown size={14} />
+              {generatingReport ? 'Generating…' : 'Generate Report'}
+            </button>
+          </div>
+        )}
+
         {/* Tabs */}
         <Tabs defaultValue="activity" onValueChange={(val) => { if (val === 'activity') { console.log('[Tabs] Activity tab focused, re-fetching withdrawals'); fetchWithdrawals(); refetch(); } }}>
           <TabsList className="w-full rounded-xl p-1 h-11 pot-tabs-list">
