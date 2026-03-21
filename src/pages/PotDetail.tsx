@@ -1279,7 +1279,7 @@ export default function PotDetail() {
                 disabled={!rejectReason.trim() || !!processingWithdrawal}
                 onClick={() => rejectConfirm && handleRejectWithdrawal(rejectConfirm, rejectReason.trim())}
               >
-                {processingWithdrawal ? 'Processing…' : 'Reject ❌'}
+                {processingWithdrawal ? t('potDetail.processing') : t('potDetail.reject')}
               </Button>
             </div>
           </div>
