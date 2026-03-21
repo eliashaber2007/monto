@@ -1149,9 +1149,9 @@ export default function PotDetail() {
               onClick={handleCopyLink}
             >
               {copied ? (
-                <><Check size={16} className="mr-1.5" /> Copied!</>
+                <><Check size={16} className="mr-1.5" /> {t('potDetail.copied')}</>
               ) : (
-                <><Copy size={16} className="mr-1.5" /> Copy Invite Link</>
+                <><Copy size={16} className="mr-1.5" /> {t('potDetail.copyInviteLink')}</>
               )}
             </Button>
             <Button
