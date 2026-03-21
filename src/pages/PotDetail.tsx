@@ -449,7 +449,7 @@ export default function PotDetail() {
       } catch (e) { console.error('Leader notification failed:', e); }
       toast({ title: t('potDetail.leaderAssigned', { name: memberName }) });
       refetch();
-    } catch (err: any) { toast({ title: 'Error', description: err.message, variant: 'destructive' }); } finally { setAssigningLeader(null); }
+    } catch (err: any) { toast({ title: t('common.error'), description: err.message, variant: 'destructive' }); } finally { setAssigningLeader(null); }
   };
 
   const handleRemoveLeader = async (member: any) => {
