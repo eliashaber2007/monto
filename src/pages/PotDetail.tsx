@@ -400,7 +400,7 @@ export default function PotDetail() {
 
   const handleRejectWithdrawal = async (withdrawal: any, reason: string) => {
     if (withdrawal.user_id === user?.id) {
-      toast({ title: 'Error', description: 'You cannot reject your own withdrawal request.', variant: 'destructive' });
+      toast({ title: t('common.error'), description: t('potDetail.cannotRejectOwn'), variant: 'destructive' });
       return;
     }
     setProcessingWithdrawal(withdrawal.id);
