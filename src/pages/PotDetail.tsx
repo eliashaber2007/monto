@@ -572,10 +572,10 @@ export default function PotDetail() {
 
       queryClient.invalidateQueries({ queryKey: ['pots'] });
       toast({
-        title: 'Pot closed 🎉',
+        title: t('potDetail.potClosed'),
         description: balance > 0
-          ? `${formatCurrency(balance, currency)} has been transferred to your bank account. Funds arrive within 1-3 business days.`
-          : 'The pot has been closed.',
+          ? t('potDetail.potClosedDesc', { amount: formatCurrency(balance, currency) })
+          : t('potDetail.potClosedNoBalance'),
       });
       navigate('/');
     } catch (err: any) {
