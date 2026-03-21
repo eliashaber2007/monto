@@ -727,7 +727,7 @@ export default function PotDetail() {
               className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium hover:text-foreground transition-colors disabled:opacity-50"
             >
               <FileDown size={14} />
-              {generatingReport ? 'Generating…' : 'Generate Report'}
+              {generatingReport ? t('potDetail.generating') : t('potDetail.generateReport')}
             </button>
           </div>
         )}
