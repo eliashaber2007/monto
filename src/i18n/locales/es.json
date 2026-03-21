@@ -277,6 +277,7 @@
     "totalDeducted": "Tomado del bote: {{amount}}"
   },
   "profile": {
+    "myProfile": "Mi perfil",
     "title": "Perfil",
     "avatarColor": "Color del avatar",
     "avatarUpdated": "¡Avatar actualizado! 📸",
