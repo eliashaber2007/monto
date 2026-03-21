@@ -1244,7 +1244,7 @@ export default function PotDetail() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => approveConfirm && handleApproveWithdrawal(approveConfirm)}
               disabled={!!processingWithdrawal}
