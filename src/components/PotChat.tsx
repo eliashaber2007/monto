@@ -188,6 +188,7 @@ export default function PotChat({ potId, potName, potEmoji, members, onClose }: 
             pot_id: potId,
             type: 'mention',
             message: `${senderName} mentioned you in ${potName}`,
+            variables: { name: senderName, pot: potName },
           });
           // Push notification via edge function
           try {

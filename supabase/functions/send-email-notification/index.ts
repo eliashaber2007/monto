@@ -193,6 +193,7 @@ async function handleNotification(payload: EmailPayload) {
         pot_id: payload.pot_id,
         type: 'expense_reminder',
         message: reminderMessage,
+        variables: { name: creatorName, amount: String(payload.amount ?? 0), pot: pot.name },
       });
 
       // Send email
@@ -227,6 +228,7 @@ async function handleNotification(payload: EmailPayload) {
         pot_id: payload.pot_id,
         type: 'leader_assigned',
         message,
+        variables: { name: creatorName, pot: pot.name },
       });
       
       const recipientEmail = await getUserEmail(payload.user_id);
@@ -247,6 +249,7 @@ async function handleNotification(payload: EmailPayload) {
         pot_id: payload.pot_id,
         type: 'leader_removed',
         message: removedMessage,
+        variables: { pot: pot.name },
       });
       
       const removedEmail = await getUserEmail(payload.user_id);
