@@ -466,7 +466,7 @@ export default function PotDetail() {
           body: JSON.stringify({ type: 'leader_removed', pot_id: id, user_id: member.user_id }),
         });
       } catch (e) { console.error('Leader removal notification failed:', e); }
-      toast({ title: `${memberName} is no longer a leader.` });
+      toast({ title: t('potDetail.leaderRemoved', { name: memberName }) });
       refetch();
     } catch (err: any) { toast({ title: 'Error', description: err.message, variant: 'destructive' }); } finally { setAssigningLeader(null); }
   };
