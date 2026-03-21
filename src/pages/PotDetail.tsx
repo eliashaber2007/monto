@@ -902,7 +902,7 @@ export default function PotDetail() {
                                             }
                                           );
 
-                                          toast({ title: 'Reminder sent 📩' });
+                                          toast({ title: t('potDetail.reminderSent') });
                                         } catch (err: any) {
                                           toast({ title: 'Error', description: err.message, variant: 'destructive' });
                                         } finally {
