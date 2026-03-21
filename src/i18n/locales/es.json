@@ -29,6 +29,7 @@
     "createAccount": "Crear cuenta",
     "creatingAccount": "Creando cuenta…",
     "email": "Correo electrónico",
+    "emailPlaceholder": "tu@ejemplo.com",
     "password": "Contraseña",
     "firstName": "Nombre",
     "forgotPassword": "¿Olvidaste tu contraseña?",
