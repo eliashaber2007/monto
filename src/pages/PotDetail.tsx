@@ -788,7 +788,7 @@ export default function PotDetail() {
                     {fundsOpen && (
                       <div className="border-t border-border divide-y divide-border">
                         {deposits.length === 0 ? (
-                          <div className="p-4 text-center text-xs text-muted-foreground">No contributions yet</div>
+                          <div className="p-4 text-center text-xs text-muted-foreground">{t('potDetail.noContributions')}</div>
                         ) : deposits.map((tx) => {
                           const profile = getMemberProfile(tx.user_id);
                           const name = profile?.first_name || 'Member';
