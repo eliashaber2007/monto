@@ -1078,7 +1078,7 @@ export default function PotDetail() {
                               disabled={assigningLeader === m.id}
                               className="text-xs flex items-center gap-1.5 font-semibold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-700 px-3 py-1.5 rounded-lg hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-colors disabled:opacity-50"
                             >
-                              ⭐ {assigningLeader === m.id ? 'Assigning…' : 'Assign as Leader'}
+                              ⭐ {assigningLeader === m.id ? t('potDetail.assigningLeader') : t('potDetail.assignAsLeader')}
                             </button>
                           ) : m.role === 'leader' ? (
                             <button
