@@ -13,6 +13,7 @@ interface Notification {
   message: string;
   read: boolean;
   created_at: string;
+  variables?: Record<string, string> | null;
 }
 
 const EMOJI: Record<string, string> = {
@@ -30,94 +31,87 @@ const EMOJI: Record<string, string> = {
 };
 
 /**
- * Parse dynamic values from the stored English notification message.
- * Returns { name, amount, pot } when possible.
+ * Fallback regex parser for legacy notifications that don't have variables stored.
  */
-function parseMessage(type: string, message: string): Record<string, string> {
+function parseMessageLegacy(type: string, message: string): Record<string, string> {
   const params: Record<string, string> = {};
-
   switch (type) {
     case 'payout': {
-      // "You withdrew €123.00 from "Pot Name". Funds arrive..."
       const m = message.match(/withdrew\s*€([\d.,]+)\s*from\s*"([^"]+)"/i);
       if (m) { params.amount = m[1]; params.pot = m[2]; }
       break;
     }
     case 'withdrawal_requested': {
-      // "Name requested a withdrawal of €123 from PotName"
       const m = message.match(/^(.+?)\s+requested a withdrawal of\s*€([\d.,]+)\s*from\s+(.+)$/i);
       if (m) { params.name = m[1]; params.amount = m[2]; params.pot = m[3]; }
       break;
     }
     case 'member_joined': {
-      // "Name joined PotName"
       const m = message.match(/^(.+?)\s+joined\s+(.+)$/i);
       if (m) { params.name = m[1]; params.pot = m[2]; }
       break;
     }
     case 'withdrawal_approved': {
-      // "Your withdrawal of €123 from PotName was approved"
       const m = message.match(/withdrawal of\s*€([\d.,]+)\s*from\s+(.+?)\s+was approved/i);
       if (m) { params.amount = m[1]; params.pot = m[2]; }
       break;
     }
     case 'withdrawal_rejected': {
-      // "Your withdrawal of €123 from PotName was rejected"
       const m = message.match(/withdrawal of\s*€([\d.,]+)\s*from\s+(.+?)\s+was rejected/i);
       if (m) { params.amount = m[1]; params.pot = m[2]; }
       break;
     }
     case 'funds_added': {
-      // "Name added €123 to PotName"
       const m = message.match(/^(.+?)\s+added\s*€([\d.,]+)\s*to\s+(.+)$/i);
       if (m) { params.name = m[1]; params.amount = m[2]; params.pot = m[3]; }
       break;
     }
     case 'receipt_uploaded': {
-      // "Name uploaded a receipt in PotName"
       const m = message.match(/^(.+?)\s+uploaded a receipt in\s+(.+)$/i);
       if (m) { params.name = m[1]; params.pot = m[2]; }
       break;
     }
     case 'expense_reminder': {
-      // "PotName: CreatorName is requesting you to justify your withdrawal of €123..."
       const m = message.match(/^(.+?):\s+(.+?)\s+is requesting you to justify your withdrawal of\s*€([\d.,]+)/i);
       if (m) { params.pot = m[1]; params.name = m[2]; params.amount = m[3]; }
       break;
     }
     case 'leader_assigned': {
-      // "You've been made a leader of PotName by CreatorName."
       const m = message.match(/leader of\s+(.+?)\s+by\s+(.+?)\.?$/i);
       if (m) { params.pot = m[1]; params.name = m[2]; }
       break;
     }
     case 'leader_removed': {
-      // "You are no longer a leader of PotName."
       const m = message.match(/leader of\s+(.+?)\.?$/i);
       if (m) { params.pot = m[1]; }
       break;
     }
     case 'mention': {
-      // "Name mentioned you in PotName"
       const m = message.match(/^(.+?)\s+mentioned you in\s+(.+)$/i);
       if (m) { params.name = m[1]; params.pot = m[2]; }
       break;
     }
   }
-
   return params;
 }
 
-function translateMessage(type: string, message: string, t: (key: string, params?: Record<string, string>) => string): string {
-  const key = `notifications.msg_${type}`;
-  const params = parseMessage(type, message);
+function translateMessage(
+  n: Notification,
+  t: (key: string, params?: Record<string, string>) => string
+): string {
+  const key = `notifications.msg_${n.type}`;
 
-  // If we couldn't parse params, fall back to the raw message
-  if (Object.keys(params).length === 0) return message;
+  // Use stored variables if available (new format), otherwise parse from legacy message
+  const vars = (n.variables && Object.keys(n.variables).length > 0)
+    ? n.variables
+    : parseMessageLegacy(n.type, n.message);
 
-  const translated = t(key, params);
-  // If i18next returns the key itself (missing), fall back to raw message
-  if (translated === key) return message;
+  // If we have no variables at all, show raw message as fallback
+  if (Object.keys(vars).length === 0) return n.message;
+
+  const translated = t(key, vars);
+  // If i18next returns the key itself (missing translation), fall back to raw message
+  if (translated === key) return n.message;
   return translated;
 }
 
@@ -248,7 +242,7 @@ export default function Notifications() {
                 <span className="text-xl mt-0.5">{EMOJI[n.type] ?? '🔔'}</span>
                 <div className="flex-1 min-w-0">
                   <p className={`text-sm ${!n.read ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>
-                    {translateMessage(n.type, n.message, t)}
+                    {translateMessage(n, t)}
                   </p>
                   <p className="text-[11px] text-muted-foreground mt-0.5">{timeAgo(n.created_at)}</p>
                 </div>
