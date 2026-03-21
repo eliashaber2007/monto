@@ -1172,9 +1172,9 @@ export default function PotDetail() {
       <AlertDialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Leave this pot?</AlertDialogTitle>
+            <AlertDialogTitle>{t('potDetail.leaveQuestion')}</AlertDialogTitle>
             <AlertDialogDescription>
-              You will be removed from "{pot.name}" and won't be able to see it anymore. This action cannot be undone.
+              {t('potDetail.leaveDescription', { name: pot.name })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
