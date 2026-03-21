@@ -579,7 +579,7 @@ export default function PotDetail() {
       });
       navigate('/');
     } catch (err: any) {
-      toast({ title: 'Error closing pot', description: err.message, variant: 'destructive' });
+      toast({ title: t('common.error'), description: err.message, variant: 'destructive' });
     } finally {
       setClosing(false);
     }
