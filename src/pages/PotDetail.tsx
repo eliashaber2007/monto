@@ -1045,7 +1045,7 @@ export default function PotDetail() {
                                       style={{ width: `${pct}%` }}
                                     />
                                   </div>
-                                  <p className="text-[10px] text-muted-foreground">{pct}% justified ({formatCurrency(expTotal, currency)} of {formatCurrency(Number(w.amount), currency)})</p>
+                                  <p className="text-[10px] text-muted-foreground">{t('potDetail.justifiedPct', { pct, current: formatCurrency(expTotal, currency), total: formatCurrency(Number(w.amount), currency) })}</p>
                                 </div>
                                 {canJustify ? (
                                   <button
