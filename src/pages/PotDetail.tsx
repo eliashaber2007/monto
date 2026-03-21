@@ -1206,7 +1206,7 @@ export default function PotDetail() {
               disabled={closing}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {closing ? 'Processing…' : 'Close Pot'}
+              {closing ? t('potDetail.processing') : t('potDetail.closePot')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
