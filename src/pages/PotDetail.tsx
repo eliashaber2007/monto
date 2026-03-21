@@ -777,7 +777,7 @@ export default function PotDetail() {
                     >
                       <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                         <span>💳</span>
-                        <span>Funds Added</span>
+                        <span>{t('potDetail.fundsAdded')}</span>
                         <span className="text-muted-foreground font-normal">·</span>
                         <span className="text-success">{formatCurrency(totalDeposits, currency)}</span>
                         <span className="text-muted-foreground font-normal">·</span>
