@@ -1260,7 +1260,7 @@ export default function PotDetail() {
       <Dialog open={!!rejectConfirm} onOpenChange={(v) => { if (!v) { setRejectConfirm(null); setRejectReason(''); } }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Reject withdrawal</DialogTitle>
+            <DialogTitle>{t('potDetail.rejectTitle')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground">
