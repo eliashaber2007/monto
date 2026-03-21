@@ -225,7 +225,7 @@ export default function PotDetail() {
       setTimeout(() => refetch(), 6000);
       setSearchParams({}, { replace: true });
     } else if (payment === 'cancelled') {
-      toast({ title: 'Payment cancelled', description: 'No funds were added.', variant: 'destructive' });
+      toast({ title: t('potDetail.paymentCancelled'), description: t('potDetail.paymentCancelledDesc'), variant: 'destructive' });
       setSearchParams({}, { replace: true });
     }
   }, [searchParams]);
