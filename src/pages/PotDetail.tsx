@@ -1216,9 +1216,9 @@ export default function PotDetail() {
       <AlertDialog open={showConnectBankDialog} onOpenChange={setShowConnectBankDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Bank account required</AlertDialogTitle>
+            <AlertDialogTitle>{t('potDetail.bankRequired')}</AlertDialogTitle>
             <AlertDialogDescription>
-              You need to connect your bank account before closing a pot. This is required to receive your funds.
+              {t('potDetail.bankRequiredDesc')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
