@@ -816,7 +816,7 @@ export default function PotDetail() {
                     >
                       <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                         <span>💸</span>
-                        <span>Withdrawals</span>
+                        <span>{t('potDetail.withdrawals')}</span>
                         <span className="text-muted-foreground font-normal">·</span>
                         <span className="text-destructive">{formatCurrency(totalWithdrawals, currency)}</span>
                         <span className="text-muted-foreground font-normal">·</span>
