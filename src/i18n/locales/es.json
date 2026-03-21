@@ -187,7 +187,14 @@
     "approveDescription": "¿Estás seguro de aprobar este retiro de {{amount}}? Esto activará una transferencia bancaria al miembro y deducirá el monto del saldo del bote.",
     "rejectTitle": "Rechazar retiro",
     "rejectDescription": "Proporciona una razón para rechazar este retiro de {{amount}}.",
-    "rejectReasonPlaceholder": "Razón del rechazo…"
+    "rejectReasonPlaceholder": "Razón del rechazo…",
+    "cannotApproveOwn": "No puedes aprobar tu propia solicitud de retiro.",
+    "cannotRejectOwn": "No puedes rechazar tu propia solicitud de retiro.",
+    "noLongerPending": "Este retiro ya no está pendiente.",
+    "leaderAssigned": "{{name}} ahora es líder de este bote.",
+    "leaderRemoved": "{{name}} ya no es líder.",
+    "receiptApproved": "Aprobado",
+    "receiptRejected": "Rechazado"
   },
   "createPot": {
     "setupPot": "Configura tu bote ✨",

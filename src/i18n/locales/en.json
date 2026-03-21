@@ -187,7 +187,14 @@
     "approveDescription": "Are you sure you want to approve this withdrawal of {{amount}}? This will trigger a bank transfer to the member and deduct the amount from the pot balance.",
     "rejectTitle": "Reject withdrawal",
     "rejectDescription": "Please provide a reason for rejecting this withdrawal of {{amount}}.",
-    "rejectReasonPlaceholder": "Reason for rejection…"
+    "rejectReasonPlaceholder": "Reason for rejection…",
+    "cannotApproveOwn": "You cannot approve your own withdrawal request.",
+    "cannotRejectOwn": "You cannot reject your own withdrawal request.",
+    "noLongerPending": "This withdrawal is no longer pending.",
+    "leaderAssigned": "{{name}} is now a leader of this pot.",
+    "leaderRemoved": "{{name}} is no longer a leader.",
+    "receiptApproved": "Approved",
+    "receiptRejected": "Rejected"
   },
   "createPot": {
     "setupPot": "Set up your pot ✨",

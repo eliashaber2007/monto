@@ -187,7 +187,14 @@
     "approveDescription": "Möchten Sie diese Auszahlung von {{amount}} wirklich genehmigen? Dies löst eine Banküberweisung an das Mitglied aus und zieht den Betrag vom Kassensaldo ab.",
     "rejectTitle": "Auszahlung ablehnen",
     "rejectDescription": "Bitte geben Sie einen Grund für die Ablehnung dieser Auszahlung von {{amount}} an.",
-    "rejectReasonPlaceholder": "Grund für die Ablehnung…"
+    "rejectReasonPlaceholder": "Grund für die Ablehnung…",
+    "cannotApproveOwn": "Sie können Ihren eigenen Auszahlungsantrag nicht genehmigen.",
+    "cannotRejectOwn": "Sie können Ihren eigenen Auszahlungsantrag nicht ablehnen.",
+    "noLongerPending": "Diese Auszahlung ist nicht mehr ausstehend.",
+    "leaderAssigned": "{{name}} ist jetzt Leiter dieser Kasse.",
+    "leaderRemoved": "{{name}} ist kein Leiter mehr.",
+    "receiptApproved": "Genehmigt",
+    "receiptRejected": "Abgelehnt"
   },
   "createPot": {
     "setupPot": "Kasse einrichten ✨",
