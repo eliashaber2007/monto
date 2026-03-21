@@ -1264,7 +1264,7 @@ export default function PotDetail() {
           </DialogHeader>
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              Please provide a reason for rejecting this withdrawal of {rejectConfirm ? formatCurrency(Number(rejectConfirm.amount), currency) : ''}.
+              {t('potDetail.rejectDescription', { amount: rejectConfirm ? formatCurrency(Number(rejectConfirm.amount), currency) : '' })}
             </p>
             <textarea
               value={rejectReason}
