@@ -675,7 +675,7 @@ export default function PotDetail() {
             </Button>
           ) : (
             <div className="flex-1 h-12 rounded-xl bg-muted/50 flex items-center justify-center text-xs text-muted-foreground text-center px-2">
-              Contributions restricted to leaders only
+              {t('potDetail.contributionsRestricted')}
             </div>
           )}
         </div>
