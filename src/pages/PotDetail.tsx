@@ -1013,7 +1013,7 @@ export default function PotDetail() {
                   {isExpanded && (
                     <div className="border-t border-border px-4 pb-4 pt-3 space-y-3">
                       {memberWithdrawals.length === 0 ? (
-                        <p className="text-xs text-muted-foreground text-center py-2">No withdrawals yet</p>
+                        <p className="text-xs text-muted-foreground text-center py-2">{t('potDetail.noWithdrawals')}</p>
                       ) : (
                         <>
                           <p className="text-xs font-semibold text-muted-foreground">
