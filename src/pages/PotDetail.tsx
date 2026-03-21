@@ -1194,9 +1194,9 @@ export default function PotDetail() {
       <AlertDialog open={showCloseDialog} onOpenChange={setShowCloseDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Close this pot?</AlertDialogTitle>
+            <AlertDialogTitle>{t('potDetail.closeQuestion')}</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently close "{pot.name}". The remaining funds of {formatCurrency(pot.balance ?? 0, currency)} will be transferred to your bank account. Funds arrive within 1-3 business days.
+              {t('potDetail.closeDescription', { name: pot.name, balance: formatCurrency(pot.balance ?? 0, currency) })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
