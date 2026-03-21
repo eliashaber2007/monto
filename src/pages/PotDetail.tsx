@@ -192,6 +192,7 @@ export default function PotDetail() {
   const [expandedMembers, setExpandedMembers] = useState<Record<string, boolean>>({});
   const [withdrawalExpenses, setWithdrawalExpenses] = useState<Record<string, number>>({});
   const [sendingReminder, setSendingReminder] = useState<string | null>(null);
+  const [generatingReport, setGeneratingReport] = useState(false);
   const [assigningLeader, setAssigningLeader] = useState<string | null>(null);
   const [approveConfirm, setApproveConfirm] = useState<any | null>(null);
   const [rejectConfirm, setRejectConfirm] = useState<any | null>(null);
