@@ -1023,9 +1023,9 @@ export default function PotDetail() {
                             const expTotal = withdrawalExpenses[w.id] ?? 0;
                             const pct = Number(w.amount) > 0 ? Math.min(Math.round((expTotal / Number(w.amount)) * 100), 100) : 0;
                             const statusMap: Record<string, { label: string; cls: string }> = {
-                              pending: { label: 'Pending', cls: 'bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-700' },
-                              approved: { label: 'Approved', cls: 'bg-green-100 text-green-800 border-green-300 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700' },
-                              rejected: { label: 'Rejected', cls: 'bg-red-100 text-red-800 border-red-300 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700' },
+                              pending: { label: t('potDetail.pending'), cls: 'bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-700' },
+                              approved: { label: t('potDetail.approved'), cls: 'bg-green-100 text-green-800 border-green-300 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700' },
+                              rejected: { label: t('potDetail.rejected'), cls: 'bg-red-100 text-red-800 border-red-300 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700' },
                             };
                             const st = statusMap[w.status] ?? statusMap.pending;
                             const canJustify = w.user_id === user?.id;
