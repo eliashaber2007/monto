@@ -996,7 +996,7 @@ export default function PotDetail() {
                     </div>
                     {m.role === 'creator' && (
                       <span className="text-[11px] px-2 py-0.5 rounded-full bg-accent text-primary border border-primary/20 font-semibold">
-                        👑 Creator
+                        {t('potDetail.creatorRole')}
                       </span>
                     )}
                     {m.role === 'leader' && (
