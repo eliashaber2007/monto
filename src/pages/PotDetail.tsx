@@ -1017,7 +1017,7 @@ export default function PotDetail() {
                       ) : (
                         <>
                           <p className="text-xs font-semibold text-muted-foreground">
-                            {memberWithdrawals.length} withdrawal{memberWithdrawals.length !== 1 ? 's' : ''} · {formatCurrency(totalWithdrawn, currency)} total · {overallJustifiedPct}% justified overall
+                            {t('potDetail.withdrawalSummary', { count: memberWithdrawals.length, total: formatCurrency(totalWithdrawn, currency), pct: overallJustifiedPct })}
                           </p>
                           {memberWithdrawals.map((w: any) => {
                             const expTotal = withdrawalExpenses[w.id] ?? 0;
