@@ -447,7 +447,7 @@ export default function PotDetail() {
           body: JSON.stringify({ type: 'leader_assigned', pot_id: id, user_id: member.user_id, creator_name: creatorProfile?.first_name || 'The creator' }),
         });
       } catch (e) { console.error('Leader notification failed:', e); }
-      toast({ title: `${memberName} is now a leader of this pot.` });
+      toast({ title: t('potDetail.leaderAssigned', { name: memberName }) });
       refetch();
     } catch (err: any) { toast({ title: 'Error', description: err.message, variant: 'destructive' }); } finally { setAssigningLeader(null); }
   };
