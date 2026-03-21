@@ -23,6 +23,7 @@ export type Database = {
           read: boolean
           type: string
           user_id: string
+          variables: Json | null
         }
         Insert: {
           created_at?: string
@@ -32,6 +33,7 @@ export type Database = {
           read?: boolean
           type: string
           user_id: string
+          variables?: Json | null
         }
         Update: {
           created_at?: string
@@ -41,6 +43,7 @@ export type Database = {
           read?: boolean
           type?: string
           user_id?: string
+          variables?: Json | null
         }
         Relationships: [
           {
