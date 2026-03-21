@@ -48,8 +48,11 @@ export function generatePotReport(
 ) {
   const doc = new jsPDF();
   const currency = pot.currency || 'EUR';
-  const fmt = (n: number) =>
-    new Intl.NumberFormat('en-IE', { style: 'currency', currency, minimumFractionDigits: 2 }).format(n);
+  const fmt = (n: number) => {
+    const formatted = new Intl.NumberFormat('en-IE', { style: 'currency', currency, minimumFractionDigits: 2 }).format(n);
+    // Ensure space between currency sign and number (e.g. "€12" → "€ 12")
+    return formatted.replace(/^([^\d\s-]+)(\d)/, '$1 $2').replace(/^([^\d\s-]+)(-)/, '$1 $2');
+  };
   const dateStr = (s: string) =>
     new Date(s).toLocaleDateString('en-IE', { day: 'numeric', month: 'short', year: 'numeric' });
 
