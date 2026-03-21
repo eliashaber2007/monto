@@ -92,7 +92,7 @@ export function generatePotReport(
   const summaryData = [
     ['Pot Name', pot.name],
     ['Created', dateStr(pot.created_at)],
-    ['Goal Amount', pot.goal_amount ? fmt(pot.goal_amount) : 'No goal set'],
+    ['Target Amount', pot.goal_amount ? fmt(pot.goal_amount) : 'No goal set'],
     ['Current Balance', fmt(pot.balance)],
     ['Total Funds Added', fmt(totalAdded)],
     ['Total Withdrawn', fmt(totalWithdrawn)],
