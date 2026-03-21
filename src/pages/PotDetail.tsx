@@ -418,7 +418,7 @@ export default function PotDetail() {
         });
       } catch (e) { console.error('Rejection notification failed:', e); }
 
-      toast({ title: 'Withdrawal rejected ❌' });
+      toast({ title: t('potDetail.withdrawalRejected') });
       setRejectConfirm(null);
       setRejectReason('');
       refetch();
