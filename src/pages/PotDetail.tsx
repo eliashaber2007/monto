@@ -781,7 +781,7 @@ export default function PotDetail() {
                         <span className="text-muted-foreground font-normal">·</span>
                         <span className="text-success">{formatCurrency(totalDeposits, currency)}</span>
                         <span className="text-muted-foreground font-normal">·</span>
-                        <span className="text-muted-foreground font-normal text-xs">{deposits.length} transaction{deposits.length !== 1 ? 's' : ''}</span>
+                        <span className="text-muted-foreground font-normal text-xs">{deposits.length} {deposits.length !== 1 ? t('potDetail.transactions') : t('potDetail.transaction')}</span>
                       </div>
                       <ChevronDown size={16} className={`text-muted-foreground transition-transform duration-200 ${fundsOpen ? 'rotate-180' : ''}`} />
                     </button>
