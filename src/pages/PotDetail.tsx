@@ -1108,7 +1108,7 @@ export default function PotDetail() {
               onClick={() => setShowChangePassword(true)}
             >
               <KeyRound size={15} className="mr-2" />
-              Change Withdrawal Password
+              {t('potDetail.changeWithdrawalPassword')}
             </Button>
           )}
           {isCreator ? (
