@@ -904,7 +904,7 @@ export default function PotDetail() {
 
                                           toast({ title: t('potDetail.reminderSent') });
                                         } catch (err: any) {
-                                          toast({ title: 'Error', description: err.message, variant: 'destructive' });
+                                          toast({ title: t('common.error'), description: err.message, variant: 'destructive' });
                                         } finally {
                                           setSendingReminder(null);
                                         }
