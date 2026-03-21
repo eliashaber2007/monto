@@ -484,7 +484,7 @@ export default function PotDetail() {
       return;
     }
     queryClient.invalidateQueries({ queryKey: ['pots'] });
-    toast({ title: 'Left pot', description: 'You have left this pot.' });
+    toast({ title: t('potDetail.leftPot'), description: t('potDetail.leftPotDesc') });
     navigate('/');
   };
 
