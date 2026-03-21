@@ -72,12 +72,12 @@ export default function Onboarding() {
       <div className="fixed inset-0 z-50 bg-[#000000] flex flex-col items-center px-6 py-10">
         <div className="flex-1" />
         {/* Logo */}
-        <div
-          className="w-24 h-24 rounded-2xl bg-[#1E3A5F] flex items-center justify-center mb-10 animate-[onboard-logo-in_500ms_ease-out_both] onboarding-logo-pulse"
+        <img
+          src={montoLogo}
+          alt="Monto"
+          className="w-24 h-24 rounded-2xl mb-10 animate-[onboard-logo-in_500ms_ease-out_both] onboarding-logo-pulse"
           style={{ boxShadow: '0 0 40px rgba(37, 99, 235, 0.4)' }}
-        >
-          <span className="text-4xl font-extrabold text-[#FFFFFF] select-none">M</span>
-        </div>
+        />
         {/* Text */}
         <div className="text-center max-w-sm">
           <h1

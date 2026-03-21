@@ -117,9 +117,7 @@ export default function Signup() {
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary mb-4 shadow-pill">
-            <span className="text-primary-foreground font-bold text-xl">M</span>
-          </div>
+          <img src={montoLogo} alt="Monto" className="w-14 h-14 rounded-2xl mb-4 shadow-pill inline-block" />
           <h1 className="text-2xl font-bold text-foreground">{t('auth.createAccount')}</h1>
           <p className="text-muted-foreground text-sm mt-1">{t('auth.startSaving')}</p>
         </div>
