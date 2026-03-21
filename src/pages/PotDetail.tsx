@@ -934,7 +934,7 @@ export default function PotDetail() {
                                     disabled={processingWithdrawal === w.id}
                                     className="flex-1 text-xs font-semibold py-2 rounded-lg bg-destructive/10 text-destructive border border-destructive/20 hover:bg-destructive/20 transition-colors disabled:opacity-50"
                                   >
-                                    Reject ❌
+                                     {t('potDetail.reject')}
                                   </button>
                                 </div>
                               )}
