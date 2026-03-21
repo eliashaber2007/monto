@@ -200,6 +200,7 @@ export default function PotDetail() {
   const [rejectReason, setRejectReason] = useState('');
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const inviteLink = `https://montofinance.app/invite/${id}`;
 
