@@ -1127,7 +1127,7 @@ export default function PotDetail() {
               onClick={() => setShowLeaveDialog(true)}
             >
               <LogOut size={16} className="mr-2" />
-              Leave Pot
+              {t('potDetail.leavePot')}
             </Button>
           )}
         </div>
