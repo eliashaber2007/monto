@@ -193,6 +193,7 @@ async function handleNotification(payload: EmailPayload) {
         pot_id: payload.pot_id,
         type: 'expense_reminder',
         message: reminderMessage,
+        variables: { name: creatorName, amount: String(payload.amount ?? 0), pot: pot.name },
       });
 
       // Send email
