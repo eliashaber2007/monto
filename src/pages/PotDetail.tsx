@@ -392,7 +392,7 @@ export default function PotDetail() {
       fetchWithdrawals();
     } catch (err: any) {
       // Payout failed — withdrawal stays pending, balance untouched
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+      toast({ title: t('common.error'), description: err.message, variant: 'destructive' });
     } finally {
       setProcessingWithdrawal(null);
     }
