@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Users, Plus, CheckCircle2, Image as ImageIcon, Upload, X, LogOut, Copy, Check, Landmark, ThumbsUp, ThumbsDown, MessageCircle, KeyRound, ChevronDown, ChevronRight, Receipt, Bell } from 'lucide-react';
+import { ArrowLeft, Users, Plus, CheckCircle2, Image as ImageIcon, Upload, X, LogOut, Copy, Check, Landmark, ThumbsUp, ThumbsDown, MessageCircle, KeyRound, ChevronDown, ChevronRight, Receipt, Bell, FileDown } from 'lucide-react';
+import { generatePotReport } from '@/lib/generatePotReport';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePotDetail } from '@/hooks/usePots';
