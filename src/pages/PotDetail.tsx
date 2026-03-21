@@ -990,7 +990,7 @@ export default function PotDetail() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-foreground">
-                        {m.user_id === user?.id ? `${memberName} (You)` : memberName}
+                        {m.user_id === user?.id ? `${memberName} (${t('common.you')})` : memberName}
                       </p>
                       <p className="text-xs text-muted-foreground capitalize">{m.role}</p>
                     </div>
