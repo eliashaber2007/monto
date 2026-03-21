@@ -620,7 +620,7 @@ export default function PotDetail() {
               <span className={`flex-shrink-0 text-[11px] px-2 py-0.5 rounded-full font-semibold border ${
                 isCreator ? 'bg-accent text-primary border-primary/20' : isLeader ? 'bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700' : 'bg-accent text-primary border-primary/20'
               }`}>
-                {isCreator ? '👑 Creator' : isLeader ? '⭐ Leader' : '👤 Member'}
+                {isCreator ? t('potDetail.creatorRole') : isLeader ? t('potDetail.leaderRole') : t('potDetail.memberRole')}
               </span>
             </div>
           </div>
