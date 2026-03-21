@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Users, Plus, CheckCircle2, Image as ImageIcon, Upload, X, LogOut, Copy, Check, Landmark, ThumbsUp, ThumbsDown, MessageCircle, KeyRound, ChevronDown, ChevronRight, Receipt, Bell, FileDown } from 'lucide-react';
 import { generatePotReport } from '@/lib/generatePotReport';
@@ -199,6 +200,7 @@ export default function PotDetail() {
   const [rejectReason, setRejectReason] = useState('');
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const inviteLink = `https://montofinance.app/invite/${id}`;
 
@@ -215,7 +217,7 @@ export default function PotDetail() {
   useEffect(() => {
     const payment = searchParams.get('payment');
     if (payment === 'success') {
-      toast({ title: '🎉 Payment successful!', description: 'Your balance will update shortly.' });
+      toast({ title: t('potDetail.paymentSuccess'), description: t('potDetail.paymentSuccessDesc') });
       // Multiple staggered refetches to catch webhook processing
       refetch();
       setTimeout(() => refetch(), 1500);
@@ -223,7 +225,7 @@ export default function PotDetail() {
       setTimeout(() => refetch(), 6000);
       setSearchParams({}, { replace: true });
     } else if (payment === 'cancelled') {
-      toast({ title: 'Payment cancelled', description: 'No funds were added.', variant: 'destructive' });
+      toast({ title: t('potDetail.paymentCancelled'), description: t('potDetail.paymentCancelledDesc'), variant: 'destructive' });
       setSearchParams({}, { replace: true });
     }
   }, [searchParams]);
@@ -618,7 +620,7 @@ export default function PotDetail() {
               <span className={`flex-shrink-0 text-[11px] px-2 py-0.5 rounded-full font-semibold border ${
                 isCreator ? 'bg-accent text-primary border-primary/20' : isLeader ? 'bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700' : 'bg-accent text-primary border-primary/20'
               }`}>
-                {isCreator ? '👑 Creator' : isLeader ? '⭐ Leader' : '👤 Member'}
+                {isCreator ? t('potDetail.creatorRole') : isLeader ? t('potDetail.leaderRole') : t('potDetail.memberRole')}
               </span>
             </div>
           </div>
@@ -628,7 +630,7 @@ export default function PotDetail() {
               className="relative flex items-center gap-1.5 text-xs text-primary font-semibold border border-primary/30 rounded-full px-3 py-1.5 hover:bg-accent transition-colors"
             >
               <MessageCircle size={13} />
-              Chat
+              {t('potDetail.chat')}
               {unreadChatCount > 0 && (
                 <span className="min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1 ml-0.5">
                   {unreadChatCount > 99 ? '99+' : unreadChatCount}
@@ -640,7 +642,7 @@ export default function PotDetail() {
               className="flex items-center gap-1.5 text-xs text-primary font-semibold border border-primary/30 rounded-full px-3 py-1.5 hover:bg-accent transition-colors"
             >
               <Users size={13} />
-              Invite
+              {t('potDetail.invite')}
             </button>
           </div>
         </div>
@@ -651,12 +653,12 @@ export default function PotDetail() {
         <div className="bg-card rounded-2xl shadow-sm border border-border p-8 text-center">
           <ProgressRing balance={pot.balance ?? 0} peakBalance={((pot as any).peak_balance > 0 ? (pot as any).peak_balance : pot.balance) ?? 0} currency={currency} />
           {((pot as any).peak_balance <= 0 && pot.balance <= 0) && !pot.goal_amount && (
-            <p className="text-sm text-muted-foreground mt-4">No goal set — save as much as you like! 🎯</p>
+            <p className="text-sm text-muted-foreground mt-4">{t('potDetail.noGoalSet')}</p>
           )}
           {pot.require_receipt && (
             <div className="mt-3 inline-flex items-center gap-1.5 text-xs text-warning font-medium bg-warning/10 px-2.5 py-1 rounded-full border border-warning/20">
               <CheckCircle2 size={11} />
-              Receipt verification enabled
+              {t('potDetail.receiptVerification')}
             </div>
           )}
         </div>
@@ -664,16 +666,16 @@ export default function PotDetail() {
         {/* Action row */}
         <div className="flex gap-3">
           <Button variant="outline" className="flex-1 h-12 rounded-xl font-semibold border-primary text-primary hover:bg-primary/10" onClick={() => setShowWithdrawal(true)}>
-            Request Withdrawal
+            {t('potDetail.requestWithdrawal')}
           </Button>
           {(!(pot as any).contributions_restricted || isCreatorOrLeader) ? (
             <Button variant="secondary" className="flex-1 h-12 rounded-xl font-semibold bg-muted text-foreground hover:bg-muted/80" onClick={() => setShowAddFunds(true)}>
               <Plus size={16} className="mr-1" />
-              Add Funds
+              {t('potDetail.addFunds')}
             </Button>
           ) : (
             <div className="flex-1 h-12 rounded-xl bg-muted/50 flex items-center justify-center text-xs text-muted-foreground text-center px-2">
-              Contributions restricted to leaders only
+              {t('potDetail.contributionsRestricted')}
             </div>
           )}
         </div>
@@ -713,10 +715,10 @@ export default function PotDetail() {
                   }
 
                   generatePotReport(pot, members, allTx ?? [], allW ?? [], allExpenses);
-                  toast({ title: '📄 Report downloaded!' });
+                  toast({ title: t('potDetail.reportDownloaded') });
                 } catch (e) {
                   console.error('Report generation failed:', e);
-                  toast({ title: 'Failed to generate report', variant: 'destructive' });
+                  toast({ title: t('potDetail.reportFailed'), variant: 'destructive' });
                 } finally {
                   setGeneratingReport(false);
                 }
@@ -725,7 +727,7 @@ export default function PotDetail() {
               className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium hover:text-foreground transition-colors disabled:opacity-50"
             >
               <FileDown size={14} />
-              {generatingReport ? 'Generating…' : 'Generate Report'}
+              {generatingReport ? t('potDetail.generating') : t('potDetail.generateReport')}
             </button>
           </div>
         )}
@@ -733,8 +735,8 @@ export default function PotDetail() {
         {/* Tabs */}
         <Tabs defaultValue="activity" onValueChange={(val) => { if (val === 'activity') { console.log('[Tabs] Activity tab focused, re-fetching withdrawals'); fetchWithdrawals(); refetch(); } }}>
           <TabsList className="w-full rounded-xl p-1 h-11 pot-tabs-list">
-            <TabsTrigger value="activity" className="pot-tab-trigger flex-1 rounded-lg text-sm">Activity</TabsTrigger>
-            <TabsTrigger value="members" className="pot-tab-trigger flex-1 rounded-lg text-sm">Members</TabsTrigger>
+            <TabsTrigger value="activity" className="pot-tab-trigger flex-1 rounded-lg text-sm">{t('potDetail.activity')}</TabsTrigger>
+            <TabsTrigger value="members" className="pot-tab-trigger flex-1 rounded-lg text-sm">{t('potDetail.members')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="activity" className="mt-5 space-y-3">
@@ -775,18 +777,18 @@ export default function PotDetail() {
                     >
                       <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                         <span>💳</span>
-                        <span>Funds Added</span>
+                        <span>{t('potDetail.fundsAdded')}</span>
                         <span className="text-muted-foreground font-normal">·</span>
                         <span className="text-success">{formatCurrency(totalDeposits, currency)}</span>
                         <span className="text-muted-foreground font-normal">·</span>
-                        <span className="text-muted-foreground font-normal text-xs">{deposits.length} transaction{deposits.length !== 1 ? 's' : ''}</span>
+                        <span className="text-muted-foreground font-normal text-xs">{deposits.length} {deposits.length !== 1 ? t('potDetail.transactions') : t('potDetail.transaction')}</span>
                       </div>
                       <ChevronDown size={16} className={`text-muted-foreground transition-transform duration-200 ${fundsOpen ? 'rotate-180' : ''}`} />
                     </button>
                     {fundsOpen && (
                       <div className="border-t border-border divide-y divide-border">
                         {deposits.length === 0 ? (
-                          <div className="p-4 text-center text-xs text-muted-foreground">No contributions yet</div>
+                          <div className="p-4 text-center text-xs text-muted-foreground">{t('potDetail.noContributions')}</div>
                         ) : deposits.map((tx) => {
                           const profile = getMemberProfile(tx.user_id);
                           const name = profile?.first_name || 'Member';
@@ -814,24 +816,24 @@ export default function PotDetail() {
                     >
                       <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                         <span>💸</span>
-                        <span>Withdrawals</span>
+                        <span>{t('potDetail.withdrawals')}</span>
                         <span className="text-muted-foreground font-normal">·</span>
                         <span className="text-destructive">{formatCurrency(totalWithdrawals, currency)}</span>
                         <span className="text-muted-foreground font-normal">·</span>
-                        <span className="text-muted-foreground font-normal text-xs">{withdrawals.length} transaction{withdrawals.length !== 1 ? 's' : ''}</span>
+                        <span className="text-muted-foreground font-normal text-xs">{withdrawals.length} {withdrawals.length !== 1 ? t('potDetail.transactions') : t('potDetail.transaction')}</span>
                       </div>
                       <ChevronDown size={16} className={`text-muted-foreground transition-transform duration-200 ${withdrawalsOpen ? 'rotate-180' : ''}`} />
                     </button>
                     {withdrawalsOpen && (
                       <div className="border-t border-border divide-y divide-border">
                         {withdrawals.length === 0 ? (
-                          <div className="p-4 text-center text-xs text-muted-foreground">No withdrawals yet</div>
+                          <div className="p-4 text-center text-xs text-muted-foreground">{t('potDetail.noWithdrawals')}</div>
                         ) : withdrawals.map((w) => {
                           const profile = getMemberProfile(w.user_id);
                           const name = profile?.first_name || 'Member';
                           const isMyRequest = w.user_id === user?.id;
                           const isPending = w.status === 'pending';
-                          const statusLabel = isPending ? 'Pending' : w.status === 'approved' ? 'Approved' : 'Rejected';
+                          const statusLabel = isPending ? t('potDetail.pending') : w.status === 'approved' ? t('potDetail.approved') : t('potDetail.rejected');
                           const statusColor = isPending
                             ? 'text-warning bg-warning/10 border-warning/20'
                             : w.status === 'approved'
@@ -858,7 +860,7 @@ export default function PotDetail() {
                                       className="text-xs flex items-center gap-1.5 text-primary-foreground font-semibold bg-primary px-3 py-1.5 rounded-lg hover:bg-primary/90 transition-colors mt-0.5"
                                     >
                                       <Receipt size={12} />
-                                      Justify expenses
+                                       {t('potDetail.justifyExpenses')}
                                     </button>
                                   ) : isCreatorOrLeader ? (
                                     <button
@@ -866,7 +868,7 @@ export default function PotDetail() {
                                       className="text-xs flex items-center gap-1.5 text-primary-foreground font-semibold bg-primary px-3 py-1.5 rounded-lg hover:bg-primary/90 transition-colors mt-0.5"
                                     >
                                       <Receipt size={12} />
-                                      View justified expenses
+                                       {t('potDetail.viewJustifiedExpenses')}
                                     </button>
                                   ) : null}
                                   {/* Send reminder button for creator/leader when expenses not fully justified */}
@@ -900,7 +902,7 @@ export default function PotDetail() {
                                             }
                                           );
 
-                                          toast({ title: 'Reminder sent 📩' });
+                                          toast({ title: t('potDetail.reminderSent') });
                                         } catch (err: any) {
                                           toast({ title: 'Error', description: err.message, variant: 'destructive' });
                                         } finally {
@@ -911,7 +913,7 @@ export default function PotDetail() {
                                       className="text-xs flex items-center gap-1.5 text-warning font-semibold bg-warning/10 border border-warning/20 px-3 py-1.5 rounded-lg hover:bg-warning/20 transition-colors mt-0.5 disabled:opacity-50"
                                     >
                                       <Bell size={12} />
-                                      {sendingReminder === w.id ? 'Sending…' : 'Send reminder'}
+                                      {sendingReminder === w.id ? t('potDetail.sending') : t('potDetail.sendReminder')}
                                     </button>
                                   )}
                                 </div>
@@ -925,14 +927,14 @@ export default function PotDetail() {
                                     disabled={processingWithdrawal === w.id}
                                     className="flex-1 text-xs font-semibold py-2 rounded-lg bg-success/10 text-success border border-success/20 hover:bg-success/20 transition-colors disabled:opacity-50"
                                   >
-                                    {processingWithdrawal === w.id ? 'Processing…' : 'Approve ✅'}
+                                    {processingWithdrawal === w.id ? t('potDetail.processing') : t('potDetail.approve')}
                                   </button>
                                   <button
                                     onClick={() => { setRejectConfirm(w); setRejectReason(''); }}
                                     disabled={processingWithdrawal === w.id}
                                     className="flex-1 text-xs font-semibold py-2 rounded-lg bg-destructive/10 text-destructive border border-destructive/20 hover:bg-destructive/20 transition-colors disabled:opacity-50"
                                   >
-                                    Reject ❌
+                                     {t('potDetail.reject')}
                                   </button>
                                 </div>
                               )}
@@ -948,7 +950,7 @@ export default function PotDetail() {
                       <span className="text-base">🎉</span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-foreground">Created "{pot.name}"</p>
+                      <p className="text-sm font-semibold text-foreground">{t('potDetail.created', { name: pot.name })}</p>
                       <p className="text-xs text-muted-foreground">{formatDate(pot.created_at)}</p>
                     </div>
                   </div>
@@ -988,18 +990,18 @@ export default function PotDetail() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-foreground">
-                        {m.user_id === user?.id ? `${memberName} (You)` : memberName}
+                        {m.user_id === user?.id ? `${memberName} (${t('common.you')})` : memberName}
                       </p>
                       <p className="text-xs text-muted-foreground capitalize">{m.role}</p>
                     </div>
                     {m.role === 'creator' && (
                       <span className="text-[11px] px-2 py-0.5 rounded-full bg-accent text-primary border border-primary/20 font-semibold">
-                        👑 Creator
+                        {t('potDetail.creatorRole')}
                       </span>
                     )}
                     {m.role === 'leader' && (
                       <span className="text-[11px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-300 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700 font-semibold">
-                        ⭐ Leader
+                        {t('potDetail.leaderRole')}
                       </span>
                     )}
                     <ChevronDown
@@ -1011,19 +1013,19 @@ export default function PotDetail() {
                   {isExpanded && (
                     <div className="border-t border-border px-4 pb-4 pt-3 space-y-3">
                       {memberWithdrawals.length === 0 ? (
-                        <p className="text-xs text-muted-foreground text-center py-2">No withdrawals yet</p>
+                        <p className="text-xs text-muted-foreground text-center py-2">{t('potDetail.noWithdrawals')}</p>
                       ) : (
                         <>
                           <p className="text-xs font-semibold text-muted-foreground">
-                            {memberWithdrawals.length} withdrawal{memberWithdrawals.length !== 1 ? 's' : ''} · {formatCurrency(totalWithdrawn, currency)} total · {overallJustifiedPct}% justified overall
+                            {t('potDetail.withdrawalSummary', { count: memberWithdrawals.length, total: formatCurrency(totalWithdrawn, currency), pct: overallJustifiedPct })}
                           </p>
                           {memberWithdrawals.map((w: any) => {
                             const expTotal = withdrawalExpenses[w.id] ?? 0;
                             const pct = Number(w.amount) > 0 ? Math.min(Math.round((expTotal / Number(w.amount)) * 100), 100) : 0;
                             const statusMap: Record<string, { label: string; cls: string }> = {
-                              pending: { label: 'Pending', cls: 'bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-700' },
-                              approved: { label: 'Approved', cls: 'bg-green-100 text-green-800 border-green-300 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700' },
-                              rejected: { label: 'Rejected', cls: 'bg-red-100 text-red-800 border-red-300 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700' },
+                              pending: { label: t('potDetail.pending'), cls: 'bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-700' },
+                              approved: { label: t('potDetail.approved'), cls: 'bg-green-100 text-green-800 border-green-300 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700' },
+                              rejected: { label: t('potDetail.rejected'), cls: 'bg-red-100 text-red-800 border-red-300 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700' },
                             };
                             const st = statusMap[w.status] ?? statusMap.pending;
                             const canJustify = w.user_id === user?.id;
@@ -1043,7 +1045,7 @@ export default function PotDetail() {
                                       style={{ width: `${pct}%` }}
                                     />
                                   </div>
-                                  <p className="text-[10px] text-muted-foreground">{pct}% justified ({formatCurrency(expTotal, currency)} of {formatCurrency(Number(w.amount), currency)})</p>
+                                  <p className="text-[10px] text-muted-foreground">{t('potDetail.justifiedPct', { pct, current: formatCurrency(expTotal, currency), total: formatCurrency(Number(w.amount), currency) })}</p>
                                 </div>
                                 {canJustify ? (
                                   <button
@@ -1051,7 +1053,7 @@ export default function PotDetail() {
                                     className="text-xs flex items-center gap-1.5 text-primary-foreground font-semibold bg-primary px-3 py-1.5 rounded-lg hover:bg-primary/90 transition-colors"
                                   >
                                     <Receipt size={12} />
-                                    Justify expenses
+                                    {t('potDetail.justifyExpenses')}
                                   </button>
                                 ) : isCreatorOrLeader ? (
                                   <button
@@ -1059,7 +1061,7 @@ export default function PotDetail() {
                                     className="text-xs flex items-center gap-1.5 text-muted-foreground font-semibold bg-muted px-3 py-1.5 rounded-lg hover:bg-muted/80 transition-colors"
                                   >
                                     <Receipt size={12} />
-                                    View justified expenses
+                                    {t('potDetail.viewJustifiedExpenses')}
                                   </button>
                                 ) : null}
                               </div>
@@ -1076,7 +1078,7 @@ export default function PotDetail() {
                               disabled={assigningLeader === m.id}
                               className="text-xs flex items-center gap-1.5 font-semibold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-700 px-3 py-1.5 rounded-lg hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-colors disabled:opacity-50"
                             >
-                              ⭐ {assigningLeader === m.id ? 'Assigning…' : 'Assign as Leader'}
+                              ⭐ {assigningLeader === m.id ? t('potDetail.assigningLeader') : t('potDetail.assignAsLeader')}
                             </button>
                           ) : m.role === 'leader' ? (
                             <button
@@ -1084,7 +1086,7 @@ export default function PotDetail() {
                               disabled={assigningLeader === m.id}
                               className="text-xs flex items-center gap-1.5 font-semibold text-destructive bg-destructive/10 border border-destructive/20 px-3 py-1.5 rounded-lg hover:bg-destructive/20 transition-colors disabled:opacity-50"
                             >
-                              {assigningLeader === m.id ? 'Removing…' : 'Remove as Leader'}
+                              {assigningLeader === m.id ? t('potDetail.removingLeader') : t('potDetail.removeAsLeader')}
                             </button>
                           ) : null}
                         </div>
@@ -1106,7 +1108,7 @@ export default function PotDetail() {
               onClick={() => setShowChangePassword(true)}
             >
               <KeyRound size={15} className="mr-2" />
-              Change Withdrawal Password
+              {t('potDetail.changeWithdrawalPassword')}
             </Button>
           )}
           {isCreator ? (
@@ -1116,7 +1118,7 @@ export default function PotDetail() {
               onClick={() => setShowCloseDialog(true)}
             >
               <X size={16} className="mr-2" />
-              Close Pot
+              {t('potDetail.closePot')}
             </Button>
           ) : (
             <Button
@@ -1125,7 +1127,7 @@ export default function PotDetail() {
               onClick={() => setShowLeaveDialog(true)}
             >
               <LogOut size={16} className="mr-2" />
-              Leave Pot
+              {t('potDetail.leavePot')}
             </Button>
           )}
         </div>
@@ -1139,28 +1141,28 @@ export default function PotDetail() {
               <Users size={22} className="text-primary" />
             </div>
             <div className="text-center space-y-1">
-              <h3 className="text-base font-bold text-foreground">Invite to {pot.name}</h3>
-              <p className="text-xs text-muted-foreground">Anyone with this link can join your pot</p>
+              <h3 className="text-base font-bold text-foreground">{t('potDetail.inviteTo', { name: pot.name })}</h3>
+              <p className="text-xs text-muted-foreground">{t('potDetail.anyoneWithLink')}</p>
             </div>
             <Button
               className="w-full h-11 rounded-xl font-semibold"
               onClick={handleCopyLink}
             >
               {copied ? (
-                <><Check size={16} className="mr-1.5" /> Copied!</>
+                <><Check size={16} className="mr-1.5" /> {t('potDetail.copied')}</>
               ) : (
-                <><Copy size={16} className="mr-1.5" /> Copy Invite Link</>
+                <><Copy size={16} className="mr-1.5" /> {t('potDetail.copyInviteLink')}</>
               )}
             </Button>
             <Button
               className="w-full h-11 rounded-xl font-semibold bg-[#25D366] hover:bg-[#1da851] text-white"
               onClick={() => {
-                const message = `Hey! I've created a pot called "${pot.name}" on Monto. Join here: ${inviteLink}`;
+                const message = t('potDetail.whatsappMessage', { name: pot.name, link: inviteLink });
                 window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
               }}
             >
               <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 mr-1.5"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-              Share via WhatsApp
+              {t('potDetail.shareViaWhatsapp')}
             </Button>
           </div>
         </DialogContent>
@@ -1170,19 +1172,19 @@ export default function PotDetail() {
       <AlertDialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Leave this pot?</AlertDialogTitle>
+            <AlertDialogTitle>{t('potDetail.leaveQuestion')}</AlertDialogTitle>
             <AlertDialogDescription>
-              You will be removed from "{pot.name}" and won't be able to see it anymore. This action cannot be undone.
+              {t('potDetail.leaveDescription', { name: pot.name })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleLeavePot}
               disabled={leaving}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {leaving ? 'Leaving…' : 'Leave Pot'}
+              {leaving ? t('potDetail.leaving') : t('potDetail.leavePot')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1192,19 +1194,19 @@ export default function PotDetail() {
       <AlertDialog open={showCloseDialog} onOpenChange={setShowCloseDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Close this pot?</AlertDialogTitle>
+            <AlertDialogTitle>{t('potDetail.closeQuestion')}</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently close "{pot.name}". The remaining funds of {formatCurrency(pot.balance ?? 0, currency)} will be transferred to your bank account. Funds arrive within 1-3 business days.
+              {t('potDetail.closeDescription', { name: pot.name, balance: formatCurrency(pot.balance ?? 0, currency) })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleClosePot}
               disabled={closing}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {closing ? 'Processing…' : 'Close Pot'}
+              {closing ? t('potDetail.processing') : t('potDetail.closePot')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1214,19 +1216,19 @@ export default function PotDetail() {
       <AlertDialog open={showConnectBankDialog} onOpenChange={setShowConnectBankDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Bank account required</AlertDialogTitle>
+            <AlertDialogTitle>{t('potDetail.bankRequired')}</AlertDialogTitle>
             <AlertDialogDescription>
-              You need to connect your bank account before closing a pot. This is required to receive your funds.
+              {t('potDetail.bankRequiredDesc')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConnectBank}
               disabled={connectingBank}
             >
               <Landmark size={15} className="mr-1.5" />
-              {connectingBank ? 'Redirecting…' : 'Connect Bank Account'}
+              {connectingBank ? t('potDetail.redirecting') : t('potDetail.connectBankAccount')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1236,19 +1238,19 @@ export default function PotDetail() {
       <AlertDialog open={!!approveConfirm} onOpenChange={(v) => { if (!v) setApproveConfirm(null); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Approve withdrawal?</AlertDialogTitle>
+            <AlertDialogTitle>{t('potDetail.approveQuestion')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to approve this withdrawal of {approveConfirm ? formatCurrency(Number(approveConfirm.amount), currency) : ''}? This will trigger a bank transfer to the member and deduct the amount from the pot balance.
+              {t('potDetail.approveDescription', { amount: approveConfirm ? formatCurrency(Number(approveConfirm.amount), currency) : '' })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => approveConfirm && handleApproveWithdrawal(approveConfirm)}
               disabled={!!processingWithdrawal}
               className="bg-success text-success-foreground hover:bg-success/90"
             >
-              {processingWithdrawal ? 'Processing…' : 'Approve ✅'}
+              {processingWithdrawal ? t('potDetail.processing') : t('potDetail.approve')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1258,26 +1260,26 @@ export default function PotDetail() {
       <Dialog open={!!rejectConfirm} onOpenChange={(v) => { if (!v) { setRejectConfirm(null); setRejectReason(''); } }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Reject withdrawal</DialogTitle>
+            <DialogTitle>{t('potDetail.rejectTitle')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              Please provide a reason for rejecting this withdrawal of {rejectConfirm ? formatCurrency(Number(rejectConfirm.amount), currency) : ''}.
+              {t('potDetail.rejectDescription', { amount: rejectConfirm ? formatCurrency(Number(rejectConfirm.amount), currency) : '' })}
             </p>
             <textarea
               value={rejectReason}
               onChange={(e) => setRejectReason(e.target.value)}
-              placeholder="Reason for rejection…"
+              placeholder={t('potDetail.rejectReasonPlaceholder')}
               className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm min-h-[80px] focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
             <div className="flex gap-2 justify-end">
-              <Button variant="outline" onClick={() => { setRejectConfirm(null); setRejectReason(''); }}>Cancel</Button>
+              <Button variant="outline" onClick={() => { setRejectConfirm(null); setRejectReason(''); }}>{t('common.cancel')}</Button>
               <Button
                 variant="destructive"
                 disabled={!rejectReason.trim() || !!processingWithdrawal}
                 onClick={() => rejectConfirm && handleRejectWithdrawal(rejectConfirm, rejectReason.trim())}
               >
-                {processingWithdrawal ? 'Processing…' : 'Reject ❌'}
+                {processingWithdrawal ? t('potDetail.processing') : t('potDetail.reject')}
               </Button>
             </div>
           </div>
