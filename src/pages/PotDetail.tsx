@@ -630,7 +630,7 @@ export default function PotDetail() {
               className="relative flex items-center gap-1.5 text-xs text-primary font-semibold border border-primary/30 rounded-full px-3 py-1.5 hover:bg-accent transition-colors"
             >
               <MessageCircle size={13} />
-              Chat
+              {t('potDetail.chat')}
               {unreadChatCount > 0 && (
                 <span className="min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1 ml-0.5">
                   {unreadChatCount > 99 ? '99+' : unreadChatCount}
