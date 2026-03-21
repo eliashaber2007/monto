@@ -133,7 +133,7 @@ export default function Signup() {
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="email">{t('auth.email')}</Label>
-              <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="h-11 rounded-xl" />
+              <Input id="email" type="email" placeholder={t('auth.emailPlaceholder')} value={email} onChange={(e) => setEmail(e.target.value)} required className="h-11 rounded-xl" />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="password">{t('auth.password')}</Label>
