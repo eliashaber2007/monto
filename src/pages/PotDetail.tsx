@@ -827,7 +827,7 @@ export default function PotDetail() {
                     {withdrawalsOpen && (
                       <div className="border-t border-border divide-y divide-border">
                         {withdrawals.length === 0 ? (
-                          <div className="p-4 text-center text-xs text-muted-foreground">No withdrawals yet</div>
+                          <div className="p-4 text-center text-xs text-muted-foreground">{t('potDetail.noWithdrawals')}</div>
                         ) : withdrawals.map((w) => {
                           const profile = getMemberProfile(w.user_id);
                           const name = profile?.first_name || 'Member';
