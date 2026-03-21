@@ -1157,7 +1157,7 @@ export default function PotDetail() {
             <Button
               className="w-full h-11 rounded-xl font-semibold bg-[#25D366] hover:bg-[#1da851] text-white"
               onClick={() => {
-                const message = `Hey! I've created a pot called "${pot.name}" on Monto. Join here: ${inviteLink}`;
+                const message = t('potDetail.whatsappMessage', { name: pot.name, link: inviteLink });
                 window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
               }}
             >
