@@ -189,7 +189,7 @@ export function generatePotReport(
   } else {
     autoTable(doc, {
       startY: y,
-      head: [['Member', 'Date', 'Deducted', 'Received', 'Expenses', 'Justified']],
+      head: [['Member', 'Date', 'Deducted from pot', 'Received by member', 'Expenses', 'Justified']],
       body: withdrawalRows,
       theme: 'striped',
       headStyles: { fillColor: primaryColor, fontSize: 8, fontStyle: 'bold' },
