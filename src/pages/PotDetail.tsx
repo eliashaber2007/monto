@@ -653,7 +653,7 @@ export default function PotDetail() {
         <div className="bg-card rounded-2xl shadow-sm border border-border p-8 text-center">
           <ProgressRing balance={pot.balance ?? 0} peakBalance={((pot as any).peak_balance > 0 ? (pot as any).peak_balance : pot.balance) ?? 0} currency={currency} />
           {((pot as any).peak_balance <= 0 && pot.balance <= 0) && !pot.goal_amount && (
-            <p className="text-sm text-muted-foreground mt-4">No goal set — save as much as you like! 🎯</p>
+            <p className="text-sm text-muted-foreground mt-4">{t('potDetail.noGoalSet')}</p>
           )}
           {pot.require_receipt && (
             <div className="mt-3 inline-flex items-center gap-1.5 text-xs text-warning font-medium bg-warning/10 px-2.5 py-1 rounded-full border border-warning/20">
