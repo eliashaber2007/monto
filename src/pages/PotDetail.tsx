@@ -59,7 +59,7 @@ function ReceiptStatusBadge({ status, t }: { status: string; t: (key: string) =>
   const cfg = map[status] ?? map.pending;
   return (
     <span className={`text-[10px] px-2 py-0.5 rounded-full border font-semibold ${cfg.color}`}>
-      {cfg.label}
+      {t(cfg.labelKey)}
     </span>
   );
 }
