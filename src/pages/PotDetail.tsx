@@ -833,7 +833,7 @@ export default function PotDetail() {
                           const name = profile?.first_name || 'Member';
                           const isMyRequest = w.user_id === user?.id;
                           const isPending = w.status === 'pending';
-                          const statusLabel = isPending ? 'Pending' : w.status === 'approved' ? 'Approved' : 'Rejected';
+                          const statusLabel = isPending ? t('potDetail.pending') : w.status === 'approved' ? t('potDetail.approved') : t('potDetail.rejected');
                           const statusColor = isPending
                             ? 'text-warning bg-warning/10 border-warning/20'
                             : w.status === 'approved'
