@@ -353,7 +353,7 @@
     "minutesAgo": "vor {{count}} Min.",
     "hoursAgo": "vor {{count}} Std.",
     "daysAgo": "vor {{count}} T.",
-    "msg_payout": "Sie haben € {{amount}} aus „{{pot}}" abgehoben. Die Gelder treffen innerhalb von 1–3 Werktagen ein.",
+    "msg_payout": "Sie haben \u20ac {{amount}} aus \"{{pot}}\" abgehoben. Die Gelder treffen innerhalb von 1\u20133 Werktagen ein.",
     "msg_withdrawal_requested": "{{name}} hat eine Auszahlung von € {{amount}} aus {{pot}} angefordert",
     "msg_member_joined": "{{name}} ist {{pot}} beigetreten",
     "msg_withdrawal_approved": "Ihre Auszahlung von € {{amount}} aus {{pot}} wurde genehmigt",
