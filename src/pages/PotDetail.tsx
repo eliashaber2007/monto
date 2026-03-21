@@ -1118,7 +1118,7 @@ export default function PotDetail() {
               onClick={() => setShowCloseDialog(true)}
             >
               <X size={16} className="mr-2" />
-              Close Pot
+              {t('potDetail.closePot')}
             </Button>
           ) : (
             <Button
