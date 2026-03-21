@@ -658,7 +658,7 @@ export default function PotDetail() {
           {pot.require_receipt && (
             <div className="mt-3 inline-flex items-center gap-1.5 text-xs text-warning font-medium bg-warning/10 px-2.5 py-1 rounded-full border border-warning/20">
               <CheckCircle2 size={11} />
-              Receipt verification enabled
+              {t('potDetail.receiptVerification')}
             </div>
           )}
         </div>
