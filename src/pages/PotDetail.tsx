@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Users, Plus, CheckCircle2, Image as ImageIcon, Upload, X, LogOut, Copy, Check, Landmark, ThumbsUp, ThumbsDown, MessageCircle, KeyRound, ChevronDown, ChevronRight, Receipt, Bell } from 'lucide-react';
+import { ArrowLeft, Users, Plus, CheckCircle2, Image as ImageIcon, Upload, X, LogOut, Copy, Check, Landmark, ThumbsUp, ThumbsDown, MessageCircle, KeyRound, ChevronDown, ChevronRight, Receipt, Bell, FileDown } from 'lucide-react';
+import { generatePotReport } from '@/lib/generatePotReport';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePotDetail } from '@/hooks/usePots';
@@ -191,6 +192,7 @@ export default function PotDetail() {
   const [expandedMembers, setExpandedMembers] = useState<Record<string, boolean>>({});
   const [withdrawalExpenses, setWithdrawalExpenses] = useState<Record<string, number>>({});
   const [sendingReminder, setSendingReminder] = useState<string | null>(null);
+  const [generatingReport, setGeneratingReport] = useState(false);
   const [assigningLeader, setAssigningLeader] = useState<string | null>(null);
   const [approveConfirm, setApproveConfirm] = useState<any | null>(null);
   const [rejectConfirm, setRejectConfirm] = useState<any | null>(null);
@@ -675,6 +677,58 @@ export default function PotDetail() {
             </div>
           )}
         </div>
+
+        {/* Generate Report - creator only */}
+        {isCreator && (
+          <div className="flex justify-end">
+            <button
+              onClick={async () => {
+                setGeneratingReport(true);
+                try {
+                  // Fetch all transactions (not just 50)
+                  const { data: allTx } = await supabase
+                    .from('transactions')
+                    .select('*')
+                    .eq('pot_id', id!)
+                    .eq('status', 'completed')
+                    .order('created_at', { ascending: false });
+
+                  // Fetch all approved withdrawals
+                  const { data: allW } = await supabase
+                    .from('withdrawals')
+                    .select('*')
+                    .eq('pot_id', id!)
+                    .eq('status', 'approved')
+                    .order('created_at', { ascending: false });
+
+                  // Fetch all expenses for approved withdrawals
+                  const approvedIds = (allW ?? []).map(w => w.id);
+                  let allExpenses: any[] = [];
+                  if (approvedIds.length > 0) {
+                    const { data: expData } = await supabase
+                      .from('withdrawal_expenses')
+                      .select('*')
+                      .in('withdrawal_id', approvedIds);
+                    allExpenses = expData ?? [];
+                  }
+
+                  generatePotReport(pot, members, allTx ?? [], allW ?? [], allExpenses);
+                  toast({ title: '📄 Report downloaded!' });
+                } catch (e) {
+                  console.error('Report generation failed:', e);
+                  toast({ title: 'Failed to generate report', variant: 'destructive' });
+                } finally {
+                  setGeneratingReport(false);
+                }
+              }}
+              disabled={generatingReport}
+              className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium hover:text-foreground transition-colors disabled:opacity-50"
+            >
+              <FileDown size={14} />
+              {generatingReport ? 'Generating…' : 'Generate Report'}
+            </button>
+          </div>
+        )}
 
         {/* Tabs */}
         <Tabs defaultValue="activity" onValueChange={(val) => { if (val === 'activity') { console.log('[Tabs] Activity tab focused, re-fetching withdrawals'); fetchWithdrawals(); refetch(); } }}>
