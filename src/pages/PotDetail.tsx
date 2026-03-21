@@ -1273,7 +1273,7 @@ export default function PotDetail() {
               className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm min-h-[80px] focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
             <div className="flex gap-2 justify-end">
-              <Button variant="outline" onClick={() => { setRejectConfirm(null); setRejectReason(''); }}>Cancel</Button>
+              <Button variant="outline" onClick={() => { setRejectConfirm(null); setRejectReason(''); }}>{t('common.cancel')}</Button>
               <Button
                 variant="destructive"
                 disabled={!rejectReason.trim() || !!processingWithdrawal}
