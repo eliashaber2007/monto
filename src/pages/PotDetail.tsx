@@ -347,7 +347,7 @@ export default function PotDetail() {
   const handleApproveWithdrawal = async (withdrawal: any) => {
     console.log('[Approve] Starting approval for withdrawal:', withdrawal.id, 'amount:', withdrawal.amount, 'status:', withdrawal.status);
     if (withdrawal.user_id === user?.id) {
-      toast({ title: 'Error', description: 'You cannot approve your own withdrawal request.', variant: 'destructive' });
+      toast({ title: t('common.error'), description: t('potDetail.cannotApproveOwn'), variant: 'destructive' });
       return;
     }
     if (withdrawal.status !== 'pending') {
