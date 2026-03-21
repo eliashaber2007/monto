@@ -1141,7 +1141,7 @@ export default function PotDetail() {
               <Users size={22} className="text-primary" />
             </div>
             <div className="text-center space-y-1">
-              <h3 className="text-base font-bold text-foreground">Invite to {pot.name}</h3>
+              <h3 className="text-base font-bold text-foreground">{t('potDetail.inviteTo', { name: pot.name })}</h3>
               <p className="text-xs text-muted-foreground">Anyone with this link can join your pot</p>
             </div>
             <Button
