@@ -386,7 +386,7 @@ export default function PotDetail() {
       // 2. Payout succeeded — mark withdrawal as approved
       await supabase.from('withdrawals').update({ status: 'approved', processed_at: new Date().toISOString() }).eq('id', withdrawal.id);
 
-      toast({ title: 'Withdrawal approved ✅' });
+      toast({ title: t('potDetail.withdrawalApproved') });
       setApproveConfirm(null);
       refetch();
       fetchWithdrawals();
