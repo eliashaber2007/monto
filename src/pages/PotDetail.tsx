@@ -48,18 +48,18 @@ function formatDate(dateStr: string) {
   });
 }
 
-function ReceiptStatusBadge({ status }: { status: string }) {
-  const map: Record<string, { label: string; color: string }> = {
-    pending: { label: 'Receipt Pending', color: 'bg-warning/10 text-warning border-warning/20' },
-    submitted: { label: 'Submitted', color: 'bg-primary/10 text-primary border-primary/20' },
-    approved: { label: 'Approved', color: 'bg-success/10 text-success border-success/20' },
-    rejected: { label: 'Rejected', color: 'bg-destructive/10 text-destructive border-destructive/20' },
-    expired: { label: 'Unverified', color: 'bg-destructive/10 text-destructive border-destructive/20' },
+function ReceiptStatusBadge({ status, t }: { status: string; t: (key: string) => string }) {
+  const map: Record<string, { labelKey: string; color: string }> = {
+    pending: { labelKey: 'potDetail.receiptPending', color: 'bg-warning/10 text-warning border-warning/20' },
+    submitted: { labelKey: 'potDetail.submitted', color: 'bg-primary/10 text-primary border-primary/20' },
+    approved: { labelKey: 'potDetail.receiptApproved', color: 'bg-success/10 text-success border-success/20' },
+    rejected: { labelKey: 'potDetail.receiptRejected', color: 'bg-destructive/10 text-destructive border-destructive/20' },
+    expired: { labelKey: 'potDetail.unverified', color: 'bg-destructive/10 text-destructive border-destructive/20' },
   };
   const cfg = map[status] ?? map.pending;
   return (
     <span className={`text-[10px] px-2 py-0.5 rounded-full border font-semibold ${cfg.color}`}>
-      {cfg.label}
+      {t(cfg.labelKey)}
     </span>
   );
 }
@@ -347,11 +347,11 @@ export default function PotDetail() {
   const handleApproveWithdrawal = async (withdrawal: any) => {
     console.log('[Approve] Starting approval for withdrawal:', withdrawal.id, 'amount:', withdrawal.amount, 'status:', withdrawal.status);
     if (withdrawal.user_id === user?.id) {
-      toast({ title: 'Error', description: 'You cannot approve your own withdrawal request.', variant: 'destructive' });
+      toast({ title: t('common.error'), description: t('potDetail.cannotApproveOwn'), variant: 'destructive' });
       return;
     }
     if (withdrawal.status !== 'pending') {
-      toast({ title: 'Error', description: 'This withdrawal is no longer pending.', variant: 'destructive' });
+      toast({ title: t('common.error'), description: t('potDetail.noLongerPending'), variant: 'destructive' });
       return;
     }
     setProcessingWithdrawal(withdrawal.id);
@@ -386,13 +386,13 @@ export default function PotDetail() {
       // 2. Payout succeeded — mark withdrawal as approved
       await supabase.from('withdrawals').update({ status: 'approved', processed_at: new Date().toISOString() }).eq('id', withdrawal.id);
 
-      toast({ title: 'Withdrawal approved ✅' });
+      toast({ title: t('potDetail.withdrawalApproved') });
       setApproveConfirm(null);
       refetch();
       fetchWithdrawals();
     } catch (err: any) {
       // Payout failed — withdrawal stays pending, balance untouched
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+      toast({ title: t('common.error'), description: err.message, variant: 'destructive' });
     } finally {
       setProcessingWithdrawal(null);
     }
@@ -400,7 +400,7 @@ export default function PotDetail() {
 
   const handleRejectWithdrawal = async (withdrawal: any, reason: string) => {
     if (withdrawal.user_id === user?.id) {
-      toast({ title: 'Error', description: 'You cannot reject your own withdrawal request.', variant: 'destructive' });
+      toast({ title: t('common.error'), description: t('potDetail.cannotRejectOwn'), variant: 'destructive' });
       return;
     }
     setProcessingWithdrawal(withdrawal.id);
@@ -418,13 +418,13 @@ export default function PotDetail() {
         });
       } catch (e) { console.error('Rejection notification failed:', e); }
 
-      toast({ title: 'Withdrawal rejected ❌' });
+      toast({ title: t('potDetail.withdrawalRejected') });
       setRejectConfirm(null);
       setRejectReason('');
       refetch();
       fetchWithdrawals();
     } catch (err: any) {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+      toast({ title: t('common.error'), description: err.message, variant: 'destructive' });
     } finally {
       setProcessingWithdrawal(null);
     }
@@ -447,9 +447,9 @@ export default function PotDetail() {
           body: JSON.stringify({ type: 'leader_assigned', pot_id: id, user_id: member.user_id, creator_name: creatorProfile?.first_name || 'The creator' }),
         });
       } catch (e) { console.error('Leader notification failed:', e); }
-      toast({ title: `${memberName} is now a leader of this pot.` });
+      toast({ title: t('potDetail.leaderAssigned', { name: memberName }) });
       refetch();
-    } catch (err: any) { toast({ title: 'Error', description: err.message, variant: 'destructive' }); } finally { setAssigningLeader(null); }
+    } catch (err: any) { toast({ title: t('common.error'), description: err.message, variant: 'destructive' }); } finally { setAssigningLeader(null); }
   };
 
   const handleRemoveLeader = async (member: any) => {
@@ -466,9 +466,9 @@ export default function PotDetail() {
           body: JSON.stringify({ type: 'leader_removed', pot_id: id, user_id: member.user_id }),
         });
       } catch (e) { console.error('Leader removal notification failed:', e); }
-      toast({ title: `${memberName} is no longer a leader.` });
+      toast({ title: t('potDetail.leaderRemoved', { name: memberName }) });
       refetch();
-    } catch (err: any) { toast({ title: 'Error', description: err.message, variant: 'destructive' }); } finally { setAssigningLeader(null); }
+    } catch (err: any) { toast({ title: t('common.error'), description: err.message, variant: 'destructive' }); } finally { setAssigningLeader(null); }
   };
 
   const handleLeavePot = async () => {
@@ -480,11 +480,11 @@ export default function PotDetail() {
       .eq('user_id', user!.id);
     setLeaving(false);
     if (error) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      toast({ title: t('common.error'), description: error.message, variant: 'destructive' });
       return;
     }
     queryClient.invalidateQueries({ queryKey: ['pots'] });
-    toast({ title: 'Left pot', description: 'You have left this pot.' });
+    toast({ title: t('potDetail.leftPot'), description: t('potDetail.leftPotDesc') });
     navigate('/');
   };
 
@@ -511,7 +511,7 @@ export default function PotDetail() {
 
       window.location.href = result.url;
     } catch (err: any) {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+      toast({ title: t('common.error'), description: err.message, variant: 'destructive' });
       setConnectingBank(false);
     }
   };
@@ -572,14 +572,14 @@ export default function PotDetail() {
 
       queryClient.invalidateQueries({ queryKey: ['pots'] });
       toast({
-        title: 'Pot closed 🎉',
+        title: t('potDetail.potClosed'),
         description: balance > 0
-          ? `${formatCurrency(balance, currency)} has been transferred to your bank account. Funds arrive within 1-3 business days.`
-          : 'The pot has been closed.',
+          ? t('potDetail.potClosedDesc', { amount: formatCurrency(balance, currency) })
+          : t('potDetail.potClosedNoBalance'),
       });
       navigate('/');
     } catch (err: any) {
-      toast({ title: 'Error closing pot', description: err.message, variant: 'destructive' });
+      toast({ title: t('common.error'), description: err.message, variant: 'destructive' });
     } finally {
       setClosing(false);
     }
@@ -904,7 +904,7 @@ export default function PotDetail() {
 
                                           toast({ title: t('potDetail.reminderSent') });
                                         } catch (err: any) {
-                                          toast({ title: 'Error', description: err.message, variant: 'destructive' });
+                                          toast({ title: t('common.error'), description: err.message, variant: 'destructive' });
                                         } finally {
                                           setSendingReminder(null);
                                         }

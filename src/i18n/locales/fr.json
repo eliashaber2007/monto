@@ -187,7 +187,14 @@
     "approveDescription": "Êtes-vous sûr de vouloir approuver ce retrait de {{amount}} ? Cela déclenchera un virement bancaire au membre et déduira le montant du solde de la cagnotte.",
     "rejectTitle": "Rejeter le retrait",
     "rejectDescription": "Veuillez fournir une raison pour le rejet de ce retrait de {{amount}}.",
-    "rejectReasonPlaceholder": "Raison du rejet…"
+    "rejectReasonPlaceholder": "Raison du rejet…",
+    "cannotApproveOwn": "Vous ne pouvez pas approuver votre propre demande de retrait.",
+    "cannotRejectOwn": "Vous ne pouvez pas rejeter votre propre demande de retrait.",
+    "noLongerPending": "Ce retrait n'est plus en attente.",
+    "leaderAssigned": "{{name}} est maintenant responsable de cette cagnotte.",
+    "leaderRemoved": "{{name}} n'est plus responsable.",
+    "receiptApproved": "Approuvé",
+    "receiptRejected": "Rejeté"
   },
   "createPot": {
     "setupPot": "Créez votre cagnotte ✨",
