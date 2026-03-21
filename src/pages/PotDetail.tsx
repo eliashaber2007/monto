@@ -424,7 +424,7 @@ export default function PotDetail() {
       refetch();
       fetchWithdrawals();
     } catch (err: any) {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+      toast({ title: t('common.error'), description: err.message, variant: 'destructive' });
     } finally {
       setProcessingWithdrawal(null);
     }
