@@ -718,7 +718,7 @@ export default function PotDetail() {
                   toast({ title: t('potDetail.reportDownloaded') });
                 } catch (e) {
                   console.error('Report generation failed:', e);
-                  toast({ title: 'Failed to generate report', variant: 'destructive' });
+                  toast({ title: t('potDetail.reportFailed'), variant: 'destructive' });
                 } finally {
                   setGeneratingReport(false);
                 }
