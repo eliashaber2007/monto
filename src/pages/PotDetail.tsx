@@ -950,7 +950,7 @@ export default function PotDetail() {
                       <span className="text-base">🎉</span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-foreground">Created "{pot.name}"</p>
+                      <p className="text-sm font-semibold text-foreground">{t('potDetail.created', { name: pot.name })}</p>
                       <p className="text-xs text-muted-foreground">{formatDate(pot.created_at)}</p>
                     </div>
                   </div>
