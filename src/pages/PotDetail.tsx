@@ -1228,7 +1228,7 @@ export default function PotDetail() {
               disabled={connectingBank}
             >
               <Landmark size={15} className="mr-1.5" />
-              {connectingBank ? 'Redirecting…' : 'Connect Bank Account'}
+              {connectingBank ? t('potDetail.redirecting') : t('potDetail.connectBankAccount')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
