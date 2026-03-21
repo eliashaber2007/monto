@@ -1238,9 +1238,9 @@ export default function PotDetail() {
       <AlertDialog open={!!approveConfirm} onOpenChange={(v) => { if (!v) setApproveConfirm(null); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Approve withdrawal?</AlertDialogTitle>
+            <AlertDialogTitle>{t('potDetail.approveQuestion')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to approve this withdrawal of {approveConfirm ? formatCurrency(Number(approveConfirm.amount), currency) : ''}? This will trigger a bank transfer to the member and deduct the amount from the pot balance.
+              {t('potDetail.approveDescription', { amount: approveConfirm ? formatCurrency(Number(approveConfirm.amount), currency) : '' })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
