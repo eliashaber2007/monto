@@ -642,7 +642,7 @@ export default function PotDetail() {
               className="flex items-center gap-1.5 text-xs text-primary font-semibold border border-primary/30 rounded-full px-3 py-1.5 hover:bg-accent transition-colors"
             >
               <Users size={13} />
-              Invite
+              {t('potDetail.invite')}
             </button>
           </div>
         </div>
