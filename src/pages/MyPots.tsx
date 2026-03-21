@@ -115,7 +115,7 @@ export default function MyPots() {
                     </span>
                   )}
                 </div>
-                <span className="font-bold text-foreground text-base group-hover:text-primary transition-colors">My Profile</span>
+                <span className="font-bold text-foreground text-base group-hover:text-primary transition-colors">{t('profile.myProfile')}</span>
               </button>
           <div className="flex items-center gap-1">
             <NotificationBell />

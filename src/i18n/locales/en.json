@@ -277,6 +277,7 @@
     "totalDeducted": "Taken from pot: {{amount}}"
   },
   "profile": {
+    "myProfile": "My Profile",
     "title": "Profile",
     "avatarColor": "Avatar color",
     "avatarUpdated": "Avatar updated! 📸",
