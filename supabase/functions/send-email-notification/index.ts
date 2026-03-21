@@ -228,6 +228,7 @@ async function handleNotification(payload: EmailPayload) {
         pot_id: payload.pot_id,
         type: 'leader_assigned',
         message,
+        variables: { name: creatorName, pot: pot.name },
       });
       
       const recipientEmail = await getUserEmail(payload.user_id);
