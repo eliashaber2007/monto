@@ -134,11 +134,11 @@ export default function Notifications() {
     const diff = Date.now() - new Date(dateStr).getTime();
     const mins = Math.floor(diff / 60000);
     if (mins < 1) return t('notifications.justNow');
-    if (mins < 60) return t('notifications.minutesAgo', { count: String(mins) });
+    if (mins < 60) return t('notifications.minutesAgo', { count: mins });
     const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return t('notifications.hoursAgo', { count: String(hrs) });
+    if (hrs < 24) return t('notifications.hoursAgo', { count: hrs });
     const days = Math.floor(hrs / 24);
-    return t('notifications.daysAgo', { count: String(days) });
+    return t('notifications.daysAgo', { count: days });
   };
 
   const fetchNotifications = async () => {
