@@ -217,7 +217,7 @@ export default function PotDetail() {
   useEffect(() => {
     const payment = searchParams.get('payment');
     if (payment === 'success') {
-      toast({ title: '🎉 Payment successful!', description: 'Your balance will update shortly.' });
+      toast({ title: t('potDetail.paymentSuccess'), description: t('potDetail.paymentSuccessDesc') });
       // Multiple staggered refetches to catch webhook processing
       refetch();
       setTimeout(() => refetch(), 1500);
