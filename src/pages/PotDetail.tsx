@@ -1086,7 +1086,7 @@ export default function PotDetail() {
                               disabled={assigningLeader === m.id}
                               className="text-xs flex items-center gap-1.5 font-semibold text-destructive bg-destructive/10 border border-destructive/20 px-3 py-1.5 rounded-lg hover:bg-destructive/20 transition-colors disabled:opacity-50"
                             >
-                              {assigningLeader === m.id ? 'Removing…' : 'Remove as Leader'}
+                              {assigningLeader === m.id ? t('potDetail.removingLeader') : t('potDetail.removeAsLeader')}
                             </button>
                           ) : null}
                         </div>
