@@ -1250,7 +1250,7 @@ export default function PotDetail() {
               disabled={!!processingWithdrawal}
               className="bg-success text-success-foreground hover:bg-success/90"
             >
-              {processingWithdrawal ? 'Processing…' : 'Approve ✅'}
+              {processingWithdrawal ? t('potDetail.processing') : t('potDetail.approve')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
