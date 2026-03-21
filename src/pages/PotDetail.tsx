@@ -351,7 +351,7 @@ export default function PotDetail() {
       return;
     }
     if (withdrawal.status !== 'pending') {
-      toast({ title: 'Error', description: 'This withdrawal is no longer pending.', variant: 'destructive' });
+      toast({ title: t('common.error'), description: t('potDetail.noLongerPending'), variant: 'destructive' });
       return;
     }
     setProcessingWithdrawal(withdrawal.id);
