@@ -1184,7 +1184,7 @@ export default function PotDetail() {
               disabled={leaving}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {leaving ? 'Leaving…' : 'Leave Pot'}
+              {leaving ? t('potDetail.leaving') : t('potDetail.leavePot')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
