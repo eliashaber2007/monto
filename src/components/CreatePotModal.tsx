@@ -190,7 +190,6 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
                   <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground font-medium text-sm select-none">{currencySymbol}</span>
                   <Input id="goalAmount" type="number" min="0" step="0.01" placeholder="e.g. 1000" value={goalAmount} onChange={(e) => setGoalAmount(e.target.value)} className="h-11 pl-9" />
                 </div>
-                <p className="text-xs text-muted-foreground">{t('createPot.potAmountHint')}</p>
               </div>
               <div className="space-y-1.5">
                 <Label>{t('createPot.addIcon')}</Label>
