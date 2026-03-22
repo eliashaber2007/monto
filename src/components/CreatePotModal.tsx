@@ -159,7 +159,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
               <DialogTitle className="text-base">
                 {step === 1 && t('createPot.setupPot')}
                 {step === 2 && t('createPot.withdrawalRules')}
-                {step === 3 && "Receipt & Verification"}
+                {step === 3 && t('createPot.receiptVerification')}
                 {step === 4 && t('createPot.initialDeposit')}
               </DialogTitle>
               {step <= 3 && <span className="ml-auto text-xs text-muted-foreground font-medium">{step}/{totalSteps}</span>}
