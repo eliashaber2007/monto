@@ -47,23 +47,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Server-side contribution restriction check for existing pots
-    if (!is_new_pot) {
-      const supabaseAdmin = createClient(
-        Deno.env.get('SUPABASE_URL')!,
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-      );
-      const { data: potData } = await supabaseAdmin.from('pots').select('contributions_restricted').eq('id', pot_id).single();
-      if (potData?.contributions_restricted) {
-        const { data: memberData } = await supabaseAdmin.from('pot_members').select('role').eq('pot_id', pot_id).eq('user_id', userId).single();
-        if (memberData?.role === 'member') {
-          return new Response(JSON.stringify({ error: 'The pot creator has restricted contributions to leaders only.' }), {
-            status: 403,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          });
-        }
-      }
-    }
+
 
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, {
       apiVersion: '2024-06-20',
@@ -94,7 +78,7 @@ Deno.serve(async (req) => {
       metadata.pot_max_withdrawal_amount = String(pot_config.max_withdrawal_amount ?? '');
       metadata.pot_max_withdrawals_per_day = String(pot_config.max_withdrawals_per_day ?? '');
       metadata.pot_emoji = pot_config.emoji || '';
-      metadata.pot_contributions_restricted = String(pot_config.contributions_restricted ?? false);
+      
     }
 
     // Set success/cancel URLs based on whether this is a new pot

@@ -20,7 +20,6 @@ interface AddFundsModalProps {
   potId: string;
   potName: string;
   currency: string;
-  restricted?: boolean;
 }
 
 export default function AddFundsModal({
@@ -29,7 +28,6 @@ export default function AddFundsModal({
   potId,
   potName,
   currency,
-  restricted,
 }: AddFundsModalProps) {
   const { t } = useTranslation();
   const [selected, setSelected] = useState<number | null>(null);
@@ -67,19 +65,6 @@ export default function AddFundsModal({
     }
   };
 
-  if (restricted) {
-    return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-sm rounded-2xl">
-          <DialogHeader>
-            <DialogTitle>{t('addFunds.restricted')}</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground py-4">{t('addFunds.restrictedDesc')}</p>
-          <Button variant="outline" className="w-full" onClick={() => onOpenChange(false)}>{t('common.close')}</Button>
-        </DialogContent>
-      </Dialog>
-    );
-  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

@@ -46,7 +46,6 @@ export default function PotSettings({ open, onOpenChange, pot, members, isCreato
   const [emoji, setEmoji] = useState(pot.emoji || '');
   const [requireReceipt, setRequireReceipt] = useState(pot.require_receipt);
   const [maxWithdrawalAmount, setMaxWithdrawalAmount] = useState(pot.max_withdrawal_amount?.toString() || '');
-  const [contributionsRestricted, setContributionsRestricted] = useState(pot.contributions_restricted);
   const [withdrawalRule, setWithdrawalRule] = useState<WithdrawalRule>(pot.withdrawal_rule || 'auto_approve');
   const [withdrawalPassword, setWithdrawalPassword] = useState(pot.withdrawal_password || '');
   const [saving, setSaving] = useState(false);
@@ -59,7 +58,6 @@ export default function PotSettings({ open, onOpenChange, pot, members, isCreato
     setEmoji(pot.emoji || '');
     setRequireReceipt(pot.require_receipt);
     setMaxWithdrawalAmount(pot.max_withdrawal_amount?.toString() || '');
-    setContributionsRestricted(pot.contributions_restricted);
     setWithdrawalRule(pot.withdrawal_rule || 'auto_approve');
     setWithdrawalPassword(pot.withdrawal_password || '');
   }, [pot]);
@@ -90,7 +88,6 @@ export default function PotSettings({ open, onOpenChange, pot, members, isCreato
         emoji: emoji || null,
         require_receipt: requireReceipt,
         max_withdrawal_amount: maxWithdrawalAmount ? parseFloat(maxWithdrawalAmount) : null,
-        contributions_restricted: contributionsRestricted,
         withdrawal_rule: withdrawalRule,
         withdrawal_password: withdrawalRule === 'requires_password' ? withdrawalPassword : null,
       };
@@ -171,13 +168,6 @@ export default function PotSettings({ open, onOpenChange, pot, members, isCreato
               </div>
             )}
 
-            {/* Contribution restrictions */}
-            <div>
-              <Label className="text-xs text-muted-foreground">{t('potSettings.contributions')}</Label>
-              <p className="text-sm font-semibold text-foreground mt-0.5">
-                {pot.contributions_restricted ? t('potSettings.leadersAndCreator') : t('potSettings.allMembers')}
-              </p>
-            </div>
 
             {/* Leaders */}
             {leaders.length > 0 && (
@@ -308,16 +298,6 @@ export default function PotSettings({ open, onOpenChange, pot, members, isCreato
               />
             </div>
 
-            {/* Contribution restrictions */}
-            <div className="flex items-center justify-between">
-              <div>
-                <Label className="text-sm font-medium">{t('potSettings.restrictContributions')}</Label>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {contributionsRestricted ? t('potSettings.leadersAndCreator') : t('potSettings.allMembers')}
-                </p>
-              </div>
-              <Switch checked={contributionsRestricted} onCheckedChange={setContributionsRestricted} />
-            </div>
 
             {/* Leaders list */}
             {leaders.length > 0 && (
