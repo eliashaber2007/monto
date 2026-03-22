@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Users, Plus, CheckCircle2, Image as ImageIcon, Upload, X, LogOut, Copy, Check, Landmark, ThumbsUp, ThumbsDown, MessageCircle, KeyRound, ChevronDown, ChevronRight, Receipt, Bell, FileDown } from 'lucide-react';
+import { ArrowLeft, Users, Plus, CheckCircle2, Image as ImageIcon, Upload, X, LogOut, Copy, Check, Landmark, ThumbsUp, ThumbsDown, MessageCircle, KeyRound, ChevronDown, ChevronRight, Receipt, Bell, FileDown, Settings } from 'lucide-react';
 import { generatePotReport } from '@/lib/generatePotReport';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -32,6 +32,7 @@ import ReceiptReviewModal from '@/components/ReceiptReviewModal';
 import WithdrawalModal from '@/components/WithdrawalModal';
 import PotChat from '@/components/PotChat';
 import ChangePasswordModal from '@/components/ChangePasswordModal';
+import PotSettings from '@/components/PotSettings';
 
 function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat('en-IE', {
@@ -200,6 +201,7 @@ export default function PotDetail() {
   const [rejectReason, setRejectReason] = useState('');
   const [removeMemberConfirm, setRemoveMemberConfirm] = useState<any | null>(null);
   const [removingMember, setRemovingMember] = useState<string | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { t } = useTranslation();
@@ -696,25 +698,29 @@ export default function PotDetail() {
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <button
               onClick={() => setShowChat(true)}
-              className="relative flex items-center gap-1.5 text-xs text-primary font-semibold border border-primary/30 rounded-full px-3 py-1.5 hover:bg-accent transition-colors"
+              className="relative flex items-center gap-1 text-xs text-primary font-semibold border border-primary/30 rounded-full px-2.5 py-1.5 hover:bg-accent transition-colors"
             >
               <MessageCircle size={13} />
-              {t('potDetail.chat')}
               {unreadChatCount > 0 && (
-                <span className="min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1 ml-0.5">
+                <span className="min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1">
                   {unreadChatCount > 99 ? '99+' : unreadChatCount}
                 </span>
               )}
             </button>
             <button
               onClick={() => setShowInviteModal(true)}
-              className="flex items-center gap-1.5 text-xs text-primary font-semibold border border-primary/30 rounded-full px-3 py-1.5 hover:bg-accent transition-colors"
+              className="flex items-center justify-center text-xs text-primary font-semibold border border-primary/30 rounded-full w-8 h-8 hover:bg-accent transition-colors"
             >
               <Users size={13} />
-              {t('potDetail.invite')}
+            </button>
+            <button
+              onClick={() => setShowSettings(true)}
+              className="flex items-center justify-center text-xs text-primary font-semibold border border-primary/30 rounded-full w-8 h-8 hover:bg-accent transition-colors"
+            >
+              <Settings size={14} />
             </button>
           </div>
         </div>
@@ -1474,6 +1480,15 @@ export default function PotDetail() {
         potId={id!}
         currentPassword={pot.withdrawal_password ?? null}
         onChanged={() => refetch()}
+      />
+
+      <PotSettings
+        open={showSettings}
+        onOpenChange={setShowSettings}
+        pot={pot}
+        members={members}
+        isCreator={isCreator}
+        onUpdated={() => refetch()}
       />
     </div>
   );
