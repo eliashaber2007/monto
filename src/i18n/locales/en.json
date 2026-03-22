@@ -195,7 +195,14 @@
     "leaderAssigned": "{{name}} is now a leader of this pot.",
     "leaderRemoved": "{{name}} is no longer a leader.",
     "receiptApproved": "Approved",
-    "receiptRejected": "Rejected"
+    "receiptRejected": "Rejected",
+    "removeMember": "Remove from pot",
+    "removingMember": "Removing…",
+    "removeMemberConfirmTitle": "Remove member?",
+    "removeMemberConfirmDesc": "Are you sure you want to remove {{name}} from this pot? Their pending requests will be cancelled. This cannot be undone.",
+    "memberRemoved": "{{name}} has been removed from the pot.",
+    "demoteFirst": "Demote this member to Member role before removing them.",
+    "removedFromPot": "You have been removed from this pot."
   },
   "createPot": {
     "setupPot": "Set up your pot ✨",
