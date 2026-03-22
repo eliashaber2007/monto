@@ -487,5 +487,32 @@
     "a7": "Tanto el creador como los miembros pueden compartir el enlace de invitación para agregar nuevas personas a un bote.",
     "q8": "¿Qué pasa si un retiro es rechazado?",
     "a8": "Si el creador rechaza una solicitud de retiro, no se mueve dinero y el solicitante recibe una notificación."
+  },
+  "potSettings": {
+    "title": "Ajustes del bote",
+    "potRules": "Reglas del bote",
+    "potName": "Nombre del bote",
+    "icon": "Icono",
+    "targetAmount": "Monto objetivo",
+    "receiptVerification": "Verificación de recibos",
+    "enabled": "Activada",
+    "disabled": "Desactivada",
+    "receiptDesc": "Los miembros deben subir un comprobante después de retirar",
+    "maxWithdrawal": "Retiro máx. por solicitud",
+    "noLimit": "Sin límite",
+    "noTarget": "Sin objetivo",
+    "contributions": "Contribuciones",
+    "restrictContributions": "Restringir contribuciones",
+    "allMembers": "Todos los miembros pueden añadir fondos",
+    "leadersAndCreator": "Solo líderes y creador",
+    "leaders": "Líderes",
+    "manageLeadersHint": "Gestiona los líderes desde la pestaña Miembros",
+    "createdOn": "Creado el",
+    "saveChanges": "Guardar cambios",
+    "saving": "Guardando…",
+    "updated": "Ajustes del bote actualizados ✅",
+    "receiptWarningTitle": "¿Desactivar verificación de recibos?",
+    "receiptWarningDesc": "Desactivar la verificación de recibos significa que los miembros ya no necesitarán justificar sus retiros. ¿Estás seguro?",
+    "turnOff": "Desactivar"
   }
 }

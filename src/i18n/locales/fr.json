@@ -487,5 +487,32 @@
     "a7": "Le créateur et les membres peuvent partager le lien d'invitation pour amener de nouvelles personnes dans une cagnotte.",
     "q8": "Que se passe-t-il si un retrait est rejeté ?",
     "a8": "Si le créateur rejette une demande de retrait, aucun argent n'est déplacé et le demandeur reçoit une notification."
+  },
+  "potSettings": {
+    "title": "Paramètres du pot",
+    "potRules": "Règles du pot",
+    "potName": "Nom du pot",
+    "icon": "Icône",
+    "targetAmount": "Montant cible",
+    "receiptVerification": "Vérification des reçus",
+    "enabled": "Activée",
+    "disabled": "Désactivée",
+    "receiptDesc": "Les membres doivent fournir une preuve après un retrait",
+    "maxWithdrawal": "Retrait max par demande",
+    "noLimit": "Aucune limite",
+    "noTarget": "Aucun objectif",
+    "contributions": "Contributions",
+    "restrictContributions": "Restreindre les contributions",
+    "allMembers": "Tous les membres peuvent ajouter des fonds",
+    "leadersAndCreator": "Leaders et créateur uniquement",
+    "leaders": "Leaders",
+    "manageLeadersHint": "Gérez les leaders depuis l'onglet Membres",
+    "createdOn": "Créé le",
+    "saveChanges": "Enregistrer",
+    "saving": "Enregistrement…",
+    "updated": "Paramètres du pot mis à jour ✅",
+    "receiptWarningTitle": "Désactiver la vérification des reçus ?",
+    "receiptWarningDesc": "Désactiver la vérification des reçus signifie que les membres n'auront plus besoin de justifier leurs retraits. Êtes-vous sûr ?",
+    "turnOff": "Désactiver"
   }
 }

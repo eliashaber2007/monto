@@ -487,5 +487,32 @@
     "a7": "Both the pot creator and members can share the invite link to bring new people into a pot.",
     "q8": "What happens if a withdrawal is rejected?",
     "a8": "If the creator rejects a withdrawal request, no money is moved and the requester receives a notification letting them know."
+  },
+  "potSettings": {
+    "title": "Pot Settings",
+    "potRules": "Pot Rules",
+    "potName": "Pot name",
+    "icon": "Icon",
+    "targetAmount": "Target amount",
+    "receiptVerification": "Receipt verification",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "receiptDesc": "Members must upload proof after withdrawing",
+    "maxWithdrawal": "Max withdrawal per request",
+    "noLimit": "No limit",
+    "noTarget": "No target",
+    "contributions": "Contributions",
+    "restrictContributions": "Restrict contributions",
+    "allMembers": "All members can add funds",
+    "leadersAndCreator": "Leaders and creator only",
+    "leaders": "Leaders",
+    "manageLeadersHint": "Manage leaders from the Members tab",
+    "createdOn": "Created",
+    "saveChanges": "Save Changes",
+    "saving": "Saving…",
+    "updated": "Pot settings updated ✅",
+    "receiptWarningTitle": "Turn off receipt verification?",
+    "receiptWarningDesc": "Turning off receipt verification means members no longer need to justify withdrawals. Are you sure?",
+    "turnOff": "Turn Off"
   }
 }

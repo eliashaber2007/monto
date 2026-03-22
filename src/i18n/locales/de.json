@@ -487,5 +487,32 @@
     "a7": "Sowohl der Ersteller als auch Mitglieder können den Einladungslink teilen, um neue Personen in eine Kasse zu bringen.",
     "q8": "Was passiert, wenn eine Auszahlung abgelehnt wird?",
     "a8": "Wenn der Ersteller eine Auszahlungsanfrage ablehnt, wird kein Geld bewegt und der Antragsteller erhält eine Benachrichtigung."
+  },
+  "potSettings": {
+    "title": "Pot-Einstellungen",
+    "potRules": "Pot-Regeln",
+    "potName": "Pot-Name",
+    "icon": "Symbol",
+    "targetAmount": "Zielbetrag",
+    "receiptVerification": "Belegprüfung",
+    "enabled": "Aktiviert",
+    "disabled": "Deaktiviert",
+    "receiptDesc": "Mitglieder müssen nach einer Auszahlung einen Beleg hochladen",
+    "maxWithdrawal": "Max. Auszahlung pro Anfrage",
+    "noLimit": "Kein Limit",
+    "noTarget": "Kein Ziel",
+    "contributions": "Einzahlungen",
+    "restrictContributions": "Einzahlungen einschränken",
+    "allMembers": "Alle Mitglieder können einzahlen",
+    "leadersAndCreator": "Nur Leader und Ersteller",
+    "leaders": "Leader",
+    "manageLeadersHint": "Leader im Mitglieder-Tab verwalten",
+    "createdOn": "Erstellt am",
+    "saveChanges": "Änderungen speichern",
+    "saving": "Speichern…",
+    "updated": "Pot-Einstellungen aktualisiert ✅",
+    "receiptWarningTitle": "Belegprüfung deaktivieren?",
+    "receiptWarningDesc": "Wenn Sie die Belegprüfung deaktivieren, müssen Mitglieder ihre Auszahlungen nicht mehr begründen. Sind Sie sicher?",
+    "turnOff": "Deaktivieren"
   }
 }
