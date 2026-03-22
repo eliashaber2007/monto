@@ -34,7 +34,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
   const [potName, setPotName] = useState("");
   const [currency, setCurrency] = useState("EUR");
   const [goalAmount, setGoalAmount] = useState("");
-  const [withdrawalRule, setWithdrawalRule] = useState<WithdrawalRule>("auto_approve");
+  const [withdrawalRule, setWithdrawalRule] = useState<WithdrawalRule | "">("")
   const [withdrawalPassword, setWithdrawalPassword] = useState("");
   const [creating, setCreating] = useState(false);
   const [initialDeposit, setInitialDeposit] = useState("");
