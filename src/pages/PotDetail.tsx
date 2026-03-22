@@ -463,6 +463,67 @@ export default function PotDetail() {
     } catch (err: any) { toast({ title: t('common.error'), description: err.message, variant: 'destructive' }); } finally { setAssigningLeader(null); }
   };
 
+  const handleRemoveMember = async (member: any) => {
+    const memberProfile = (member as any)?.profiles;
+    const memberName = memberProfile?.first_name || 'Member';
+
+    if (member.role === 'leader') {
+      toast({ title: t('potDetail.demoteFirst'), variant: 'destructive' });
+      return;
+    }
+
+    setRemovingMember(member.id);
+    try {
+      // Cancel pending withdrawals
+      const { data: pendingW } = await supabase
+        .from('withdrawals')
+        .select('id')
+        .eq('pot_id', id!)
+        .eq('user_id', member.user_id)
+        .eq('status', 'pending');
+
+      if (pendingW && pendingW.length > 0) {
+        for (const w of pendingW) {
+          await supabase.from('withdrawals').update({ status: 'rejected', processed_at: new Date().toISOString() }).eq('id', w.id);
+        }
+      }
+
+      // Remove from pot_members
+      const { error } = await supabase.from('pot_members').delete().eq('id', member.id);
+      if (error) throw error;
+
+      // Send notification via DB function (bypasses RLS)
+      await supabase.rpc('notify_member_removed' as any, {
+        p_user_id: member.user_id,
+        p_pot_id: id!,
+        p_pot_name: data?.pot?.name || 'the pot',
+      });
+
+      // Send push notification
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-push-notification`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${sessionData?.session?.access_token}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+          body: JSON.stringify({
+            user_id: member.user_id,
+            title: 'Monto',
+            body: `You have been removed from ${data?.pot?.name || 'a pot'} by the creator.`,
+            url: '/',
+          }),
+        });
+      } catch (e) { console.error('Push notification failed:', e); }
+
+      toast({ title: t('potDetail.memberRemoved', { name: memberName }) });
+      setRemoveMemberConfirm(null);
+      refetch();
+    } catch (err: any) {
+      toast({ title: t('common.error'), description: err.message, variant: 'destructive' });
+    } finally {
+      setRemovingMember(null);
+    }
+  };
+
   const handleRemoveLeader = async (member: any) => {
     setAssigningLeader(member.id);
     try {
