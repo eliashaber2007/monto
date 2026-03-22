@@ -195,7 +195,14 @@
     "leaderAssigned": "{{name}} est maintenant responsable de cette cagnotte.",
     "leaderRemoved": "{{name}} n'est plus responsable.",
     "receiptApproved": "Approuvé",
-    "receiptRejected": "Rejeté"
+    "receiptRejected": "Rejeté",
+    "removeMember": "Retirer de la cagnotte",
+    "removingMember": "Suppression…",
+    "removeMemberConfirmTitle": "Retirer ce membre ?",
+    "removeMemberConfirmDesc": "Êtes-vous sûr de vouloir retirer {{name}} de cette cagnotte ? Ses demandes en attente seront annulées. Cette action est irréversible.",
+    "memberRemoved": "{{name}} a été retiré de la cagnotte.",
+    "demoteFirst": "Rétrogradez ce membre au rôle de Membre avant de le retirer.",
+    "removedFromPot": "Vous avez été retiré de cette cagnotte."
   },
   "createPot": {
     "setupPot": "Créez votre cagnotte ✨",
@@ -365,7 +372,8 @@
     "msg_expense_reminder": "{{pot}} : {{name}} vous demande de justifier votre retrait de € {{amount}}. Veuillez ajouter vos dépenses et reçus.",
     "msg_leader_assigned": "Vous avez été nommé responsable de {{pot}} par {{name}}.",
     "msg_leader_removed": "Vous n'êtes plus responsable de {{pot}}.",
-    "msg_mention": "{{name}} vous a mentionné dans {{pot}}"
+    "msg_mention": "{{name}} vous a mentionné dans {{pot}}",
+    "msg_member_removed": "Vous avez été retiré de {{pot}} par le créateur."
   },
   "archive": {
     "title": "Archives 📦",

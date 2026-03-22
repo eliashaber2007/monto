@@ -195,7 +195,14 @@
     "leaderAssigned": "{{name}} is now a leader of this pot.",
     "leaderRemoved": "{{name}} is no longer a leader.",
     "receiptApproved": "Approved",
-    "receiptRejected": "Rejected"
+    "receiptRejected": "Rejected",
+    "removeMember": "Remove from pot",
+    "removingMember": "Removing…",
+    "removeMemberConfirmTitle": "Remove member?",
+    "removeMemberConfirmDesc": "Are you sure you want to remove {{name}} from this pot? Their pending requests will be cancelled. This cannot be undone.",
+    "memberRemoved": "{{name}} has been removed from the pot.",
+    "demoteFirst": "Demote this member to Member role before removing them.",
+    "removedFromPot": "You have been removed from this pot."
   },
   "createPot": {
     "setupPot": "Set up your pot ✨",
@@ -365,7 +372,8 @@
     "msg_expense_reminder": "{{pot}}: {{name}} is requesting you to justify your withdrawal of € {{amount}}. Please add your expenses and receipts.",
     "msg_leader_assigned": "You've been made a leader of {{pot}} by {{name}}.",
     "msg_leader_removed": "You are no longer a leader of {{pot}}.",
-    "msg_mention": "{{name}} mentioned you in {{pot}}"
+    "msg_mention": "{{name}} mentioned you in {{pot}}",
+    "msg_member_removed": "You have been removed from {{pot}} by the creator."
   },
   "archive": {
     "title": "Pot Archive 📦",

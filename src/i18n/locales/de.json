@@ -195,7 +195,14 @@
     "leaderAssigned": "{{name}} ist jetzt Leiter dieser Kasse.",
     "leaderRemoved": "{{name}} ist kein Leiter mehr.",
     "receiptApproved": "Genehmigt",
-    "receiptRejected": "Abgelehnt"
+    "receiptRejected": "Abgelehnt",
+    "removeMember": "Aus der Kasse entfernen",
+    "removingMember": "Entfernen…",
+    "removeMemberConfirmTitle": "Mitglied entfernen?",
+    "removeMemberConfirmDesc": "Möchten Sie {{name}} wirklich aus dieser Kasse entfernen? Ausstehende Anträge werden storniert. Dies kann nicht rückgängig gemacht werden.",
+    "memberRemoved": "{{name}} wurde aus der Kasse entfernt.",
+    "demoteFirst": "Stufen Sie dieses Mitglied zuerst zum Mitglied herunter, bevor Sie es entfernen.",
+    "removedFromPot": "Sie wurden aus dieser Kasse entfernt."
   },
   "createPot": {
     "setupPot": "Kasse einrichten ✨",
@@ -365,7 +372,8 @@
     "msg_expense_reminder": "{{pot}}: {{name}} bittet Sie, Ihre Auszahlung von € {{amount}} zu begründen. Bitte fügen Sie Ihre Ausgaben und Belege hinzu.",
     "msg_leader_assigned": "Sie wurden von {{name}} zum Leiter von {{pot}} ernannt.",
     "msg_leader_removed": "Sie sind kein Leiter von {{pot}} mehr.",
-    "msg_mention": "{{name}} hat Sie in {{pot}} erwähnt"
+    "msg_mention": "{{name}} hat Sie in {{pot}} erwähnt",
+    "msg_member_removed": "Sie wurden vom Ersteller aus {{pot}} entfernt."
   },
   "archive": {
     "title": "Kassenarchiv 📦",

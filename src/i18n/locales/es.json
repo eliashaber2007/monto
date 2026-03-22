@@ -195,7 +195,14 @@
     "leaderAssigned": "{{name}} ahora es líder de este bote.",
     "leaderRemoved": "{{name}} ya no es líder.",
     "receiptApproved": "Aprobado",
-    "receiptRejected": "Rechazado"
+    "receiptRejected": "Rechazado",
+    "removeMember": "Eliminar del bote",
+    "removingMember": "Eliminando…",
+    "removeMemberConfirmTitle": "¿Eliminar miembro?",
+    "removeMemberConfirmDesc": "¿Estás seguro de que quieres eliminar a {{name}} de este bote? Sus solicitudes pendientes serán canceladas. Esta acción no se puede deshacer.",
+    "memberRemoved": "{{name}} ha sido eliminado del bote.",
+    "demoteFirst": "Degrada a este miembro al rol de Miembro antes de eliminarlo.",
+    "removedFromPot": "Has sido eliminado de este bote."
   },
   "createPot": {
     "setupPot": "Configura tu bote ✨",
@@ -365,7 +372,8 @@
     "msg_expense_reminder": "{{pot}}: {{name}} te pide que justifiques tu retiro de € {{amount}}. Por favor agrega tus gastos y comprobantes.",
     "msg_leader_assigned": "Has sido nombrado líder de {{pot}} por {{name}}.",
     "msg_leader_removed": "Ya no eres líder de {{pot}}.",
-    "msg_mention": "{{name}} te mencionó en {{pot}}"
+    "msg_mention": "{{name}} te mencionó en {{pot}}",
+    "msg_member_removed": "Has sido eliminado de {{pot}} por el creador."
   },
   "archive": {
     "title": "Archivo de botes 📦",
