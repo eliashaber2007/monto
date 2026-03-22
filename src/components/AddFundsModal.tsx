@@ -28,7 +28,6 @@ export default function AddFundsModal({
   potId,
   potName,
   currency,
-  restricted,
 }: AddFundsModalProps) {
   const { t } = useTranslation();
   const [selected, setSelected] = useState<number | null>(null);
