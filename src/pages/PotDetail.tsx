@@ -302,6 +302,10 @@ export default function PotDetail() {
         }
         refetch();
       })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'pot_members', filter: `pot_id=eq.${id}` }, (payload) => {
+        console.log('[Realtime] Member role changed:', payload);
+        refetch();
+      })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [id, user, refetch, fetchWithdrawals, navigate, toast, t]);
