@@ -240,7 +240,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
                 <p className="text-xs text-muted-foreground">e.g. set to 3 to allow a maximum of 3 withdrawal requests per day</p>
               </div>
 
-              <Button className="w-full h-11 rounded-xl" disabled={withdrawalRule === "requires_password" && !withdrawalPassword.trim()} onClick={() => setStep(3)}>{t('common.next')}</Button>
+              <Button className="w-full h-11 rounded-xl" disabled={!withdrawalRule || (withdrawalRule === "requires_password" && !withdrawalPassword.trim())} onClick={() => setStep(3)}>{t('common.next')}</Button>
             </div>
           )}
 
