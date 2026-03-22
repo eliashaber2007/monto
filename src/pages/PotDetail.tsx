@@ -698,25 +698,29 @@ export default function PotDetail() {
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <button
               onClick={() => setShowChat(true)}
-              className="relative flex items-center gap-1.5 text-xs text-primary font-semibold border border-primary/30 rounded-full px-3 py-1.5 hover:bg-accent transition-colors"
+              className="relative flex items-center gap-1 text-xs text-primary font-semibold border border-primary/30 rounded-full px-2.5 py-1.5 hover:bg-accent transition-colors"
             >
               <MessageCircle size={13} />
-              {t('potDetail.chat')}
               {unreadChatCount > 0 && (
-                <span className="min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1 ml-0.5">
+                <span className="min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1">
                   {unreadChatCount > 99 ? '99+' : unreadChatCount}
                 </span>
               )}
             </button>
             <button
               onClick={() => setShowInviteModal(true)}
-              className="flex items-center gap-1.5 text-xs text-primary font-semibold border border-primary/30 rounded-full px-3 py-1.5 hover:bg-accent transition-colors"
+              className="flex items-center justify-center text-xs text-primary font-semibold border border-primary/30 rounded-full w-8 h-8 hover:bg-accent transition-colors"
             >
               <Users size={13} />
-              {t('potDetail.invite')}
+            </button>
+            <button
+              onClick={() => setShowSettings(true)}
+              className="flex items-center justify-center text-xs text-primary font-semibold border border-primary/30 rounded-full w-8 h-8 hover:bg-accent transition-colors"
+            >
+              <Settings size={14} />
             </button>
           </div>
         </div>
