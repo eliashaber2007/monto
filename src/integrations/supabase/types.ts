@@ -516,6 +516,10 @@ export type Database = {
         Args: { p_pot_id: string; p_user_id: string }
         Returns: boolean
       }
+      notify_member_removed: {
+        Args: { p_pot_id: string; p_pot_name: string; p_user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
