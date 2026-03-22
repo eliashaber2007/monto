@@ -302,6 +302,10 @@ export default function PotDetail() {
         }
         refetch();
       })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'pot_members', filter: `pot_id=eq.${id}` }, (payload) => {
+        console.log('[Realtime] Member role changed:', payload);
+        refetch();
+      })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [id, user, refetch, fetchWithdrawals, navigate, toast, t]);
@@ -743,18 +747,14 @@ export default function PotDetail() {
 
         {/* Action row */}
         <div className="flex gap-3">
-          <Button variant="outline" className="flex-1 h-12 rounded-xl font-semibold border-primary text-primary hover:bg-primary/10" onClick={() => setShowWithdrawal(true)}>
+          <Button variant="outline" className={`h-12 rounded-xl font-semibold border-primary text-primary hover:bg-primary/10 ${(pot as any).contributions_restricted && !isCreatorOrLeader ? 'w-full' : 'flex-1'}`} onClick={() => setShowWithdrawal(true)}>
             {t('potDetail.requestWithdrawal')}
           </Button>
-          {(!(pot as any).contributions_restricted || isCreatorOrLeader) ? (
+          {(!(pot as any).contributions_restricted || isCreatorOrLeader) && (
             <Button variant="secondary" className="flex-1 h-12 rounded-xl font-semibold bg-muted text-foreground hover:bg-muted/80" onClick={() => setShowAddFunds(true)}>
               <Plus size={16} className="mr-1" />
               {t('potDetail.addFunds')}
             </Button>
-          ) : (
-            <div className="flex-1 h-12 rounded-xl bg-muted/50 flex items-center justify-center text-xs text-muted-foreground text-center px-2">
-              {t('potDetail.contributionsRestricted')}
-            </div>
           )}
         </div>
 

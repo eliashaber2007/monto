@@ -263,7 +263,9 @@
     "processingFee": "Incluye {{fee}} de tarifa de Stripe",
     "totalCharged": "Se te cobrará: {{total}}",
     "payWithStripe": "Pagar con Stripe",
-    "redirecting": "Redirigiendo…"
+    "redirecting": "Redirigiendo…",
+    "restricted": "Restringido",
+    "restrictedDesc": "Solo el creador y los líderes pueden agregar fondos a este bote."
   },
   "withdrawalModal": {
     "title": "Solicitar retiro",

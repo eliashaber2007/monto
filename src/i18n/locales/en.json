@@ -264,7 +264,9 @@
     "processingFee": "Includes {{fee}} Stripe processing fee",
     "totalCharged": "You'll be charged: {{total}}",
     "payWithStripe": "Pay with Stripe",
-    "redirecting": "Redirecting…"
+    "redirecting": "Redirecting…",
+    "restricted": "Restricted",
+    "restrictedDesc": "Only the creator and leaders can add funds to this pot."
   },
   "withdrawalModal": {
     "title": "Request Withdrawal",

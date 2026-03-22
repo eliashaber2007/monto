@@ -263,7 +263,9 @@
     "processingFee": "Inclut {{fee}} de frais Stripe",
     "totalCharged": "Vous serez débité : {{total}}",
     "payWithStripe": "Payer avec Stripe",
-    "redirecting": "Redirection…"
+    "redirecting": "Redirection…",
+    "restricted": "Restreint",
+    "restrictedDesc": "Seuls le créateur et les leaders peuvent ajouter des fonds à cette cagnotte."
   },
   "withdrawalModal": {
     "title": "Demander un retrait",
