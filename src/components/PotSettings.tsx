@@ -49,7 +49,6 @@ export default function PotSettings({ open, onOpenChange, pot, members, isCreato
   const [withdrawalRule, setWithdrawalRule] = useState<WithdrawalRule>(pot.withdrawal_rule || 'auto_approve');
   const [withdrawalPassword, setWithdrawalPassword] = useState(pot.withdrawal_password || '');
   const [saving, setSaving] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [showReceiptWarning, setShowReceiptWarning] = useState(false);
   const [pendingReceiptValue, setPendingReceiptValue] = useState(false);
 
