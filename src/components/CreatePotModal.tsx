@@ -246,7 +246,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
           {/* Step 3: Receipt & Verification */}
           {step === 3 && (
             <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">These settings help you keep track of how funds are spent.</p>
+              <p className="text-sm text-muted-foreground">{t('createPot.receiptVerificationDesc')}</p>
 
               <div className="flex items-center justify-between p-3.5 rounded-xl border border-border bg-card">
                 <div>
