@@ -159,7 +159,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
               <DialogTitle className="text-base">
                 {step === 1 && t('createPot.setupPot')}
                 {step === 2 && t('createPot.withdrawalRules')}
-                {step === 3 && "Receipt & Verification"}
+                {step === 3 && t('createPot.receiptVerification')}
                 {step === 4 && t('createPot.initialDeposit')}
               </DialogTitle>
               {step <= 3 && <span className="ml-auto text-xs text-muted-foreground font-medium">{step}/{totalSteps}</span>}
@@ -190,7 +190,6 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
                   <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground font-medium text-sm select-none">{currencySymbol}</span>
                   <Input id="goalAmount" type="number" min="0" step="0.01" placeholder="e.g. 1000" value={goalAmount} onChange={(e) => setGoalAmount(e.target.value)} className="h-11 pl-9" />
                 </div>
-                <p className="text-xs text-muted-foreground">{t('createPot.potAmountHint')}</p>
               </div>
               <div className="space-y-1.5">
                 <Label>{t('createPot.addIcon')}</Label>
@@ -200,7 +199,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
                   ))}
                 </div>
               </div>
-              <Button className="w-full h-11 rounded-xl" disabled={!potName.trim()} onClick={() => setStep(2)}>{t('common.next')}</Button>
+              <Button className="w-full h-11 rounded-xl" disabled={!potName.trim() || !goalAmount || parseFloat(goalAmount) <= 0} onClick={() => setStep(2)}>{t('common.next')}</Button>
             </div>
           )}
 
@@ -235,9 +234,9 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="maxWdDay">Max withdrawals per day (number of times)</Label>
+                <Label htmlFor="maxWdDay">{t('createPot.maxWithdrawalsPerDay')}</Label>
                 <Input id="maxWdDay" type="number" min="1" step="1" placeholder={t('createPot.noLimit')} value={maxWithdrawalsPerDay} onChange={(e) => setMaxWithdrawalsPerDay(e.target.value)} className="h-11" />
-                <p className="text-xs text-muted-foreground">e.g. set to 3 to allow a maximum of 3 withdrawal requests per day</p>
+                <p className="text-xs text-muted-foreground">{t('createPot.maxWithdrawalsPerDayHint')}</p>
               </div>
 
               <Button className="w-full h-11 rounded-xl" disabled={!withdrawalRule || (withdrawalRule === "requires_password" && !withdrawalPassword.trim())} onClick={() => setStep(3)}>{t('common.next')}</Button>
@@ -247,7 +246,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
           {/* Step 3: Receipt & Verification */}
           {step === 3 && (
             <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">These settings help you keep track of how funds are spent.</p>
+              <p className="text-sm text-muted-foreground">{t('createPot.receiptVerificationDesc')}</p>
 
               <div className="flex items-center justify-between p-3.5 rounded-xl border border-border bg-card">
                 <div>
@@ -260,18 +259,18 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
               </div>
 
               <div className="space-y-2">
-                <Label>Who can add funds to this pot?</Label>
+                <Label>{t('createPot.whoCanAddFunds')}</Label>
                 <button type="button" onClick={() => setContributionsRestricted(false)} className={`w-full flex items-center gap-3 p-3.5 rounded-xl border transition-all text-left ${!contributionsRestricted ? "border-primary bg-accent shadow-sm" : "border-border bg-card hover:border-primary/40"}`}>
                   <div>
-                    <div className="text-sm font-semibold text-foreground">Anyone</div>
-                    <div className="text-xs text-muted-foreground">All members can contribute</div>
+                    <div className="text-sm font-semibold text-foreground">{t('createPot.anyone')}</div>
+                    <div className="text-xs text-muted-foreground">{t('createPot.anyoneDesc')}</div>
                   </div>
                   {!contributionsRestricted && (<div className="ml-auto w-5 h-5 rounded-full bg-primary flex items-center justify-center flex-shrink-0"><div className="w-2 h-2 rounded-full bg-white" /></div>)}
                 </button>
                 <button type="button" onClick={() => setContributionsRestricted(true)} className={`w-full flex items-center gap-3 p-3.5 rounded-xl border transition-all text-left ${contributionsRestricted ? "border-primary bg-accent shadow-sm" : "border-border bg-card hover:border-primary/40"}`}>
                   <div>
-                    <div className="text-sm font-semibold text-foreground">Leaders only</div>
-                    <div className="text-xs text-muted-foreground">Only you and your leaders can add funds</div>
+                    <div className="text-sm font-semibold text-foreground">{t('createPot.leadersOnly')}</div>
+                    <div className="text-xs text-muted-foreground">{t('createPot.leadersOnlyDesc')}</div>
                   </div>
                   {contributionsRestricted && (<div className="ml-auto w-5 h-5 rounded-full bg-primary flex items-center justify-center flex-shrink-0"><div className="w-2 h-2 rounded-full bg-white" /></div>)}
                 </button>
