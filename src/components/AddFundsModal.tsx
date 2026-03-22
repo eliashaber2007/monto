@@ -20,7 +20,6 @@ interface AddFundsModalProps {
   potId: string;
   potName: string;
   currency: string;
-  restricted?: boolean;
 }
 
 export default function AddFundsModal({
