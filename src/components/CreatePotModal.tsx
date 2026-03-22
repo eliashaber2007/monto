@@ -43,7 +43,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
   const [maxWithdrawalAmount, setMaxWithdrawalAmount] = useState("");
   const [maxWithdrawalsPerDay, setMaxWithdrawalsPerDay] = useState("");
   const [selectedEmoji, setSelectedEmoji] = useState<string | null>(null);
-  const [contributionsRestricted, setContributionsRestricted] = useState(false);
+  
 
   const POT_EMOJIS = [
     "💰", "🏖️", "🎉", "🎁", "✈️", "🏠", "🚗", "🎓", "💍", "🍕",
