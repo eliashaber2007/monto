@@ -258,23 +258,6 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
                 </button>
               </div>
 
-              <div className="space-y-2">
-                <Label>{t('createPot.whoCanAddFunds')}</Label>
-                <button type="button" onClick={() => setContributionsRestricted(false)} className={`w-full flex items-center gap-3 p-3.5 rounded-xl border transition-all text-left ${!contributionsRestricted ? "border-primary bg-accent shadow-sm" : "border-border bg-card hover:border-primary/40"}`}>
-                  <div>
-                    <div className="text-sm font-semibold text-foreground">{t('createPot.anyone')}</div>
-                    <div className="text-xs text-muted-foreground">{t('createPot.anyoneDesc')}</div>
-                  </div>
-                  {!contributionsRestricted && (<div className="ml-auto w-5 h-5 rounded-full bg-primary flex items-center justify-center flex-shrink-0"><div className="w-2 h-2 rounded-full bg-white" /></div>)}
-                </button>
-                <button type="button" onClick={() => setContributionsRestricted(true)} className={`w-full flex items-center gap-3 p-3.5 rounded-xl border transition-all text-left ${contributionsRestricted ? "border-primary bg-accent shadow-sm" : "border-border bg-card hover:border-primary/40"}`}>
-                  <div>
-                    <div className="text-sm font-semibold text-foreground">{t('createPot.leadersOnly')}</div>
-                    <div className="text-xs text-muted-foreground">{t('createPot.leadersOnlyDesc')}</div>
-                  </div>
-                  {contributionsRestricted && (<div className="ml-auto w-5 h-5 rounded-full bg-primary flex items-center justify-center flex-shrink-0"><div className="w-2 h-2 rounded-full bg-white" /></div>)}
-                </button>
-              </div>
 
               <Button className="w-full h-11 rounded-xl" onClick={handleCreate} disabled={creating}>
                 {creating ? t('createPot.creating') : t('createPot.createPot')}

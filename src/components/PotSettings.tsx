@@ -299,16 +299,6 @@ export default function PotSettings({ open, onOpenChange, pot, members, isCreato
               />
             </div>
 
-            {/* Contribution restrictions */}
-            <div className="flex items-center justify-between">
-              <div>
-                <Label className="text-sm font-medium">{t('potSettings.restrictContributions')}</Label>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {contributionsRestricted ? t('potSettings.leadersAndCreator') : t('potSettings.allMembers')}
-                </p>
-              </div>
-              <Switch checked={contributionsRestricted} onCheckedChange={setContributionsRestricted} />
-            </div>
 
             {/* Leaders list */}
             {leaders.length > 0 && (
