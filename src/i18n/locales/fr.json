@@ -195,7 +195,14 @@
     "leaderAssigned": "{{name}} est maintenant responsable de cette cagnotte.",
     "leaderRemoved": "{{name}} n'est plus responsable.",
     "receiptApproved": "Approuvé",
-    "receiptRejected": "Rejeté"
+    "receiptRejected": "Rejeté",
+    "removeMember": "Retirer de la cagnotte",
+    "removingMember": "Suppression…",
+    "removeMemberConfirmTitle": "Retirer ce membre ?",
+    "removeMemberConfirmDesc": "Êtes-vous sûr de vouloir retirer {{name}} de cette cagnotte ? Ses demandes en attente seront annulées. Cette action est irréversible.",
+    "memberRemoved": "{{name}} a été retiré de la cagnotte.",
+    "demoteFirst": "Rétrogradez ce membre au rôle de Membre avant de le retirer.",
+    "removedFromPot": "Vous avez été retiré de cette cagnotte."
   },
   "createPot": {
     "setupPot": "Créez votre cagnotte ✨",
