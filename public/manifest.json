@@ -1,0 +1,17 @@
+{
+  "name": "Monto",
+  "short_name": "Monto",
+  "description": "The simplest way to manage money with your group.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0A0C18",
+  "theme_color": "#2563EB",
+  "icons": [
+    {
+      "src": "/monto_logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
