@@ -234,9 +234,9 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="maxWdDay">Max withdrawals per day (number of times)</Label>
+                <Label htmlFor="maxWdDay">{t('createPot.maxWithdrawalsPerDay')}</Label>
                 <Input id="maxWdDay" type="number" min="1" step="1" placeholder={t('createPot.noLimit')} value={maxWithdrawalsPerDay} onChange={(e) => setMaxWithdrawalsPerDay(e.target.value)} className="h-11" />
-                <p className="text-xs text-muted-foreground">e.g. set to 3 to allow a maximum of 3 withdrawal requests per day</p>
+                <p className="text-xs text-muted-foreground">{t('createPot.maxWithdrawalsPerDayHint')}</p>
               </div>
 
               <Button className="w-full h-11 rounded-xl" disabled={!withdrawalRule || (withdrawalRule === "requires_password" && !withdrawalPassword.trim())} onClick={() => setStep(3)}>{t('common.next')}</Button>
