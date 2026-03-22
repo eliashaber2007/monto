@@ -372,7 +372,8 @@
     "msg_expense_reminder": "{{pot}}: {{name}} is requesting you to justify your withdrawal of € {{amount}}. Please add your expenses and receipts.",
     "msg_leader_assigned": "You've been made a leader of {{pot}} by {{name}}.",
     "msg_leader_removed": "You are no longer a leader of {{pot}}.",
-    "msg_mention": "{{name}} mentioned you in {{pot}}"
+    "msg_mention": "{{name}} mentioned you in {{pot}}",
+    "msg_member_removed": "You have been removed from {{pot}} by the creator."
   },
   "archive": {
     "title": "Pot Archive 📦",

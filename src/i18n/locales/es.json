@@ -372,7 +372,8 @@
     "msg_expense_reminder": "{{pot}}: {{name}} te pide que justifiques tu retiro de € {{amount}}. Por favor agrega tus gastos y comprobantes.",
     "msg_leader_assigned": "Has sido nombrado líder de {{pot}} por {{name}}.",
     "msg_leader_removed": "Ya no eres líder de {{pot}}.",
-    "msg_mention": "{{name}} te mencionó en {{pot}}"
+    "msg_mention": "{{name}} te mencionó en {{pot}}",
+    "msg_member_removed": "Has sido eliminado de {{pot}} por el creador."
   },
   "archive": {
     "title": "Archivo de botes 📦",
