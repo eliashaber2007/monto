@@ -1373,6 +1373,28 @@ export default function PotDetail() {
         </DialogContent>
       </Dialog>
 
+      {/* Remove Member Confirmation */}
+      <AlertDialog open={!!removeMemberConfirm} onOpenChange={(v) => { if (!v) setRemoveMemberConfirm(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('potDetail.removeMemberConfirmTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('potDetail.removeMemberConfirmDesc', { name: (removeMemberConfirm as any)?.profiles?.first_name || 'this member' })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => removeMemberConfirm && handleRemoveMember(removeMemberConfirm)}
+              disabled={!!removingMember}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {removingMember ? t('potDetail.removingMember') : t('potDetail.removeMember')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Modals */}
       <WithdrawalModal
         open={showWithdrawal}
