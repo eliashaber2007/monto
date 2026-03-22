@@ -96,14 +96,15 @@ export default function WithdrawalModal({
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
       const isCreator = user.id === createdBy;
-      // Auto-payout for auto_approve, requires_password, or ONLY the creator in requires_approval
-      // Leaders must NOT self-approve — their requests go through the normal approval flow
+
+      // Auto-payout for: auto_approve (no security), requires_password (password already validated above),
+      // or creator on requires_approval pots
+      // Leaders must NOT self-approve on requires_approval pots
       const shouldAutoPayout = withdrawalRule === 'auto_approve' || withdrawalRule === 'requires_password' || (withdrawalRule === 'requires_approval' && isCreator);
 
       console.log('[Withdrawal] Rule:', withdrawalRule, 'isCreator:', isCreator, 'shouldAutoPayout:', shouldAutoPayout, 'amount:', numAmount);
 
       if (shouldAutoPayout) {
-        // Insert withdrawal record first, then call payout with its ID
         console.log('[Withdrawal] Auto-payout: inserting withdrawal record first');
         const { data: wData, error: wErr } = await supabase.from('withdrawals').insert({ pot_id: potId, user_id: user.id, amount: numAmount, note: note.trim(), status: 'pending' }).select('id').single();
         if (wErr) throw wErr;
@@ -122,18 +123,14 @@ export default function WithdrawalModal({
         console.log('[Withdrawal] Auto-payout response:', result);
         if (!response.ok) throw new Error(result.error || 'Payout failed');
 
-        // create-payout marks the withdrawal as approved and sets total_deducted
         toast({ title: t('withdrawalModal.withdrawalApproved') });
       } else {
-        // requires_approval and user is NOT creator — insert pending, no balance deduction
+        // requires_approval and user is NOT creator — insert pending
         console.log('[Withdrawal] Pending approval: inserting pending withdrawal');
         const { error: wErr } = await supabase.from('withdrawals').insert({ pot_id: potId, user_id: user.id, amount: numAmount, note: note.trim(), status: 'pending' });
         if (wErr) throw wErr;
-        console.log('[Withdrawal] Pending withdrawal inserted, notification trigger should fire');
 
-        // Also send email notification to creator (belt-and-suspenders)
         try {
-          console.log('[Withdrawal] Sending email notification to creator');
           await fetch(
             `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email-notification`,
             {
@@ -142,7 +139,6 @@ export default function WithdrawalModal({
               body: JSON.stringify({ type: 'withdrawal_requested', pot_id: potId, user_id: user.id, amount: numAmount, currency }),
             }
           );
-          console.log('[Withdrawal] Email notification sent');
         } catch (emailErr) {
           console.error('[Withdrawal] Email notification failed:', emailErr);
         }

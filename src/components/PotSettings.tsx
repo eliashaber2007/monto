@@ -26,6 +26,8 @@ const POT_EMOJIS = [
   "🍻", "☕", "📚", "🛍️", "🎬", "🏔️",
 ];
 
+type WithdrawalRule = 'auto_approve' | 'requires_approval' | 'requires_password';
+
 interface PotSettingsProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -40,13 +42,13 @@ export default function PotSettings({ open, onOpenChange, pot, members, isCreato
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Editable state (creator only)
   const [name, setName] = useState(pot.name);
   const [emoji, setEmoji] = useState(pot.emoji || '');
-  const [goalAmount, setGoalAmount] = useState(pot.goal_amount?.toString() || '');
   const [requireReceipt, setRequireReceipt] = useState(pot.require_receipt);
   const [maxWithdrawalAmount, setMaxWithdrawalAmount] = useState(pot.max_withdrawal_amount?.toString() || '');
   const [contributionsRestricted, setContributionsRestricted] = useState(pot.contributions_restricted);
+  const [withdrawalRule, setWithdrawalRule] = useState<WithdrawalRule>(pot.withdrawal_rule || 'auto_approve');
+  const [withdrawalPassword, setWithdrawalPassword] = useState(pot.withdrawal_password || '');
   const [saving, setSaving] = useState(false);
   const [showReceiptWarning, setShowReceiptWarning] = useState(false);
   const [pendingReceiptValue, setPendingReceiptValue] = useState(false);
@@ -54,9 +56,14 @@ export default function PotSettings({ open, onOpenChange, pot, members, isCreato
   const leaders = members.filter(m => m.role === 'leader');
   const currency = pot.currency ?? 'EUR';
 
+  const WITHDRAWAL_RULES: { id: WithdrawalRule; label: string; desc: string }[] = [
+    { id: 'requires_approval', label: t('potSettings.securityApproval'), desc: t('potSettings.securityApprovalDesc') },
+    { id: 'requires_password', label: t('potSettings.securityPassword'), desc: t('potSettings.securityPasswordDesc') },
+    { id: 'auto_approve', label: t('potSettings.securityNone'), desc: t('potSettings.securityNoneDesc') },
+  ];
+
   const handleReceiptToggle = (checked: boolean) => {
     if (!checked && pot.require_receipt) {
-      // Turning off — show confirmation
       setPendingReceiptValue(false);
       setShowReceiptWarning(true);
     } else {
@@ -70,10 +77,11 @@ export default function PotSettings({ open, onOpenChange, pot, members, isCreato
       const updates: any = {
         name: name.trim(),
         emoji: emoji || null,
-        goal_amount: goalAmount ? parseFloat(goalAmount) : null,
         require_receipt: requireReceipt,
         max_withdrawal_amount: maxWithdrawalAmount ? parseFloat(maxWithdrawalAmount) : null,
         contributions_restricted: contributionsRestricted,
+        withdrawal_rule: withdrawalRule,
+        withdrawal_password: withdrawalRule === 'requires_password' ? withdrawalPassword : null,
       };
 
       const { error } = await supabase
@@ -109,13 +117,22 @@ export default function PotSettings({ open, onOpenChange, pot, members, isCreato
             <SheetTitle>{t('potSettings.potRules')}</SheetTitle>
           </SheetHeader>
           <div className="space-y-5 pb-6">
-            {/* Pot name & emoji */}
             <div className="flex items-center gap-3">
               {pot.emoji && <span className="text-2xl">{pot.emoji}</span>}
               <span className="text-lg font-bold text-foreground">{pot.name}</span>
             </div>
 
-            {/* Target amount */}
+            {/* Withdrawal security */}
+            <div>
+              <Label className="text-xs text-muted-foreground">{t('potSettings.withdrawalSecurity')}</Label>
+              <p className="text-sm font-semibold text-foreground mt-0.5">
+                {pot.withdrawal_rule === 'requires_approval' && t('potSettings.securityReadOnlyApproval')}
+                {pot.withdrawal_rule === 'requires_password' && t('potSettings.securityReadOnlyPassword')}
+                {pot.withdrawal_rule === 'auto_approve' && t('potSettings.securityReadOnlyNone')}
+              </p>
+            </div>
+
+            {/* Target amount (read-only, still shown) */}
             {pot.goal_amount && (
               <div>
                 <Label className="text-xs text-muted-foreground">{t('potSettings.targetAmount')}</Label>
@@ -190,11 +207,7 @@ export default function PotSettings({ open, onOpenChange, pot, members, isCreato
             {/* Pot name */}
             <div>
               <Label className="text-xs text-muted-foreground">{t('potSettings.potName')}</Label>
-              <Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="mt-1"
-              />
+              <Input value={name} onChange={(e) => setName(e.target.value)} className="mt-1" />
             </div>
 
             {/* Emoji picker */}
@@ -223,16 +236,44 @@ export default function PotSettings({ open, onOpenChange, pot, members, isCreato
               </div>
             </div>
 
-            {/* Target amount */}
+            {/* Withdrawal Security */}
             <div>
-              <Label className="text-xs text-muted-foreground">{t('potSettings.targetAmount')}</Label>
-              <Input
-                type="number"
-                value={goalAmount}
-                onChange={(e) => setGoalAmount(e.target.value)}
-                placeholder={t('potSettings.noTarget')}
-                className="mt-1"
-              />
+              <Label className="text-xs text-muted-foreground">{t('potSettings.withdrawalSecurity')}</Label>
+              <div className="space-y-2 mt-1.5">
+                {WITHDRAWAL_RULES.map(({ id, label, desc }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setWithdrawalRule(id)}
+                    className={`w-full flex items-center gap-3 p-3.5 rounded-xl border transition-all text-left ${
+                      withdrawalRule === id ? 'border-primary bg-accent shadow-sm' : 'border-border bg-card hover:border-primary/40'
+                    }`}
+                  >
+                    <div>
+                      <div className="text-sm font-semibold text-foreground">{label}</div>
+                      <div className="text-xs text-muted-foreground">{desc}</div>
+                    </div>
+                    {withdrawalRule === id && (
+                      <div className="ml-auto w-5 h-5 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                        <div className="w-2 h-2 rounded-full bg-white" />
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              {withdrawalRule === 'requires_password' && (
+                <div className="mt-3">
+                  <Label className="text-xs text-muted-foreground">{t('potSettings.potPassword')}</Label>
+                  <Input
+                    type="password"
+                    value={withdrawalPassword}
+                    onChange={(e) => setWithdrawalPassword(e.target.value)}
+                    placeholder={t('potSettings.potPasswordPlaceholder')}
+                    className="mt-1"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Receipt verification */}
@@ -267,7 +308,7 @@ export default function PotSettings({ open, onOpenChange, pot, members, isCreato
               <Switch checked={contributionsRestricted} onCheckedChange={setContributionsRestricted} />
             </div>
 
-            {/* Leaders list (read-only here) */}
+            {/* Leaders list */}
             {leaders.length > 0 && (
               <div>
                 <Label className="text-xs text-muted-foreground">{t('potSettings.leaders')}</Label>
@@ -294,7 +335,7 @@ export default function PotSettings({ open, onOpenChange, pot, members, isCreato
             <Button
               className="w-full h-11 rounded-xl font-semibold"
               onClick={handleSave}
-              disabled={saving || !name.trim()}
+              disabled={saving || !name.trim() || (withdrawalRule === 'requires_password' && !withdrawalPassword.trim())}
             >
               {saving ? t('potSettings.saving') : t('potSettings.saveChanges')}
             </Button>
