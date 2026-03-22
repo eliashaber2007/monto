@@ -1143,7 +1143,7 @@ export default function PotDetail() {
                       )}
                       {/* Leader assignment - creator only */}
                       {isCreator && m.role !== 'creator' && m.user_id !== user?.id && (
-                        <div className="pt-2 border-t border-border">
+                        <div className="pt-2 border-t border-border space-y-2">
                           {m.role === 'member' ? (
                             <button
                               onClick={() => handleAssignLeader(m)}
@@ -1161,6 +1161,21 @@ export default function PotDetail() {
                               {assigningLeader === m.id ? t('potDetail.removingLeader') : t('potDetail.removeAsLeader')}
                             </button>
                           ) : null}
+                          {/* Remove member button */}
+                          <button
+                            onClick={() => {
+                              if (m.role === 'leader') {
+                                toast({ title: t('potDetail.demoteFirst'), variant: 'destructive' });
+                                return;
+                              }
+                              setRemoveMemberConfirm(m);
+                            }}
+                            disabled={removingMember === m.id}
+                            className="w-full text-xs flex items-center justify-center gap-1.5 font-semibold text-destructive-foreground bg-destructive px-3 py-2 rounded-lg hover:bg-destructive/90 transition-colors disabled:opacity-50"
+                          >
+                            <X size={12} />
+                            {removingMember === m.id ? t('potDetail.removingMember') : t('potDetail.removeMember')}
+                          </button>
                         </div>
                       )}
                     </div>
