@@ -273,7 +273,7 @@ export default function PotDetail() {
 
   // Realtime subscriptions
   useEffect(() => {
-    if (!id) return;
+    if (!id || !user) return;
     const channel = supabase
       .channel(`pot-${id}`)
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'pots', filter: `id=eq.${id}` }, (payload) => {
@@ -286,14 +286,23 @@ export default function PotDetail() {
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'withdrawals', filter: `pot_id=eq.${id}` }, (payload) => {
         console.log('[Realtime] Withdrawal change:', payload);
-        // Immediate fetch + delayed fetch to catch any lag
         fetchWithdrawals();
         refetch();
         setTimeout(() => { fetchWithdrawals(); refetch(); }, 1000);
       })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'pot_members', filter: `pot_id=eq.${id}` }, (payload) => {
+        console.log('[Realtime] Member removed:', payload);
+        const old = payload.old as any;
+        if (old?.user_id === user.id) {
+          toast({ title: t('potDetail.removedFromPot'), variant: 'destructive' });
+          navigate('/');
+          return;
+        }
+        refetch();
+      })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [id, refetch, fetchWithdrawals]);
+  }, [id, user, refetch, fetchWithdrawals, navigate, toast, t]);
 
   // Fetch expense totals per withdrawal
   useEffect(() => {
