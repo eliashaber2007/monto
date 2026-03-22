@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -52,6 +52,17 @@ export default function PotSettings({ open, onOpenChange, pot, members, isCreato
   const [saving, setSaving] = useState(false);
   const [showReceiptWarning, setShowReceiptWarning] = useState(false);
   const [pendingReceiptValue, setPendingReceiptValue] = useState(false);
+
+  // Sync state when pot data changes (e.g. reopening settings or after refetch)
+  useEffect(() => {
+    setName(pot.name);
+    setEmoji(pot.emoji || '');
+    setRequireReceipt(pot.require_receipt);
+    setMaxWithdrawalAmount(pot.max_withdrawal_amount?.toString() || '');
+    setContributionsRestricted(pot.contributions_restricted);
+    setWithdrawalRule(pot.withdrawal_rule || 'auto_approve');
+    setWithdrawalPassword(pot.withdrawal_password || '');
+  }, [pot]);
 
   const leaders = members.filter(m => m.role === 'leader');
   const currency = pot.currency ?? 'EUR';
