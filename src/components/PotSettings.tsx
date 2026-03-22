@@ -169,13 +169,6 @@ export default function PotSettings({ open, onOpenChange, pot, members, isCreato
               </div>
             )}
 
-            {/* Contribution restrictions */}
-            <div>
-              <Label className="text-xs text-muted-foreground">{t('potSettings.contributions')}</Label>
-              <p className="text-sm font-semibold text-foreground mt-0.5">
-                {pot.contributions_restricted ? t('potSettings.leadersAndCreator') : t('potSettings.allMembers')}
-              </p>
-            </div>
 
             {/* Leaders */}
             {leaders.length > 0 && (
