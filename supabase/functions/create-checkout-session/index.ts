@@ -78,7 +78,7 @@ Deno.serve(async (req) => {
       metadata.pot_max_withdrawal_amount = String(pot_config.max_withdrawal_amount ?? '');
       metadata.pot_max_withdrawals_per_day = String(pot_config.max_withdrawals_per_day ?? '');
       metadata.pot_emoji = pot_config.emoji || '';
-      metadata.pot_contributions_restricted = String(pot_config.contributions_restricted ?? false);
+      
     }
 
     // Set success/cancel URLs based on whether this is a new pot
