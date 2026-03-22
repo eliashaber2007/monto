@@ -198,6 +198,8 @@ export default function PotDetail() {
   const [approveConfirm, setApproveConfirm] = useState<any | null>(null);
   const [rejectConfirm, setRejectConfirm] = useState<any | null>(null);
   const [rejectReason, setRejectReason] = useState('');
+  const [removeMemberConfirm, setRemoveMemberConfirm] = useState<any | null>(null);
+  const [removingMember, setRemovingMember] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { t } = useTranslation();
