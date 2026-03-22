@@ -59,7 +59,6 @@ export default function PotSettings({ open, onOpenChange, pot, members, isCreato
     setEmoji(pot.emoji || '');
     setRequireReceipt(pot.require_receipt);
     setMaxWithdrawalAmount(pot.max_withdrawal_amount?.toString() || '');
-    setContributionsRestricted(pot.contributions_restricted);
     setWithdrawalRule(pot.withdrawal_rule || 'auto_approve');
     setWithdrawalPassword(pot.withdrawal_password || '');
   }, [pot]);
