@@ -89,7 +89,6 @@ export default function PotSettings({ open, onOpenChange, pot, members, isCreato
         emoji: emoji || null,
         require_receipt: requireReceipt,
         max_withdrawal_amount: maxWithdrawalAmount ? parseFloat(maxWithdrawalAmount) : null,
-        contributions_restricted: contributionsRestricted,
         withdrawal_rule: withdrawalRule,
         withdrawal_password: withdrawalRule === 'requires_password' ? withdrawalPassword : null,
       };
