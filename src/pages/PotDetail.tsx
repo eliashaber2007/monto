@@ -201,6 +201,7 @@ export default function PotDetail() {
   const [rejectReason, setRejectReason] = useState('');
   const [removeMemberConfirm, setRemoveMemberConfirm] = useState<any | null>(null);
   const [removingMember, setRemovingMember] = useState<string | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { t } = useTranslation();
