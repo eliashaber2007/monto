@@ -34,7 +34,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
   const [potName, setPotName] = useState("");
   const [currency, setCurrency] = useState("EUR");
   const [goalAmount, setGoalAmount] = useState("");
-  const [withdrawalRule, setWithdrawalRule] = useState<WithdrawalRule>("auto_approve");
+  const [withdrawalRule, setWithdrawalRule] = useState<WithdrawalRule | "">("")
   const [withdrawalPassword, setWithdrawalPassword] = useState("");
   const [creating, setCreating] = useState(false);
   const [initialDeposit, setInitialDeposit] = useState("");
@@ -52,13 +52,13 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
   ];
 
   const reset = () => {
-    setStep(1); setPotName(""); setCurrency("EUR"); setGoalAmount(""); setWithdrawalRule("auto_approve"); setWithdrawalPassword(""); setInitialDeposit(""); setRequireReceipt(false); setMaxWithdrawalAmount(""); setMaxWithdrawalsPerDay(""); setSelectedEmoji(null); setContributionsRestricted(false);
+    setStep(1); setPotName(""); setCurrency("EUR"); setGoalAmount(""); setWithdrawalRule(""); setWithdrawalPassword(""); setInitialDeposit(""); setRequireReceipt(false); setMaxWithdrawalAmount(""); setMaxWithdrawalsPerDay(""); setSelectedEmoji(null); setContributionsRestricted(false);
   };
 
   const handleClose = (val: boolean) => { if (!val) reset(); onOpenChange(val); };
 
   const buildPotConfig = () => ({
-    id: crypto.randomUUID(), name: potName.trim(), currency, goal_amount: goalAmount ? parseFloat(goalAmount) : null, withdrawal_rule: withdrawalRule, withdrawal_password: withdrawalRule === "requires_password" ? withdrawalPassword : null, require_receipt: requireReceipt, max_withdrawal_amount: maxWithdrawalAmount ? parseFloat(maxWithdrawalAmount) : null, max_withdrawals_per_day: maxWithdrawalsPerDay ? parseInt(maxWithdrawalsPerDay) : null, emoji: selectedEmoji, contributions_restricted: contributionsRestricted,
+    id: crypto.randomUUID(), name: potName.trim(), currency, goal_amount: goalAmount ? parseFloat(goalAmount) : null, withdrawal_rule: withdrawalRule || 'auto_approve', withdrawal_password: withdrawalRule === "requires_password" ? withdrawalPassword : null, require_receipt: requireReceipt, max_withdrawal_amount: maxWithdrawalAmount ? parseFloat(maxWithdrawalAmount) : null, max_withdrawals_per_day: maxWithdrawalsPerDay ? parseInt(maxWithdrawalsPerDay) : null, emoji: selectedEmoji, contributions_restricted: contributionsRestricted,
   });
 
   const redirectToCheckout = async (potConfig: ReturnType<typeof buildPotConfig>, amountEuros: number) => {
@@ -240,7 +240,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
                 <p className="text-xs text-muted-foreground">e.g. set to 3 to allow a maximum of 3 withdrawal requests per day</p>
               </div>
 
-              <Button className="w-full h-11 rounded-xl" disabled={withdrawalRule === "requires_password" && !withdrawalPassword.trim()} onClick={() => setStep(3)}>{t('common.next')}</Button>
+              <Button className="w-full h-11 rounded-xl" disabled={!withdrawalRule || (withdrawalRule === "requires_password" && !withdrawalPassword.trim())} onClick={() => setStep(3)}>{t('common.next')}</Button>
             </div>
           )}
 
