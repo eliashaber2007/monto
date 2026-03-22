@@ -32,6 +32,7 @@ import ReceiptReviewModal from '@/components/ReceiptReviewModal';
 import WithdrawalModal from '@/components/WithdrawalModal';
 import PotChat from '@/components/PotChat';
 import ChangePasswordModal from '@/components/ChangePasswordModal';
+import PotSettings from '@/components/PotSettings';
 
 function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat('en-IE', {
