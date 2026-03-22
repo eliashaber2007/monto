@@ -1481,6 +1481,15 @@ export default function PotDetail() {
         currentPassword={pot.withdrawal_password ?? null}
         onChanged={() => refetch()}
       />
+
+      <PotSettings
+        open={showSettings}
+        onOpenChange={setShowSettings}
+        pot={pot}
+        members={members}
+        isCreator={isCreator}
+        onUpdated={() => refetch()}
+      />
     </div>
   );
 }
