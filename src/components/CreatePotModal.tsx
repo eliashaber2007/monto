@@ -199,7 +199,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
                   ))}
                 </div>
               </div>
-              <Button className="w-full h-11 rounded-xl" disabled={!potName.trim()} onClick={() => setStep(2)}>{t('common.next')}</Button>
+              <Button className="w-full h-11 rounded-xl" disabled={!potName.trim() || !goalAmount || parseFloat(goalAmount) <= 0} onClick={() => setStep(2)}>{t('common.next')}</Button>
             </div>
           )}
 
