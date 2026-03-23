@@ -87,7 +87,7 @@ export function usePotDetail(potId: string | undefined) {
 
       const [potRes, membersRes, txRes] = await Promise.all([
         supabase.from('pots').select('*').eq('id', potId).single(),
-        supabase.from('pot_members').select('*, profiles:user_id(first_name, avatar_url, avatar_color)').eq('pot_id', potId),
+        supabase.from('pot_members').select('*, profiles:user_id(first_name, avatar_url, avatar_color, avatar_emoji)').eq('pot_id', potId),
         supabase
           .from('transactions')
           .select('*')

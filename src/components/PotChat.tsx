@@ -13,7 +13,7 @@ interface Member {
     first_name: string;
     avatar_url: string | null;
     avatar_color: string | null;
-    avatar_emoji: string | null;
+    avatar_emoji?: string | null;
   } | null;
 }
 
