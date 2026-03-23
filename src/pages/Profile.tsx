@@ -76,6 +76,7 @@ export default function Profile() {
   // Avatar
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [avatarColor, setAvatarColor] = useState('#3b82f6');
+  const [avatarEmoji, setAvatarEmoji] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   // Password
