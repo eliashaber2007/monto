@@ -309,6 +309,10 @@ export default function Profile() {
                 alt="Avatar"
                 className="w-24 h-24 rounded-full object-cover border-4 border-border"
               />
+            ) : avatarEmoji ? (
+              <div className="w-24 h-24 rounded-full bg-secondary flex items-center justify-center text-5xl border-4 border-border">
+                {avatarEmoji}
+              </div>
             ) : (
               <div
                 className="w-24 h-24 rounded-full flex items-center justify-center text-3xl font-bold text-white border-4 border-border"
@@ -337,17 +341,13 @@ export default function Profile() {
 
           {!avatarUrl && (
             <div className="mt-4">
-              <p className="text-xs text-muted-foreground mb-2">{t('profile.avatarColor')}</p>
-              <div className="flex flex-wrap justify-center gap-2">
-                {AVATAR_COLORS.map((c) => (
-                  <button
-                    key={c}
-                    onClick={() => handleColorChange(c)}
-                    className={`w-7 h-7 rounded-full transition-all ${avatarColor === c ? 'ring-2 ring-primary ring-offset-2 ring-offset-card scale-110' : 'hover:scale-105'}`}
-                    style={{ backgroundColor: c }}
-                  />
-                ))}
-              </div>
+              <AvatarCustomization
+                avatarColor={avatarColor}
+                avatarEmoji={avatarEmoji}
+                initial={initial}
+                onColorChange={handleColorChange}
+                onEmojiChange={handleEmojiChange}
+              />
             </div>
           )}
         </div>
