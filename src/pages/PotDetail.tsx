@@ -1049,6 +1049,7 @@ export default function PotDetail() {
               const memberName = memberProfile?.first_name || 'Member';
               const memberAvatar = memberProfile?.avatar_url;
               const memberColor = memberProfile?.avatar_color || '#3b82f6';
+              const memberEmoji = memberProfile?.avatar_emoji || null;
               const initial = memberName[0]?.toUpperCase() || '?';
               const isExpanded = expandedMembers[m.id] ?? false;
               const memberWithdrawals = withdrawals.filter((w: any) => w.user_id === m.user_id);
@@ -1064,10 +1065,12 @@ export default function PotDetail() {
                   >
                     <div
                       className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden"
-                      style={{ backgroundColor: memberAvatar ? undefined : memberColor }}
+                      style={{ backgroundColor: memberAvatar || memberEmoji ? undefined : memberColor }}
                     >
                       {memberAvatar ? (
                         <img src={memberAvatar} alt={memberName} className="w-full h-full object-cover" />
+                      ) : memberEmoji ? (
+                        <span className="text-2xl">{memberEmoji}</span>
                       ) : (
                         <span className="text-white font-bold text-sm">{initial}</span>
                       )}
