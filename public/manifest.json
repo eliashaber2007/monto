@@ -8,13 +8,7 @@
   "theme_color": "#2563EB",
   "icons": [
     {
-      "src": "/monto_favicon.png?v=9",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/monto_favicon.png?v=9",
+      "src": "/Monto_Logo_square.png?v=8",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
