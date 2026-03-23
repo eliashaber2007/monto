@@ -243,6 +243,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar_color: string | null
+          avatar_emoji: string | null
           avatar_url: string | null
           created_at: string
           dark_mode: boolean
@@ -256,6 +257,7 @@ export type Database = {
         }
         Insert: {
           avatar_color?: string | null
+          avatar_emoji?: string | null
           avatar_url?: string | null
           created_at?: string
           dark_mode?: boolean
@@ -269,6 +271,7 @@ export type Database = {
         }
         Update: {
           avatar_color?: string | null
+          avatar_emoji?: string | null
           avatar_url?: string | null
           created_at?: string
           dark_mode?: boolean
