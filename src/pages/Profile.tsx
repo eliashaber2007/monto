@@ -16,11 +16,6 @@ import { Label } from '@/components/ui/label';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import { useTranslation } from 'react-i18next';
 
-const AVATAR_COLORS = [
-  '#3b82f6', '#8b5cf6', '#ec4899', '#ef4444',
-  '#f97316', '#eab308', '#22c55e', '#14b8a6',
-  '#06b6d4', '#6366f1', '#a855f7', '#64748b',
-];
 
 const LANGUAGES = [
   { code: 'en', emoji: '🇬🇧', label: 'EN', fullName: 'English' },
