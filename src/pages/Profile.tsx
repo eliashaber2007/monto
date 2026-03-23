@@ -213,7 +213,15 @@ export default function Profile() {
   const handleColorChange = async (color: string) => {
     if (!user) return;
     setAvatarColor(color);
-    await supabase.from('profiles').update({ avatar_color: color } as any).eq('id', user.id);
+    setAvatarEmoji(null);
+    await supabase.from('profiles').update({ avatar_color: color, avatar_emoji: null } as any).eq('id', user.id);
+    queryClient.invalidateQueries({ queryKey: ['profile'] });
+  };
+
+  const handleEmojiChange = async (emoji: string) => {
+    if (!user) return;
+    setAvatarEmoji(emoji);
+    await supabase.from('profiles').update({ avatar_emoji: emoji } as any).eq('id', user.id);
     queryClient.invalidateQueries({ queryKey: ['profile'] });
   };
 
