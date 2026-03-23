@@ -3,6 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Camera, Save, Eye, EyeOff, Landmark, CheckCircle2, Moon, Sun, BookOpen, RefreshCw, Globe } from 'lucide-react';
 
 import StripeOnboardingForm from '@/components/StripeOnboardingForm';
+import AvatarCustomization from '@/components/AvatarCustomization';
+import UserAvatar from '@/components/UserAvatar';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/usePots';
