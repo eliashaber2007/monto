@@ -831,9 +831,17 @@ export default function PotDetail() {
                 const profile = getMemberProfile(userId);
                 const avatarUrl = profile?.avatar_url;
                 const avatarColor = profile?.avatar_color || '#3b82f6';
+                const avatarEmoji = profile?.avatar_emoji || null;
                 const initial = (profile?.first_name || '?')[0].toUpperCase();
                 if (avatarUrl) {
                   return <img src={avatarUrl} alt="" className="w-8 h-8 rounded-full object-cover flex-shrink-0" />;
+                }
+                if (avatarEmoji) {
+                  return (
+                    <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-lg flex-shrink-0">
+                      {avatarEmoji}
+                    </div>
+                  );
                 }
                 return (
                   <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{ backgroundColor: avatarColor }}>
