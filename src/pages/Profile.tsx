@@ -122,6 +122,7 @@ export default function Profile() {
       setDisplayName(profile.first_name ?? '');
       setAvatarUrl((profile as any).avatar_url ?? null);
       setAvatarColor((profile as any).avatar_color ?? '#3b82f6');
+      setAvatarEmoji((profile as any).avatar_emoji ?? null);
       setGender((profile as any).gender ?? null);
     }
     if (user) {
