@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import montoLogo from '@/assets/monto_logo.svg';
+import montoLogo from '@/assets/monto_logo.png';
 
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
