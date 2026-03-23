@@ -299,6 +299,8 @@
     "myProfile": "Mon profil",
     "title": "Profil",
     "avatarColor": "Couleur de l'avatar",
+    "myColour": "Ma couleur",
+    "myEmoji": "Mon emoji",
     "avatarUpdated": "Avatar mis à jour ! 📸",
     "uploadFailed": "Échec du téléchargement",
     "appearance": "Apparence",

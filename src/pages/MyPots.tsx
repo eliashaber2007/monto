@@ -105,10 +105,12 @@ export default function MyPots() {
               >
                 <div
                   className="w-10 h-10 rounded-full flex items-center justify-center shadow-sm overflow-hidden ring-2 ring-primary/30 group-hover:ring-primary/60 transition-all"
-                  style={{ backgroundColor: (profile as any)?.avatar_url ? undefined : ((profile as any)?.avatar_color ?? 'hsl(var(--primary))') }}
+                  style={{ backgroundColor: (profile as any)?.avatar_url || (profile as any)?.avatar_emoji ? undefined : ((profile as any)?.avatar_color ?? 'hsl(var(--primary))') }}
                 >
                   {(profile as any)?.avatar_url ? (
                     <img src={(profile as any).avatar_url} alt="Avatar" className="w-full h-full object-cover pointer-events-none" />
+                  ) : (profile as any)?.avatar_emoji ? (
+                    <span className="text-2xl pointer-events-none">{(profile as any).avatar_emoji}</span>
                   ) : (
                     <span className="text-white font-bold text-sm pointer-events-none">
                       {displayName?.[0]?.toUpperCase() ?? '?'}

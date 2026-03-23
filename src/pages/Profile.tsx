@@ -3,6 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Camera, Save, Eye, EyeOff, Landmark, CheckCircle2, Moon, Sun, BookOpen, RefreshCw, Globe } from 'lucide-react';
 
 import StripeOnboardingForm from '@/components/StripeOnboardingForm';
+import AvatarCustomization from '@/components/AvatarCustomization';
+import UserAvatar from '@/components/UserAvatar';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/usePots';
@@ -14,11 +16,6 @@ import { Label } from '@/components/ui/label';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import { useTranslation } from 'react-i18next';
 
-const AVATAR_COLORS = [
-  '#3b82f6', '#8b5cf6', '#ec4899', '#ef4444',
-  '#f97316', '#eab308', '#22c55e', '#14b8a6',
-  '#06b6d4', '#6366f1', '#a855f7', '#64748b',
-];
 
 const LANGUAGES = [
   { code: 'en', emoji: '🇬🇧', label: 'EN', fullName: 'English' },
@@ -79,6 +76,7 @@ export default function Profile() {
   // Avatar
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [avatarColor, setAvatarColor] = useState('#3b82f6');
+  const [avatarEmoji, setAvatarEmoji] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   // Password
@@ -124,6 +122,7 @@ export default function Profile() {
       setDisplayName(profile.first_name ?? '');
       setAvatarUrl((profile as any).avatar_url ?? null);
       setAvatarColor((profile as any).avatar_color ?? '#3b82f6');
+      setAvatarEmoji((profile as any).avatar_emoji ?? null);
       setGender((profile as any).gender ?? null);
     }
     if (user) {
@@ -214,7 +213,15 @@ export default function Profile() {
   const handleColorChange = async (color: string) => {
     if (!user) return;
     setAvatarColor(color);
-    await supabase.from('profiles').update({ avatar_color: color } as any).eq('id', user.id);
+    setAvatarEmoji(null);
+    await supabase.from('profiles').update({ avatar_color: color, avatar_emoji: null } as any).eq('id', user.id);
+    queryClient.invalidateQueries({ queryKey: ['profile'] });
+  };
+
+  const handleEmojiChange = async (emoji: string) => {
+    if (!user) return;
+    setAvatarEmoji(emoji);
+    await supabase.from('profiles').update({ avatar_emoji: emoji } as any).eq('id', user.id);
     queryClient.invalidateQueries({ queryKey: ['profile'] });
   };
 
@@ -302,6 +309,10 @@ export default function Profile() {
                 alt="Avatar"
                 className="w-24 h-24 rounded-full object-cover border-4 border-border"
               />
+            ) : avatarEmoji ? (
+              <div className="w-24 h-24 rounded-full bg-secondary flex items-center justify-center text-5xl border-4 border-border">
+                {avatarEmoji}
+              </div>
             ) : (
               <div
                 className="w-24 h-24 rounded-full flex items-center justify-center text-3xl font-bold text-white border-4 border-border"
@@ -330,17 +341,13 @@ export default function Profile() {
 
           {!avatarUrl && (
             <div className="mt-4">
-              <p className="text-xs text-muted-foreground mb-2">{t('profile.avatarColor')}</p>
-              <div className="flex flex-wrap justify-center gap-2">
-                {AVATAR_COLORS.map((c) => (
-                  <button
-                    key={c}
-                    onClick={() => handleColorChange(c)}
-                    className={`w-7 h-7 rounded-full transition-all ${avatarColor === c ? 'ring-2 ring-primary ring-offset-2 ring-offset-card scale-110' : 'hover:scale-105'}`}
-                    style={{ backgroundColor: c }}
-                  />
-                ))}
-              </div>
+              <AvatarCustomization
+                avatarColor={avatarColor}
+                avatarEmoji={avatarEmoji}
+                initial={initial}
+                onColorChange={handleColorChange}
+                onEmojiChange={handleEmojiChange}
+              />
             </div>
           )}
         </div>

@@ -831,9 +831,17 @@ export default function PotDetail() {
                 const profile = getMemberProfile(userId);
                 const avatarUrl = profile?.avatar_url;
                 const avatarColor = profile?.avatar_color || '#3b82f6';
+                const avatarEmoji = profile?.avatar_emoji || null;
                 const initial = (profile?.first_name || '?')[0].toUpperCase();
                 if (avatarUrl) {
                   return <img src={avatarUrl} alt="" className="w-8 h-8 rounded-full object-cover flex-shrink-0" />;
+                }
+                if (avatarEmoji) {
+                  return (
+                    <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-lg flex-shrink-0">
+                      {avatarEmoji}
+                    </div>
+                  );
                 }
                 return (
                   <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{ backgroundColor: avatarColor }}>
@@ -1041,6 +1049,7 @@ export default function PotDetail() {
               const memberName = memberProfile?.first_name || 'Member';
               const memberAvatar = memberProfile?.avatar_url;
               const memberColor = memberProfile?.avatar_color || '#3b82f6';
+              const memberEmoji = memberProfile?.avatar_emoji || null;
               const initial = memberName[0]?.toUpperCase() || '?';
               const isExpanded = expandedMembers[m.id] ?? false;
               const memberWithdrawals = withdrawals.filter((w: any) => w.user_id === m.user_id);
@@ -1056,10 +1065,12 @@ export default function PotDetail() {
                   >
                     <div
                       className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden"
-                      style={{ backgroundColor: memberAvatar ? undefined : memberColor }}
+                      style={{ backgroundColor: memberAvatar || memberEmoji ? undefined : memberColor }}
                     >
                       {memberAvatar ? (
                         <img src={memberAvatar} alt={memberName} className="w-full h-full object-cover" />
+                      ) : memberEmoji ? (
+                        <span className="text-2xl">{memberEmoji}</span>
                       ) : (
                         <span className="text-white font-bold text-sm">{initial}</span>
                       )}

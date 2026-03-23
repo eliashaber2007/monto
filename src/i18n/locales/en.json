@@ -300,6 +300,8 @@
     "myProfile": "My Profile",
     "title": "Profile",
     "avatarColor": "Avatar color",
+    "myColour": "My colour",
+    "myEmoji": "My emoji",
     "avatarUpdated": "Avatar updated! 📸",
     "uploadFailed": "Upload failed",
     "appearance": "Appearance",
