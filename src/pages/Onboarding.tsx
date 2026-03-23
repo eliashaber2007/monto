@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import montoLogo from '@/assets/monto_logo.png';
+import montoLogo from '@/assets/monto_logo.svg';
 
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -75,7 +75,7 @@ export default function Onboarding() {
         <img
           src={montoLogo}
           alt="Monto"
-          className="w-20 h-20 rounded-2xl mb-10 animate-[onboard-logo-in_500ms_ease-out_both] onboarding-logo-pulse"
+          className="w-24 h-24 rounded-2xl mb-10 animate-[onboard-logo-in_500ms_ease-out_both] onboarding-logo-pulse"
           style={{ boxShadow: '0 0 40px rgba(37, 99, 235, 0.4)' }}
         />
         {/* Text */}
