@@ -333,6 +333,8 @@ export default function PotChat({ potId, potName, potEmoji, members, onClose }: 
                   <Avatar className="w-7 h-7 mt-1 shrink-0">
                     {profile?.avatar_url ? (
                       <AvatarImage src={profile.avatar_url} />
+                    ) : profile?.avatar_emoji ? (
+                      <AvatarFallback className="bg-secondary text-base">{profile.avatar_emoji}</AvatarFallback>
                     ) : null}
                     <AvatarFallback style={{ backgroundColor: color }} className="text-white text-[11px] font-bold">
                       {initial}
