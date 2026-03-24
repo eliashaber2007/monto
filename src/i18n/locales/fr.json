@@ -142,6 +142,8 @@
     "leaving": "Départ…",
     "closeQuestion": "Fermer cette cagnotte ?",
     "closeDescription": "Cela fermera définitivement \"{{name}}\". Les fonds restants de {{balance}} seront transférés sur votre compte bancaire. Les fonds arrivent sous 1 à 3 jours ouvrés.",
+    "closeDescriptionWithFee": "Fermer cette cagnotte retirera automatiquement les {{balance}} restants sur votre compte bancaire ({{amount}} après les frais de virement de {{fee}}). Cette action est irréversible. Continuer ?",
+    "closeDescriptionZero": "Cela fermera définitivement \"{{name}}\". Il n'y a plus de fonds restants. Cette action est irréversible.",
     "bankRequired": "Compte bancaire requis",
     "bankRequiredDesc": "Vous devez connecter votre compte bancaire avant de fermer une cagnotte.",
     "connectBankAccount": "Connecter un compte bancaire",

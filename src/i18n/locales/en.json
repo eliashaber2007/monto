@@ -142,6 +142,8 @@
     "leaving": "Leaving…",
     "closeQuestion": "Close this pot?",
     "closeDescription": "This will permanently close \"{{name}}\". The remaining funds of {{balance}} will be transferred to your bank account. Funds arrive within 1-3 business days.",
+    "closeDescriptionWithFee": "Closing this pot will automatically withdraw the remaining {{balance}} to your bank account ({{amount}} after the {{fee}} payout fee). This cannot be undone. Continue?",
+    "closeDescriptionZero": "This will permanently close \"{{name}}\". There are no remaining funds. This cannot be undone.",
     "bankRequired": "Bank account required",
     "bankRequiredDesc": "You need to connect your bank account before closing a pot. This is required to receive your funds.",
     "connectBankAccount": "Connect Bank Account",
