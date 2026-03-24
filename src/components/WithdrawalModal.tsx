@@ -42,6 +42,10 @@ export default function WithdrawalModal({
   const formatCurrency = (val: number) =>
     new Intl.NumberFormat('en-IE', { style: 'currency', currency, minimumFractionDigits: 2 }).format(val);
 
+  // Calculate the max base amount that exactly empties the pot: base + (base*0.0025 + 0.25) = balance
+  const maxBaseAmount = parseFloat(((potBalance - 0.25) / 1.0025).toFixed(2));
+  const maxBaseFee = parseFloat(((maxBaseAmount * 0.0025) + 0.25).toFixed(2));
+
   const reset = () => { setAmount(''); setNote(''); setPassword(''); setPasswordError(''); };
   const handleClose = (v: boolean) => { if (!v) reset(); onOpenChange(v); };
 
