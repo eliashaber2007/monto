@@ -59,7 +59,13 @@ export default function WithdrawalModal({
     const fee = parseFloat(((numAmount * 0.0025) + 0.25).toFixed(2));
     const totalDeducted = parseFloat((numAmount + fee).toFixed(2));
     if (totalDeducted > potBalance) {
-      toast({ title: t('withdrawalModal.exceedsBalance'), variant: 'destructive' });
+      // Auto-cap to max withdrawable amount
+      if (maxBaseAmount > 0) {
+        setAmount(maxBaseAmount.toFixed(2));
+        toast({ title: t('withdrawalModal.maxCapMessage', { amount: formatCurrency(maxBaseAmount), fee: formatCurrency(maxBaseFee) }), variant: 'destructive' });
+      } else {
+        toast({ title: t('withdrawalModal.exceedsBalance'), variant: 'destructive' });
+      }
       return;
     }
     if (maxWithdrawalAmount && numAmount > maxWithdrawalAmount) {
