@@ -294,7 +294,8 @@
     "requestSentApproval": "Withdrawal request sent — waiting for approval.",
     "payoutFee": "Includes {{fee}} Stripe payout fee",
     "amountReceived": "You'll receive: {{amount}}",
-    "totalDeducted": "Taken from pot: {{amount}}"
+    "totalDeducted": "Taken from pot: {{amount}}",
+    "maxCapMessage": "The maximum you can withdraw is {{amount}} after the {{fee}} payout fee, which will empty the pot."
   },
   "profile": {
     "myProfile": "My Profile",

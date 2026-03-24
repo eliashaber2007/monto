@@ -293,7 +293,8 @@
     "requestSentApproval": "Auszahlungsanfrage gesendet — wartet auf Genehmigung.",
     "payoutFee": "Inkl. {{fee}} Stripe-Auszahlungsgebühr",
     "amountReceived": "Du erhältst: {{amount}}",
-    "totalDeducted": "Vom Topf abgezogen: {{amount}}"
+    "totalDeducted": "Vom Topf abgezogen: {{amount}}",
+    "maxCapMessage": "Der maximale Auszahlungsbetrag beträgt {{amount}} nach der Auszahlungsgebühr von {{fee}}, wodurch der Topf geleert wird."
   },
   "profile": {
     "myProfile": "Mein Profil",

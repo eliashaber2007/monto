@@ -618,7 +618,10 @@ export default function PotDetail() {
 
     try {
       if (balance > 0) {
-        // Call create-payout
+        // Calculate max base amount so base + fee = balance exactly
+        const payoutBase = parseFloat(((balance - 0.25) / 1.0025).toFixed(2));
+        const payoutAmount = payoutBase > 0 ? payoutBase : balance;
+
         const { data: sessionData } = await supabase.auth.getSession();
         const token = sessionData?.session?.access_token;
 
@@ -633,7 +636,7 @@ export default function PotDetail() {
             },
             body: JSON.stringify({
               pot_id: id,
-              amount: balance,
+              amount: payoutAmount,
               currency: currency.toLowerCase(),
               recipient_user_id: user.id,
             }),
