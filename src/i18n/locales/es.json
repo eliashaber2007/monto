@@ -142,6 +142,8 @@
     "leaving": "Saliendo…",
     "closeQuestion": "¿Cerrar este bote?",
     "closeDescription": "Esto cerrará permanentemente \"{{name}}\". Los fondos restantes de {{balance}} serán transferidos a tu cuenta bancaria. Los fondos llegan en 1-3 días hábiles.",
+    "closeDescriptionWithFee": "Cerrar este bote retirará automáticamente los {{balance}} restantes a tu cuenta bancaria ({{amount}} después de la comisión de pago de {{fee}}). Esto no se puede deshacer. ¿Continuar?",
+    "closeDescriptionZero": "Esto cerrará permanentemente \"{{name}}\". No quedan fondos restantes. Esto no se puede deshacer.",
     "bankRequired": "Cuenta bancaria requerida",
     "bankRequiredDesc": "Necesitas conectar tu cuenta bancaria antes de cerrar un bote.",
     "connectBankAccount": "Conectar cuenta bancaria",

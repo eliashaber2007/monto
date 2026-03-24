@@ -142,6 +142,8 @@
     "leaving": "Verlassen…",
     "closeQuestion": "Diese Kasse schließen?",
     "closeDescription": "Dies wird \"{{name}}\" dauerhaft schließen. Die verbleibenden Mittel von {{balance}} werden auf Ihr Bankkonto überwiesen. Mittel treffen innerhalb von 1-3 Werktagen ein.",
+    "closeDescriptionWithFee": "Das Schließen dieses Topfes zieht automatisch die verbleibenden {{balance}} auf Ihr Bankkonto ab ({{amount}} nach der Auszahlungsgebühr von {{fee}}). Dies kann nicht rückgängig gemacht werden. Fortfahren?",
+    "closeDescriptionZero": "Dies wird \"{{name}}\" dauerhaft schließen. Es sind keine Restmittel vorhanden. Dies kann nicht rückgängig gemacht werden.",
     "bankRequired": "Bankkonto erforderlich",
     "bankRequiredDesc": "Sie müssen Ihr Bankkonto verbinden, bevor Sie eine Kasse schließen.",
     "connectBankAccount": "Bankkonto verbinden",
