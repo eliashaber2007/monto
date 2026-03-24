@@ -293,7 +293,8 @@
     "requestSentApproval": "Solicitud de retiro enviada — esperando aprobación.",
     "payoutFee": "Incluye {{fee}} de tarifa de pago Stripe",
     "amountReceived": "Recibirás: {{amount}}",
-    "totalDeducted": "Tomado del bote: {{amount}}"
+    "totalDeducted": "Tomado del bote: {{amount}}",
+    "maxCapMessage": "El máximo que puedes retirar es {{amount}} después de la comisión de pago de {{fee}}, lo que vaciará el bote."
   },
   "profile": {
     "myProfile": "Mi perfil",

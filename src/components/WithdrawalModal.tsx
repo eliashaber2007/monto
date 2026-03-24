@@ -42,6 +42,10 @@ export default function WithdrawalModal({
   const formatCurrency = (val: number) =>
     new Intl.NumberFormat('en-IE', { style: 'currency', currency, minimumFractionDigits: 2 }).format(val);
 
+  // Calculate the max base amount that exactly empties the pot: base + (base*0.0025 + 0.25) = balance
+  const maxBaseAmount = parseFloat(((potBalance - 0.25) / 1.0025).toFixed(2));
+  const maxBaseFee = parseFloat(((maxBaseAmount * 0.0025) + 0.25).toFixed(2));
+
   const reset = () => { setAmount(''); setNote(''); setPassword(''); setPasswordError(''); };
   const handleClose = (v: boolean) => { if (!v) reset(); onOpenChange(v); };
 
@@ -55,7 +59,13 @@ export default function WithdrawalModal({
     const fee = parseFloat(((numAmount * 0.0025) + 0.25).toFixed(2));
     const totalDeducted = parseFloat((numAmount + fee).toFixed(2));
     if (totalDeducted > potBalance) {
-      toast({ title: t('withdrawalModal.exceedsBalance'), variant: 'destructive' });
+      // Auto-cap to max withdrawable amount
+      if (maxBaseAmount > 0) {
+        setAmount(maxBaseAmount.toFixed(2));
+        toast({ title: t('withdrawalModal.maxCapMessage', { amount: formatCurrency(maxBaseAmount), fee: formatCurrency(maxBaseFee) }), variant: 'destructive' });
+      } else {
+        toast({ title: t('withdrawalModal.exceedsBalance'), variant: 'destructive' });
+      }
       return;
     }
     if (maxWithdrawalAmount && numAmount > maxWithdrawalAmount) {
@@ -169,6 +179,15 @@ export default function WithdrawalModal({
             <Label htmlFor="withdrawal-amount" className="text-sm font-medium">{t('withdrawalModal.amountToWithdraw')}</Label>
             <Input id="withdrawal-amount" type="number" step="0.01" min="0.01" max={potBalance} placeholder={t('withdrawalModal.max', { amount: formatCurrency(potBalance) })} value={amount} onChange={(e) => setAmount(e.target.value)} className="mt-1" />
             <p className="text-xs text-muted-foreground mt-1">{t('withdrawalModal.available', { amount: formatCurrency(potBalance) })}</p>
+            {maxBaseAmount > 0 && maxBaseAmount < potBalance && (
+              <button
+                type="button"
+                onClick={() => setAmount(maxBaseAmount.toFixed(2))}
+                className="text-xs text-primary underline mt-1 cursor-pointer"
+              >
+                {t('withdrawalModal.maxCapMessage', { amount: formatCurrency(maxBaseAmount), fee: formatCurrency(maxBaseFee) })}
+              </button>
+            )}
             {(() => {
               const num = parseFloat(amount);
               if (!num || num <= 0) return null;
