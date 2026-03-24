@@ -293,7 +293,8 @@
     "requestSentApproval": "Demande de retrait envoyée — en attente d'approbation.",
     "payoutFee": "Inclut {{fee}} de frais de virement Stripe",
     "amountReceived": "Vous recevrez : {{amount}}",
-    "totalDeducted": "Prélevé de la cagnotte : {{amount}}"
+    "totalDeducted": "Prélevé de la cagnotte : {{amount}}",
+    "maxCapMessage": "Le maximum que vous pouvez retirer est {{amount}} après les frais de virement de {{fee}}, ce qui videra la cagnotte."
   },
   "profile": {
     "myProfile": "Mon profil",
