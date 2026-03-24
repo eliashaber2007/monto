@@ -179,6 +179,15 @@ export default function WithdrawalModal({
             <Label htmlFor="withdrawal-amount" className="text-sm font-medium">{t('withdrawalModal.amountToWithdraw')}</Label>
             <Input id="withdrawal-amount" type="number" step="0.01" min="0.01" max={potBalance} placeholder={t('withdrawalModal.max', { amount: formatCurrency(potBalance) })} value={amount} onChange={(e) => setAmount(e.target.value)} className="mt-1" />
             <p className="text-xs text-muted-foreground mt-1">{t('withdrawalModal.available', { amount: formatCurrency(potBalance) })}</p>
+            {maxBaseAmount > 0 && maxBaseAmount < potBalance && (
+              <button
+                type="button"
+                onClick={() => setAmount(maxBaseAmount.toFixed(2))}
+                className="text-xs text-primary underline mt-1 cursor-pointer"
+              >
+                {t('withdrawalModal.maxCapMessage', { amount: formatCurrency(maxBaseAmount), fee: formatCurrency(maxBaseFee) })}
+              </button>
+            )}
             {(() => {
               const num = parseFloat(amount);
               if (!num || num <= 0) return null;
