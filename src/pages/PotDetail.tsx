@@ -1301,7 +1301,18 @@ export default function PotDetail() {
           <AlertDialogHeader>
             <AlertDialogTitle>{t('potDetail.closeQuestion')}</AlertDialogTitle>
             <AlertDialogDescription>
-              {t('potDetail.closeDescription', { name: pot.name, balance: formatCurrency(pot.balance ?? 0, currency) })}
+              {(() => {
+                const bal = pot.balance ?? 0;
+                if (bal <= 0) return t('potDetail.closeDescriptionZero', { name: pot.name });
+                const base = parseFloat(((bal - 0.25) / 1.0025).toFixed(2));
+                const fee = parseFloat(((base * 0.0025) + 0.25).toFixed(2));
+                return t('potDetail.closeDescriptionWithFee', {
+                  name: pot.name,
+                  balance: formatCurrency(bal, currency),
+                  amount: formatCurrency(base, currency),
+                  fee: formatCurrency(fee, currency),
+                });
+              })()}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
