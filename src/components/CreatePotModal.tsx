@@ -269,8 +269,17 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
               </div>
 
 
-              <Button className="w-full h-11 rounded-xl" onClick={handleCreate} disabled={creating}>
-                {creating ? t('createPot.creating') : t('createPot.createPot')}
+              <Button className="w-full h-11 rounded-xl" onClick={() => {
+                if (goalAmount && parseFloat(goalAmount) > 0) {
+                  const potConfig = buildPotConfig();
+                  localStorage.setItem('pendingPotData', JSON.stringify(potConfig));
+                  setCreatedPotId(potConfig.id);
+                  setStep(4);
+                } else {
+                  handleCreate();
+                }
+              }} disabled={creating}>
+                {creating ? t('createPot.creating') : (goalAmount && parseFloat(goalAmount) > 0 ? t('common.next') : t('createPot.createPot'))}
               </Button>
             </div>
           )}
