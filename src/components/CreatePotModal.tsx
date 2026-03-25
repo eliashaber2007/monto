@@ -8,10 +8,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, CreditCard, Building2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 type WithdrawalRule = "auto_approve" | "requires_approval" | "requires_password";
+type PaymentMethod = "card" | "sepa";
+
+function calcFee(amount: number, method: PaymentMethod) {
+  if (method === 'sepa') {
+    return parseFloat(((amount * 0.005) + 0.35).toFixed(2));
+  }
+  return parseFloat(((amount * 0.015) + 0.25).toFixed(2));
+}
 
 interface Props {
   open: boolean;
@@ -43,6 +51,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
   const [maxWithdrawalAmount, setMaxWithdrawalAmount] = useState("");
   const [maxWithdrawalsPerDay, setMaxWithdrawalsPerDay] = useState("");
   const [selectedEmoji, setSelectedEmoji] = useState<string | null>(null);
+  const [depositPaymentMethod, setDepositPaymentMethod] = useState<PaymentMethod>("card");
   
 
   const POT_EMOJIS = [
@@ -52,7 +61,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
   ];
 
   const reset = () => {
-    setStep(1); setPotName(""); setCurrency("EUR"); setGoalAmount(""); setWithdrawalRule(""); setWithdrawalPassword(""); setInitialDeposit(""); setRequireReceipt(false); setMaxWithdrawalAmount(""); setMaxWithdrawalsPerDay(""); setSelectedEmoji(null);
+    setStep(1); setPotName(""); setCurrency("EUR"); setGoalAmount(""); setWithdrawalRule(""); setWithdrawalPassword(""); setInitialDeposit(""); setRequireReceipt(false); setMaxWithdrawalAmount(""); setMaxWithdrawalsPerDay(""); setSelectedEmoji(null); setDepositPaymentMethod("card");
   };
 
   const handleClose = (val: boolean) => { if (!val) reset(); onOpenChange(val); };
@@ -61,12 +70,12 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
     id: crypto.randomUUID(), name: potName.trim(), currency, goal_amount: goalAmount ? parseFloat(goalAmount) : null, withdrawal_rule: withdrawalRule || 'auto_approve', withdrawal_password: withdrawalRule === "requires_password" ? withdrawalPassword : null, require_receipt: requireReceipt, max_withdrawal_amount: maxWithdrawalAmount ? parseFloat(maxWithdrawalAmount) : null, max_withdrawals_per_day: maxWithdrawalsPerDay ? parseInt(maxWithdrawalsPerDay) : null, emoji: selectedEmoji,
   });
 
-  const redirectToCheckout = async (potConfig: ReturnType<typeof buildPotConfig>, baseAmountEuros: number) => {
+  const redirectToCheckout = async (potConfig: ReturnType<typeof buildPotConfig>, baseAmountEuros: number, method: PaymentMethod = 'card') => {
     localStorage.setItem('pendingPotData', JSON.stringify(potConfig));
-    const fee = parseFloat(((baseAmountEuros * 0.015) + 0.25).toFixed(2));
+    const fee = calcFee(baseAmountEuros, method);
     const totalCharged = parseFloat((baseAmountEuros + fee).toFixed(2));
     const res = await supabase.functions.invoke("create-checkout-session", {
-      body: { pot_id: potConfig.id, amount_cents: Math.round(totalCharged * 100), base_amount_cents: Math.round(baseAmountEuros * 100), is_new_pot: true, pot_config: { name: potConfig.name, currency: potConfig.currency, goal_amount: potConfig.goal_amount, withdrawal_rule: potConfig.withdrawal_rule, withdrawal_password: potConfig.withdrawal_password, require_receipt: potConfig.require_receipt, max_withdrawal_amount: potConfig.max_withdrawal_amount, max_withdrawals_per_day: potConfig.max_withdrawals_per_day, emoji: potConfig.emoji } },
+      body: { pot_id: potConfig.id, amount_cents: Math.round(totalCharged * 100), base_amount_cents: Math.round(baseAmountEuros * 100), is_new_pot: true, payment_method: method, pot_config: { name: potConfig.name, currency: potConfig.currency, goal_amount: potConfig.goal_amount, withdrawal_rule: potConfig.withdrawal_rule, withdrawal_password: potConfig.withdrawal_password, require_receipt: potConfig.require_receipt, max_withdrawal_amount: potConfig.max_withdrawal_amount, max_withdrawals_per_day: potConfig.max_withdrawals_per_day, emoji: potConfig.emoji } },
     });
     if (res.error) throw res.error;
     const { url } = res.data as { url: string };
@@ -108,7 +117,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
     setCreating(true);
     try {
       const pendingData = JSON.parse(localStorage.getItem('pendingPotData') || '{}');
-      await redirectToCheckout(pendingData, amount);
+      await redirectToCheckout(pendingData, amount, depositPaymentMethod);
     } catch (err: any) {
       setCreating(false);
       toast({ title: t('createPot.checkoutError'), description: err.message, variant: "destructive" });
@@ -270,8 +279,9 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
           {/* Step 4: Initial deposit */}
           {step === 4 && (() => {
             const depositAmount = initialDeposit ? parseFloat(initialDeposit) : null;
-            const depositFee = depositAmount && depositAmount > 0 ? parseFloat(((depositAmount * 0.015) + 0.25).toFixed(2)) : null;
+            const depositFee = depositAmount && depositAmount > 0 ? calcFee(depositAmount, depositPaymentMethod) : null;
             const depositTotal = depositAmount && depositFee ? parseFloat((depositAmount + depositFee).toFixed(2)) : null;
+            const platformFee = depositAmount && depositAmount > 0 && depositPaymentMethod === 'sepa' ? parseFloat((depositAmount * 0.005).toFixed(2)) : 0;
             const fmt = (v: number) => new Intl.NumberFormat('en-IE', { style: 'currency', currency }).format(v);
             return (
             <div className="space-y-5">
@@ -283,6 +293,40 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
                   <Input id="initialDeposit" type="number" min="1" step="0.01" placeholder="e.g. 50" value={initialDeposit} onChange={(e) => setInitialDeposit(e.target.value)} autoFocus className="h-11 pl-9" />
                 </div>
               </div>
+
+              {/* Payment method selector */}
+              <div className="space-y-2">
+                <Label>{t('addFunds.paymentMethod')}</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setDepositPaymentMethod('card')}
+                    className={`flex flex-col items-center gap-1 rounded-xl border p-3 transition-all ${
+                      depositPaymentMethod === 'card'
+                        ? 'bg-primary/10 border-primary ring-1 ring-primary'
+                        : 'bg-secondary border-border hover:border-primary/40'
+                    }`}
+                  >
+                    <CreditCard className="h-5 w-5 text-foreground" />
+                    <span className="text-sm font-semibold text-foreground">{t('addFunds.card')}</span>
+                    <span className="text-xs text-muted-foreground">{t('addFunds.cardSubtitle')}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDepositPaymentMethod('sepa')}
+                    className={`flex flex-col items-center gap-1 rounded-xl border p-3 transition-all ${
+                      depositPaymentMethod === 'sepa'
+                        ? 'bg-primary/10 border-primary ring-1 ring-primary'
+                        : 'bg-secondary border-border hover:border-primary/40'
+                    }`}
+                  >
+                    <Building2 className="h-5 w-5 text-foreground" />
+                    <span className="text-sm font-semibold text-foreground">{t('addFunds.sepa')}</span>
+                    <span className="text-xs text-muted-foreground">{t('addFunds.sepaSubtitle')}</span>
+                  </button>
+                </div>
+              </div>
+
               {depositAmount && depositAmount > 0 && depositFee && depositTotal && (
                 <div className="space-y-1">
                   <div className="text-sm text-foreground font-semibold">
@@ -292,7 +336,9 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
                     {t('addFunds.totalCharged', { total: fmt(depositTotal) })}
                   </div>
                   <div className="text-xs text-muted-foreground/70">
-                    {t('addFunds.processingFee', { fee: fmt(depositFee) })}
+                    {depositPaymentMethod === 'card'
+                      ? t('addFunds.processingFee', { fee: fmt(depositFee) })
+                      : t('addFunds.sepaFee', { fee: fmt(depositFee), platformFee: fmt(platformFee) })}
                   </div>
                 </div>
               )}
