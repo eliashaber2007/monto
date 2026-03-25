@@ -149,7 +149,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
   };
 
   const currencySymbol = currency === "EUR" ? "€" : currency === "GBP" ? "£" : "$";
-  const totalSteps = 3;
+  const totalSteps = 4;
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -172,7 +172,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
                 {step === 3 && t('createPot.receiptVerification')}
                 {step === 4 && t('createPot.paymentOptions')}
               </DialogTitle>
-              {step <= 3 && <span className="ml-auto text-xs text-muted-foreground font-medium">{step}/{totalSteps}</span>}
+              {step <= 4 && <span className="ml-auto text-xs text-muted-foreground font-medium">{step}/{totalSteps}</span>}
             </div>
           </DialogHeader>
 
@@ -270,16 +270,12 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
 
 
               <Button className="w-full h-11 rounded-xl" onClick={() => {
-                if (goalAmount && parseFloat(goalAmount) > 0) {
-                  const potConfig = buildPotConfig();
-                  localStorage.setItem('pendingPotData', JSON.stringify(potConfig));
-                  setCreatedPotId(potConfig.id);
-                  setStep(4);
-                } else {
-                  handleCreate();
-                }
+                const potConfig = buildPotConfig();
+                localStorage.setItem('pendingPotData', JSON.stringify(potConfig));
+                setCreatedPotId(potConfig.id);
+                setStep(4);
               }} disabled={creating}>
-                {creating ? t('createPot.creating') : (goalAmount && parseFloat(goalAmount) > 0 ? t('common.next') : t('createPot.createPot'))}
+                {creating ? t('createPot.creating') : t('createPot.createPot')}
               </Button>
             </div>
           )}
