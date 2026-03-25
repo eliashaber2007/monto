@@ -263,11 +263,17 @@
     "invalidAmountDesc": "Ingresa un monto mayor a 0.",
     "addedToPot": "Añadido al bote: {{amount}}",
     "processingFee": "Incluye {{fee}} de tarifa de Stripe",
+    "sepaFee": "Incluye {{fee}} de comisión de transferencia (€0.35 Stripe + {{platformFee}} comisión plataforma)",
     "totalCharged": "Se te cobrará: {{total}}",
     "payWithStripe": "Pagar con Stripe",
     "redirecting": "Redirigiendo…",
     "restricted": "Restringido",
-    "restrictedDesc": "Solo el creador y los líderes pueden agregar fondos a este bote."
+    "restrictedDesc": "Solo el creador y los líderes pueden agregar fondos a este bote.",
+    "paymentMethod": "Método de pago",
+    "card": "Tarjeta",
+    "cardSubtitle": "Instantáneo",
+    "sepa": "Transferencia bancaria (SEPA)",
+    "sepaSubtitle": "2-3 días hábiles"
   },
   "withdrawalModal": {
     "title": "Solicitar retiro",
