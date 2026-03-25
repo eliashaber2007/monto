@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
 
     const userId = claimsData.claims.sub;
 
-    const { pot_id, amount_cents, base_amount_cents, is_new_pot, pot_config } = await req.json();
+    const { pot_id, amount_cents, base_amount_cents, is_new_pot, pot_config, payment_method } = await req.json();
 
     if (!pot_id || !amount_cents || amount_cents < 100) {
       return new Response(JSON.stringify({ error: 'Invalid params' }), {
@@ -46,8 +46,6 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-
-
 
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, {
       apiVersion: '2024-06-20',
@@ -59,12 +57,23 @@ Deno.serve(async (req) => {
     // amount_cents = total charged (base + processing fee)
     const resolvedBaseCents = base_amount_cents || amount_cents;
 
+    // Determine payment method types
+    const isSepa = payment_method === 'sepa';
+    const paymentMethodTypes: string[] = isSepa ? ['sepa_debit'] : ['card', 'sepa_debit'];
+
     // Build metadata
     const metadata: Record<string, string> = {
       pot_id,
       user_id: userId,
       base_amount_cents: String(resolvedBaseCents),
     };
+
+    if (isSepa) {
+      metadata.payment_method = 'sepa';
+      // Platform fee = 0.5% of base amount (for logging/reporting only)
+      const platformFeeCents = Math.round(resolvedBaseCents * 0.005);
+      metadata.platform_fee_cents = String(platformFeeCents);
+    }
 
     // If this is a new pot creation, store pot config in metadata
     if (is_new_pot && pot_config) {
@@ -78,7 +87,6 @@ Deno.serve(async (req) => {
       metadata.pot_max_withdrawal_amount = String(pot_config.max_withdrawal_amount ?? '');
       metadata.pot_max_withdrawals_per_day = String(pot_config.max_withdrawals_per_day ?? '');
       metadata.pot_emoji = pot_config.emoji || '';
-      
     }
 
     // Set success/cancel URLs based on whether this is a new pot
@@ -92,7 +100,7 @@ Deno.serve(async (req) => {
     // Charge the TOTAL amount (base + fee) so the pot receives the exact base amount
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
-      payment_method_types: ['card', 'sepa_debit'],
+      payment_method_types: paymentMethodTypes,
       line_items: [
         {
           price_data: {
