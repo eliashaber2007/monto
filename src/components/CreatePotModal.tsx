@@ -94,6 +94,7 @@ export default function CreatePotModal({ open, onOpenChange, initialState }: Pro
 
   const reset = () => {
     setStep(1); setPotName(""); setCurrency("EUR"); setGoalAmount(""); setWithdrawalRule(""); setWithdrawalPassword(""); setInitialDeposit(""); setRequireReceipt(false); setMaxWithdrawalAmount(""); setMaxWithdrawalsPerDay(""); setSelectedEmoji(null); setDepositPaymentMethod("sepa");
+    localStorage.removeItem('potCreationState');
   };
 
   const handleClose = (val: boolean) => { if (!val) reset(); onOpenChange(val); };
