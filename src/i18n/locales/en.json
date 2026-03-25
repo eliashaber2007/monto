@@ -264,11 +264,17 @@
     "invalidAmountDesc": "Please enter an amount greater than 0.",
     "addedToPot": "Added to pot: {{amount}}",
     "processingFee": "Includes {{fee}} Stripe processing fee",
+    "sepaFee": "Includes {{fee}} bank transfer fee (€0.35 Stripe + {{platformFee}} platform fee)",
     "totalCharged": "You'll be charged: {{total}}",
     "payWithStripe": "Pay with Stripe",
     "redirecting": "Redirecting…",
     "restricted": "Restricted",
-    "restrictedDesc": "Only the creator and leaders can add funds to this pot."
+    "restrictedDesc": "Only the creator and leaders can add funds to this pot.",
+    "paymentMethod": "Payment method",
+    "card": "Card",
+    "cardSubtitle": "Instant",
+    "sepa": "Bank Transfer (SEPA)",
+    "sepaSubtitle": "2-3 business days"
   },
   "withdrawalModal": {
     "title": "Request Withdrawal",
