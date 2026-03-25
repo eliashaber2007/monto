@@ -56,14 +56,10 @@ export default function AddFundsModal({
 
     setLoading(true);
 
-    const fee = calcFee(amount, paymentMethod);
-    const totalCharged = parseFloat((amount + fee).toFixed(2));
-
     try {
       const res = await supabase.functions.invoke('create-checkout-session', {
         body: {
           pot_id: potId,
-          amount_cents: Math.round(totalCharged * 100),
           base_amount_cents: Math.round(amount * 100),
           payment_method: paymentMethod,
         },

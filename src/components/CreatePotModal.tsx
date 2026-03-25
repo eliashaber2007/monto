@@ -72,10 +72,8 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
 
   const redirectToCheckout = async (potConfig: ReturnType<typeof buildPotConfig>, baseAmountEuros: number, method: PaymentMethod = 'card') => {
     localStorage.setItem('pendingPotData', JSON.stringify(potConfig));
-    const fee = calcFee(baseAmountEuros, method);
-    const totalCharged = parseFloat((baseAmountEuros + fee).toFixed(2));
     const res = await supabase.functions.invoke("create-checkout-session", {
-      body: { pot_id: potConfig.id, amount_cents: Math.round(totalCharged * 100), base_amount_cents: Math.round(baseAmountEuros * 100), is_new_pot: true, payment_method: method, pot_config: { name: potConfig.name, currency: potConfig.currency, goal_amount: potConfig.goal_amount, withdrawal_rule: potConfig.withdrawal_rule, withdrawal_password: potConfig.withdrawal_password, require_receipt: potConfig.require_receipt, max_withdrawal_amount: potConfig.max_withdrawal_amount, max_withdrawals_per_day: potConfig.max_withdrawals_per_day, emoji: potConfig.emoji } },
+      body: { pot_id: potConfig.id, base_amount_cents: Math.round(baseAmountEuros * 100), is_new_pot: true, payment_method: method, pot_config: { name: potConfig.name, currency: potConfig.currency, goal_amount: potConfig.goal_amount, withdrawal_rule: potConfig.withdrawal_rule, withdrawal_password: potConfig.withdrawal_password, require_receipt: potConfig.require_receipt, max_withdrawal_amount: potConfig.max_withdrawal_amount, max_withdrawals_per_day: potConfig.max_withdrawals_per_day, emoji: potConfig.emoji } },
     });
     if (res.error) throw res.error;
     const { url } = res.data as { url: string };
