@@ -234,7 +234,7 @@ export default function MyPots() {
         +
       </button>
 
-      <CreatePotModal open={showCreate} onOpenChange={setShowCreate} />
+      <CreatePotModal open={showCreate} onOpenChange={(val) => { setShowCreate(val); if (!val) setRestoredState(null); }} initialState={restoredState} />
       <NotificationPrompt open={showNotificationPrompt} onClose={() => setShowNotificationPrompt(false)} />
     </div>
   );
