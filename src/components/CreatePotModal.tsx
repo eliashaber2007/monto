@@ -288,7 +288,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
             const cardTotal = parseFloat((baseAmount + cardFee).toFixed(2));
             const sepaFee = calcFee(baseAmount, 'sepa');
             const sepaTotal = parseFloat((baseAmount + sepaFee).toFixed(2));
-            const sepaPlatformFee = parseFloat((baseAmount * 0.005).toFixed(2));
+            
 
             const handlePayNow = async () => {
               setCreating(true);
@@ -303,11 +303,6 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
 
             return (
             <div className="space-y-5">
-              <div className="rounded-xl bg-secondary p-3 text-center">
-                <div className="text-xs text-muted-foreground">{t('createPot.potAmount')}</div>
-                <div className="text-lg font-bold text-foreground">{fmt(baseAmount)}</div>
-              </div>
-
               <div className="grid grid-cols-2 gap-2">
                 {/* Card option */}
                 <button
@@ -315,18 +310,17 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
                   onClick={() => setDepositPaymentMethod('card')}
                   className={`flex flex-col items-start gap-2 rounded-xl border p-3.5 transition-all text-left ${
                     depositPaymentMethod === 'card'
-                      ? 'bg-primary/10 border-primary ring-1 ring-primary'
-                      : 'bg-secondary border-border hover:border-primary/40'
+                      ? 'border-primary ring-1 ring-primary bg-card'
+                      : 'bg-card border-border hover:border-primary/40'
                   }`}
                 >
                   <div className="flex items-center gap-2">
                     <CreditCard className="h-4 w-4 text-foreground" />
                     <span className="text-sm font-semibold text-foreground">{t('addFunds.card')}</span>
                   </div>
-                  <span className="text-xs text-muted-foreground">{t('addFunds.cardSubtitle')}</span>
+                  <span className="text-xs text-muted-foreground">Instant</span>
                   <div className="w-full border-t border-border/50 pt-2 mt-1 space-y-0.5">
                     <div className="text-xs text-muted-foreground">{t('addFunds.addedToPot', { amount: fmt(baseAmount) })}</div>
-                    <div className="text-xs text-muted-foreground">{t('addFunds.processingFee', { fee: fmt(cardFee) })}</div>
                     <div className="text-sm font-semibold text-foreground">{t('addFunds.totalCharged', { total: fmt(cardTotal) })}</div>
                   </div>
                 </button>
@@ -337,31 +331,25 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
                   onClick={() => setDepositPaymentMethod('sepa')}
                   className={`flex flex-col items-start gap-2 rounded-xl border p-3.5 transition-all text-left ${
                     depositPaymentMethod === 'sepa'
-                      ? 'bg-primary/10 border-primary ring-1 ring-primary'
-                      : 'bg-secondary border-border hover:border-primary/40'
+                      ? 'border-primary ring-1 ring-primary bg-card'
+                      : 'bg-card border-border hover:border-primary/40'
                   }`}
                 >
                   <div className="flex items-center gap-2">
                     <Building2 className="h-4 w-4 text-foreground" />
                     <span className="text-sm font-semibold text-foreground">{t('addFunds.sepa')}</span>
                   </div>
-                  <span className="text-xs text-muted-foreground">{t('addFunds.sepaSubtitle')}</span>
+                  <span className="text-xs text-muted-foreground">2-3 business days</span>
                   <div className="w-full border-t border-border/50 pt-2 mt-1 space-y-0.5">
                     <div className="text-xs text-muted-foreground">{t('addFunds.addedToPot', { amount: fmt(baseAmount) })}</div>
-                    <div className="text-xs text-muted-foreground">{t('addFunds.sepaFee', { fee: fmt(sepaFee), platformFee: fmt(sepaPlatformFee) })}</div>
                     <div className="text-sm font-semibold text-foreground">{t('addFunds.totalCharged', { total: fmt(sepaTotal) })}</div>
                   </div>
                 </button>
               </div>
 
-              <div className="flex gap-3">
-                <Button variant="outline" className="flex-1 h-11 rounded-xl" onClick={handleSkipDeposit} type="button" disabled={creating}>
-                  {creating ? t('createPot.creating') : t('common.skip')}
-                </Button>
-                <Button className="flex-1 h-11 rounded-xl" onClick={handlePayNow} disabled={creating} type="button">
-                  {creating ? t('addFunds.redirecting') : t('createPot.payWithStripe')}
-                </Button>
-              </div>
+              <Button className="w-full h-11 rounded-xl" onClick={handlePayNow} disabled={creating} type="button">
+                {creating ? t('addFunds.redirecting') : t('createPot.payNow')}
+              </Button>
             </div>
             );
           })()}
