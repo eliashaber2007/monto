@@ -43,7 +43,7 @@ export default function AddFundsModal({
   const [selected, setSelected] = useState<number | null>(null);
   const [custom, setCustom] = useState('');
   const [loading, setLoading] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('sepa');
   const { toast } = useToast();
 
   const amount = selected ?? (custom ? parseFloat(custom) : null);
