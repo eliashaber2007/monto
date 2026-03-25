@@ -11,7 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ChevronLeft, ChevronRight, Landmark, User, MapPin, CreditCard } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-const stripePromise = loadStripe('pk_test_51T2Gy27r0WrOyS8mTChm4L1Ch8L9OyugbWjtHJIQmZJ2WeFlkYPGVW3OOnX9CVtbhOb8FG1zYcSe2fIHToHcJY4D00fqmrkkix');
+const stripePromise = loadStripe('pk_live_51T2Gxs93UcBwidVzOU6aoSS85l9pjQEyibOLlypFQ62sCExFP4FIVbYBKGJEqlXEJUKgqk9Zi2hShMw6ARjhjaPv00ZfanO1hO');
 
 const COUNTRIES = [
   { code: 'FR', label: 'France' },
