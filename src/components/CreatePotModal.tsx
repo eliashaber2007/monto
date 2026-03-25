@@ -51,7 +51,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
   const [maxWithdrawalAmount, setMaxWithdrawalAmount] = useState("");
   const [maxWithdrawalsPerDay, setMaxWithdrawalsPerDay] = useState("");
   const [selectedEmoji, setSelectedEmoji] = useState<string | null>(null);
-  const [depositPaymentMethod, setDepositPaymentMethod] = useState<PaymentMethod>("card");
+  const [depositPaymentMethod, setDepositPaymentMethod] = useState<PaymentMethod>("sepa");
   
 
   const POT_EMOJIS = [
@@ -61,7 +61,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
   ];
 
   const reset = () => {
-    setStep(1); setPotName(""); setCurrency("EUR"); setGoalAmount(""); setWithdrawalRule(""); setWithdrawalPassword(""); setInitialDeposit(""); setRequireReceipt(false); setMaxWithdrawalAmount(""); setMaxWithdrawalsPerDay(""); setSelectedEmoji(null); setDepositPaymentMethod("card");
+    setStep(1); setPotName(""); setCurrency("EUR"); setGoalAmount(""); setWithdrawalRule(""); setWithdrawalPassword(""); setInitialDeposit(""); setRequireReceipt(false); setMaxWithdrawalAmount(""); setMaxWithdrawalsPerDay(""); setSelectedEmoji(null); setDepositPaymentMethod("sepa");
   };
 
   const handleClose = (val: boolean) => { if (!val) reset(); onOpenChange(val); };
@@ -95,34 +95,33 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
       return;
     }
     if (goalAmount && parseFloat(goalAmount) > 0) {
-      try { await redirectToCheckout(buildPotConfig(), parseFloat(goalAmount)); } catch (err: any) {
-        setCreating(false);
-        toast({ title: t('createPot.checkoutError'), description: err.message, variant: "destructive" });
-      }
+      // Go to Payment Options page (step 4)
+      const potConfig = buildPotConfig();
+      localStorage.setItem('pendingPotData', JSON.stringify(potConfig));
+      setCreatedPotId(potConfig.id);
+      setStep(4);
+      setCreating(false);
       return;
     }
+    // No goal amount — create pot directly without funding
     const potConfig = buildPotConfig();
-    setCreatedPotId(potConfig.id);
-    localStorage.setItem('pendingPotData', JSON.stringify(potConfig));
-    setStep(4);
+    const { data: sessionData2 } = await supabase.auth.getSession();
+    const userId2 = sessionData2?.session?.user?.id;
+    if (!userId2) { setCreating(false); toast({ title: t('createPot.notSignedIn'), variant: "destructive" }); return; }
+    const { error: potError } = await supabase.from("pots").insert({
+      id: potConfig.id, name: potConfig.name, created_by: userId2, visual_style: "progress_ring", currency: potConfig.currency, goal_amount: potConfig.goal_amount, withdrawal_rule: potConfig.withdrawal_rule, withdrawal_password: potConfig.withdrawal_password, require_receipt: potConfig.require_receipt, max_withdrawal_amount: potConfig.max_withdrawal_amount, max_withdrawals_per_day: potConfig.max_withdrawals_per_day, emoji: potConfig.emoji,
+    } as any);
+    if (potError) { setCreating(false); toast({ title: t('common.error'), description: potError.message, variant: "destructive" }); return; }
+    await supabase.from("pot_members").insert({ pot_id: potConfig.id, user_id: userId2, role: "creator" });
+    localStorage.removeItem('pendingPotData');
+    queryClient.invalidateQueries({ queryKey: ["pots"] });
     setCreating(false);
+    reset();
+    onOpenChange(false);
+    toast({ title: t('createPot.potCreated'), description: t('createPot.potCreatedDesc', { name: potConfig.name }) });
+    navigate(`/pots/${potConfig.id}`);
   };
 
-  const handleInitialDeposit = async () => {
-    const amount = parseFloat(initialDeposit);
-    if (!amount || amount <= 0) {
-      toast({ title: t('createPot.invalidAmount'), description: t('createPot.invalidAmountDesc'), variant: "destructive" });
-      return;
-    }
-    setCreating(true);
-    try {
-      const pendingData = JSON.parse(localStorage.getItem('pendingPotData') || '{}');
-      await redirectToCheckout(pendingData, amount, depositPaymentMethod);
-    } catch (err: any) {
-      setCreating(false);
-      toast({ title: t('createPot.checkoutError'), description: err.message, variant: "destructive" });
-    }
-  };
 
   const handleSkipDeposit = async () => {
     setCreating(true);
@@ -171,7 +170,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
                 {step === 1 && t('createPot.setupPot')}
                 {step === 2 && t('createPot.withdrawalRules')}
                 {step === 3 && t('createPot.receiptVerification')}
-                {step === 4 && t('createPot.initialDeposit')}
+                {step === 4 && t('createPot.paymentOptions')}
               </DialogTitle>
               {step <= 3 && <span className="ml-auto text-xs text-muted-foreground font-medium">{step}/{totalSteps}</span>}
             </div>
@@ -276,77 +275,85 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
             </div>
           )}
 
-          {/* Step 4: Initial deposit */}
+          {/* Step 4: Payment Options */}
           {step === 4 && (() => {
-            const depositAmount = initialDeposit ? parseFloat(initialDeposit) : null;
-            const depositFee = depositAmount && depositAmount > 0 ? calcFee(depositAmount, depositPaymentMethod) : null;
-            const depositTotal = depositAmount && depositFee ? parseFloat((depositAmount + depositFee).toFixed(2)) : null;
-            const platformFee = depositAmount && depositAmount > 0 && depositPaymentMethod === 'sepa' ? parseFloat((depositAmount * 0.005).toFixed(2)) : 0;
+            const baseAmount = goalAmount ? parseFloat(goalAmount) : 0;
             const fmt = (v: number) => new Intl.NumberFormat('en-IE', { style: 'currency', currency }).format(v);
+            const cardFee = calcFee(baseAmount, 'card');
+            const cardTotal = parseFloat((baseAmount + cardFee).toFixed(2));
+            const sepaFee = calcFee(baseAmount, 'sepa');
+            const sepaTotal = parseFloat((baseAmount + sepaFee).toFixed(2));
+            const sepaPlatformFee = parseFloat((baseAmount * 0.005).toFixed(2));
+
+            const handlePayNow = async () => {
+              setCreating(true);
+              try {
+                const pendingData = JSON.parse(localStorage.getItem('pendingPotData') || '{}');
+                await redirectToCheckout(pendingData, baseAmount, depositPaymentMethod);
+              } catch (err: any) {
+                setCreating(false);
+                toast({ title: t('createPot.checkoutError'), description: err.message, variant: "destructive" });
+              }
+            };
+
             return (
             <div className="space-y-5">
-              <p className="text-sm text-muted-foreground">{t('createPot.almostReady')}</p>
-              <div className="space-y-1.5">
-                <Label htmlFor="initialDeposit">{t('createPot.depositAmount', { symbol: currencySymbol })}</Label>
-                <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground font-medium text-sm select-none">{currencySymbol}</span>
-                  <Input id="initialDeposit" type="number" min="1" step="0.01" placeholder="e.g. 50" value={initialDeposit} onChange={(e) => setInitialDeposit(e.target.value)} autoFocus className="h-11 pl-9" />
-                </div>
+              <div className="rounded-xl bg-secondary p-3 text-center">
+                <div className="text-xs text-muted-foreground">{t('createPot.potAmount')}</div>
+                <div className="text-lg font-bold text-foreground">{fmt(baseAmount)}</div>
               </div>
 
-              {/* Payment method selector */}
-              <div className="space-y-2">
-                <Label>{t('addFunds.paymentMethod')}</Label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setDepositPaymentMethod('card')}
-                    className={`flex flex-col items-center gap-1 rounded-xl border p-3 transition-all ${
-                      depositPaymentMethod === 'card'
-                        ? 'bg-primary/10 border-primary ring-1 ring-primary'
-                        : 'bg-secondary border-border hover:border-primary/40'
-                    }`}
-                  >
-                    <CreditCard className="h-5 w-5 text-foreground" />
+              <div className="grid grid-cols-2 gap-2">
+                {/* Card option */}
+                <button
+                  type="button"
+                  onClick={() => setDepositPaymentMethod('card')}
+                  className={`flex flex-col items-start gap-2 rounded-xl border p-3.5 transition-all text-left ${
+                    depositPaymentMethod === 'card'
+                      ? 'bg-primary/10 border-primary ring-1 ring-primary'
+                      : 'bg-secondary border-border hover:border-primary/40'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <CreditCard className="h-4 w-4 text-foreground" />
                     <span className="text-sm font-semibold text-foreground">{t('addFunds.card')}</span>
-                    <span className="text-xs text-muted-foreground">{t('addFunds.cardSubtitle')}</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setDepositPaymentMethod('sepa')}
-                    className={`flex flex-col items-center gap-1 rounded-xl border p-3 transition-all ${
-                      depositPaymentMethod === 'sepa'
-                        ? 'bg-primary/10 border-primary ring-1 ring-primary'
-                        : 'bg-secondary border-border hover:border-primary/40'
-                    }`}
-                  >
-                    <Building2 className="h-5 w-5 text-foreground" />
+                  </div>
+                  <span className="text-xs text-muted-foreground">{t('addFunds.cardSubtitle')}</span>
+                  <div className="w-full border-t border-border/50 pt-2 mt-1 space-y-0.5">
+                    <div className="text-xs text-muted-foreground">{t('addFunds.addedToPot', { amount: fmt(baseAmount) })}</div>
+                    <div className="text-xs text-muted-foreground">{t('addFunds.processingFee', { fee: fmt(cardFee) })}</div>
+                    <div className="text-sm font-semibold text-foreground">{t('addFunds.totalCharged', { total: fmt(cardTotal) })}</div>
+                  </div>
+                </button>
+
+                {/* SEPA option */}
+                <button
+                  type="button"
+                  onClick={() => setDepositPaymentMethod('sepa')}
+                  className={`flex flex-col items-start gap-2 rounded-xl border p-3.5 transition-all text-left ${
+                    depositPaymentMethod === 'sepa'
+                      ? 'bg-primary/10 border-primary ring-1 ring-primary'
+                      : 'bg-secondary border-border hover:border-primary/40'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Building2 className="h-4 w-4 text-foreground" />
                     <span className="text-sm font-semibold text-foreground">{t('addFunds.sepa')}</span>
-                    <span className="text-xs text-muted-foreground">{t('addFunds.sepaSubtitle')}</span>
-                  </button>
-                </div>
+                  </div>
+                  <span className="text-xs text-muted-foreground">{t('addFunds.sepaSubtitle')}</span>
+                  <div className="w-full border-t border-border/50 pt-2 mt-1 space-y-0.5">
+                    <div className="text-xs text-muted-foreground">{t('addFunds.addedToPot', { amount: fmt(baseAmount) })}</div>
+                    <div className="text-xs text-muted-foreground">{t('addFunds.sepaFee', { fee: fmt(sepaFee), platformFee: fmt(sepaPlatformFee) })}</div>
+                    <div className="text-sm font-semibold text-foreground">{t('addFunds.totalCharged', { total: fmt(sepaTotal) })}</div>
+                  </div>
+                </button>
               </div>
 
-              {depositAmount && depositAmount > 0 && depositFee && depositTotal && (
-                <div className="space-y-1">
-                  <div className="text-sm text-foreground font-semibold">
-                    {t('addFunds.addedToPot', { amount: fmt(depositAmount) })}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    {t('addFunds.totalCharged', { total: fmt(depositTotal) })}
-                  </div>
-                  <div className="text-xs text-muted-foreground/70">
-                    {depositPaymentMethod === 'card'
-                      ? t('addFunds.processingFee', { fee: fmt(depositFee) })
-                      : t('addFunds.sepaFee', { fee: fmt(depositFee), platformFee: fmt(platformFee) })}
-                  </div>
-                </div>
-              )}
               <div className="flex gap-3">
                 <Button variant="outline" className="flex-1 h-11 rounded-xl" onClick={handleSkipDeposit} type="button" disabled={creating}>
                   {creating ? t('createPot.creating') : t('common.skip')}
                 </Button>
-                <Button className="flex-1 h-11 rounded-xl" onClick={handleInitialDeposit} disabled={creating || !initialDeposit || parseFloat(initialDeposit) <= 0} type="button">
+                <Button className="flex-1 h-11 rounded-xl" onClick={handlePayNow} disabled={creating} type="button">
                   {creating ? t('addFunds.redirecting') : t('createPot.payWithStripe')}
                 </Button>
               </div>
