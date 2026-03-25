@@ -97,7 +97,7 @@ Deno.serve(async (req) => {
       ? `${origin}/?pot_cancelled=true`
       : `${origin}/pots/${pot_id}?payment=cancelled`;
 
-    // Charge the TOTAL amount (base + fee) so the pot receives the exact base amount
+    // Charge the computed total (base + fee)
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: paymentMethodTypes,
@@ -105,7 +105,7 @@ Deno.serve(async (req) => {
         {
           price_data: {
             currency: (pot_config?.currency || 'eur').toLowerCase(),
-            unit_amount: amount_cents,
+            unit_amount: totalCents,
             product_data: { name: is_new_pot ? 'Monto Pot Initial Deposit' : 'Monto Pot Contribution' },
           },
           quantity: 1,
