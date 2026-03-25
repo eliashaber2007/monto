@@ -288,7 +288,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
             const cardTotal = parseFloat((baseAmount + cardFee).toFixed(2));
             const sepaFee = calcFee(baseAmount, 'sepa');
             const sepaTotal = parseFloat((baseAmount + sepaFee).toFixed(2));
-            const sepaPlatformFee = parseFloat((baseAmount * 0.005).toFixed(2));
+            
 
             const handlePayNow = async () => {
               setCreating(true);
