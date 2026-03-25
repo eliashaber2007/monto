@@ -38,9 +38,9 @@ Deno.serve(async (req) => {
 
     const userId = claimsData.claims.sub;
 
-    const { pot_id, amount_cents, base_amount_cents, is_new_pot, pot_config, payment_method } = await req.json();
+    const { pot_id, base_amount_cents, is_new_pot, pot_config, payment_method } = await req.json();
 
-    if (!pot_id || !amount_cents || amount_cents < 100) {
+    if (!pot_id || !base_amount_cents || base_amount_cents < 100) {
       return new Response(JSON.stringify({ error: 'Invalid params' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -53,13 +53,18 @@ Deno.serve(async (req) => {
 
     const origin = req.headers.get('origin') ?? 'https://montofinance.app';
 
-    // base_amount_cents = what the user wants in the pot
-    // amount_cents = total charged (base + processing fee)
-    const resolvedBaseCents = base_amount_cents || amount_cents;
+    const resolvedBaseCents = base_amount_cents;
 
-    // Determine payment method types
+    // Calculate total based on selected payment method
     const isSepa = payment_method === 'sepa';
-    const paymentMethodTypes: string[] = isSepa ? ['sepa_debit'] : ['card', 'sepa_debit'];
+    let totalCents: number;
+    if (isSepa) {
+      totalCents = resolvedBaseCents + 70;
+    } else {
+      totalCents = Math.round(resolvedBaseCents * 1.015 + 25);
+    }
+
+    const paymentMethodTypes: string[] = isSepa ? ['sepa_debit'] : ['card'];
 
     // Build metadata
     const metadata: Record<string, string> = {
@@ -97,7 +102,7 @@ Deno.serve(async (req) => {
       ? `${origin}/?pot_cancelled=true`
       : `${origin}/pots/${pot_id}?payment=cancelled`;
 
-    // Charge the TOTAL amount (base + fee) so the pot receives the exact base amount
+    // Charge the computed total (base + fee)
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: paymentMethodTypes,
@@ -105,7 +110,7 @@ Deno.serve(async (req) => {
         {
           price_data: {
             currency: (pot_config?.currency || 'eur').toLowerCase(),
-            unit_amount: amount_cents,
+            unit_amount: totalCents,
             product_data: { name: is_new_pot ? 'Monto Pot Initial Deposit' : 'Monto Pot Contribution' },
           },
           quantity: 1,
