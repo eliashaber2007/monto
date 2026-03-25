@@ -66,6 +66,7 @@ export default function PotSuccess() {
       }
 
       localStorage.removeItem('pendingPotData');
+      localStorage.removeItem('potCreationState');
 
       queryClient.invalidateQueries({ queryKey: ['pots'] });
 
