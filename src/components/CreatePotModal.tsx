@@ -122,21 +122,6 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
     navigate(`/pots/${potConfig.id}`);
   };
 
-  const handleInitialDeposit = async () => {
-    const amount = parseFloat(initialDeposit);
-    if (!amount || amount <= 0) {
-      toast({ title: t('createPot.invalidAmount'), description: t('createPot.invalidAmountDesc'), variant: "destructive" });
-      return;
-    }
-    setCreating(true);
-    try {
-      const pendingData = JSON.parse(localStorage.getItem('pendingPotData') || '{}');
-      await redirectToCheckout(pendingData, amount, depositPaymentMethod);
-    } catch (err: any) {
-      setCreating(false);
-      toast({ title: t('createPot.checkoutError'), description: err.message, variant: "destructive" });
-    }
-  };
 
   const handleSkipDeposit = async () => {
     setCreating(true);
