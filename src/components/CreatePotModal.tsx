@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
@@ -21,9 +21,24 @@ function calcFee(amount: number, method: PaymentMethod) {
   return parseFloat(((amount * 0.015) + 0.25).toFixed(2));
 }
 
+export interface PotCreationState {
+  step: number;
+  potName: string;
+  currency: string;
+  goalAmount: string;
+  withdrawalRule: WithdrawalRule | "";
+  withdrawalPassword: string;
+  requireReceipt: boolean;
+  maxWithdrawalAmount: string;
+  maxWithdrawalsPerDay: string;
+  selectedEmoji: string | null;
+  depositPaymentMethod: PaymentMethod;
+}
+
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  initialState?: PotCreationState | null;
 }
 
 export default function CreatePotModal({ open, onOpenChange }: Props) {
