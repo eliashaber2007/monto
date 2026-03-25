@@ -92,6 +92,7 @@ Deno.serve(async (req) => {
     // Charge the TOTAL amount (base + fee) so the pot receives the exact base amount
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
+      payment_method_types: ['card', 'sepa_debit'],
       line_items: [
         {
           price_data: {
