@@ -61,10 +61,12 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
     id: crypto.randomUUID(), name: potName.trim(), currency, goal_amount: goalAmount ? parseFloat(goalAmount) : null, withdrawal_rule: withdrawalRule || 'auto_approve', withdrawal_password: withdrawalRule === "requires_password" ? withdrawalPassword : null, require_receipt: requireReceipt, max_withdrawal_amount: maxWithdrawalAmount ? parseFloat(maxWithdrawalAmount) : null, max_withdrawals_per_day: maxWithdrawalsPerDay ? parseInt(maxWithdrawalsPerDay) : null, emoji: selectedEmoji,
   });
 
-  const redirectToCheckout = async (potConfig: ReturnType<typeof buildPotConfig>, amountEuros: number) => {
+  const redirectToCheckout = async (potConfig: ReturnType<typeof buildPotConfig>, baseAmountEuros: number) => {
     localStorage.setItem('pendingPotData', JSON.stringify(potConfig));
+    const fee = parseFloat(((baseAmountEuros * 0.015) + 0.25).toFixed(2));
+    const totalCharged = parseFloat((baseAmountEuros + fee).toFixed(2));
     const res = await supabase.functions.invoke("create-checkout-session", {
-      body: { pot_id: potConfig.id, amount_cents: Math.round(amountEuros * 100), is_new_pot: true, pot_config: { name: potConfig.name, currency: potConfig.currency, goal_amount: potConfig.goal_amount, withdrawal_rule: potConfig.withdrawal_rule, withdrawal_password: potConfig.withdrawal_password, require_receipt: potConfig.require_receipt, max_withdrawal_amount: potConfig.max_withdrawal_amount, max_withdrawals_per_day: potConfig.max_withdrawals_per_day, emoji: potConfig.emoji } },
+      body: { pot_id: potConfig.id, amount_cents: Math.round(totalCharged * 100), base_amount_cents: Math.round(baseAmountEuros * 100), is_new_pot: true, pot_config: { name: potConfig.name, currency: potConfig.currency, goal_amount: potConfig.goal_amount, withdrawal_rule: potConfig.withdrawal_rule, withdrawal_password: potConfig.withdrawal_password, require_receipt: potConfig.require_receipt, max_withdrawal_amount: potConfig.max_withdrawal_amount, max_withdrawals_per_day: potConfig.max_withdrawals_per_day, emoji: potConfig.emoji } },
     });
     if (res.error) throw res.error;
     const { url } = res.data as { url: string };
@@ -266,7 +268,12 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
           )}
 
           {/* Step 4: Initial deposit */}
-          {step === 4 && (
+          {step === 4 && (() => {
+            const depositAmount = initialDeposit ? parseFloat(initialDeposit) : null;
+            const depositFee = depositAmount && depositAmount > 0 ? parseFloat(((depositAmount * 0.015) + 0.25).toFixed(2)) : null;
+            const depositTotal = depositAmount && depositFee ? parseFloat((depositAmount + depositFee).toFixed(2)) : null;
+            const fmt = (v: number) => new Intl.NumberFormat('en-IE', { style: 'currency', currency }).format(v);
+            return (
             <div className="space-y-5">
               <p className="text-sm text-muted-foreground">{t('createPot.almostReady')}</p>
               <div className="space-y-1.5">
@@ -276,6 +283,19 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
                   <Input id="initialDeposit" type="number" min="1" step="0.01" placeholder="e.g. 50" value={initialDeposit} onChange={(e) => setInitialDeposit(e.target.value)} autoFocus className="h-11 pl-9" />
                 </div>
               </div>
+              {depositAmount && depositAmount > 0 && depositFee && depositTotal && (
+                <div className="space-y-1">
+                  <div className="text-sm text-foreground font-semibold">
+                    {t('addFunds.addedToPot', { amount: fmt(depositAmount) })}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {t('addFunds.totalCharged', { total: fmt(depositTotal) })}
+                  </div>
+                  <div className="text-xs text-muted-foreground/70">
+                    {t('addFunds.processingFee', { fee: fmt(depositFee) })}
+                  </div>
+                </div>
+              )}
               <div className="flex gap-3">
                 <Button variant="outline" className="flex-1 h-11 rounded-xl" onClick={handleSkipDeposit} type="button" disabled={creating}>
                   {creating ? t('createPot.creating') : t('common.skip')}
@@ -285,7 +305,8 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
                 </Button>
               </div>
             </div>
-          )}
+            );
+          })()}
         </div>
       </DialogContent>
     </Dialog>
