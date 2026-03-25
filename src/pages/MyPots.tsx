@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useProfile, usePots } from '@/hooks/usePots';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
-import CreatePotModal from '@/components/CreatePotModal';
+import CreatePotModal, { type PotCreationState } from '@/components/CreatePotModal';
 import NotificationBell from '@/components/NotificationBell';
 import NotificationPrompt from '@/components/NotificationPrompt';
 import { useTranslation } from 'react-i18next';
@@ -61,13 +61,24 @@ export default function MyPots() {
   const { data: pots, isLoading } = usePots();
   const [showCreate, setShowCreate] = useState(false);
   const [showNotificationPrompt, setShowNotificationPrompt] = useState(false);
+  const [restoredState, setRestoredState] = useState<PotCreationState | null>(null);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
 
   useEffect(() => {
     if (searchParams.get('pot_cancelled') === 'true') {
-      localStorage.removeItem('pendingPotData');
+      // Try to restore saved form state
+      const savedState = localStorage.getItem('potCreationState');
+      if (savedState) {
+        try {
+          const parsed = JSON.parse(savedState) as PotCreationState;
+          setRestoredState(parsed);
+          setShowCreate(true);
+        } catch {
+          localStorage.removeItem('potCreationState');
+        }
+      }
       setSearchParams({}, { replace: true });
     }
   }, [searchParams]);
@@ -223,7 +234,7 @@ export default function MyPots() {
         +
       </button>
 
-      <CreatePotModal open={showCreate} onOpenChange={setShowCreate} />
+      <CreatePotModal open={showCreate} onOpenChange={(val) => { setShowCreate(val); if (!val) setRestoredState(null); }} initialState={restoredState} />
       <NotificationPrompt open={showNotificationPrompt} onClose={() => setShowNotificationPrompt(false)} />
     </div>
   );

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
@@ -21,12 +21,27 @@ function calcFee(amount: number, method: PaymentMethod) {
   return parseFloat(((amount * 0.015) + 0.25).toFixed(2));
 }
 
+export interface PotCreationState {
+  step: number;
+  potName: string;
+  currency: string;
+  goalAmount: string;
+  withdrawalRule: WithdrawalRule | "";
+  withdrawalPassword: string;
+  requireReceipt: boolean;
+  maxWithdrawalAmount: string;
+  maxWithdrawalsPerDay: string;
+  selectedEmoji: string | null;
+  depositPaymentMethod: PaymentMethod;
+}
+
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  initialState?: PotCreationState | null;
 }
 
-export default function CreatePotModal({ open, onOpenChange }: Props) {
+export default function CreatePotModal({ open, onOpenChange, initialState }: Props) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -38,20 +53,37 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
     { id: "requires_password", label: t('createPot.requiresPassword'), desc: t('createPot.requiresPasswordDesc') },
   ];
 
-  const [step, setStep] = useState(1);
-  const [potName, setPotName] = useState("");
-  const [currency, setCurrency] = useState("EUR");
-  const [goalAmount, setGoalAmount] = useState("");
-  const [withdrawalRule, setWithdrawalRule] = useState<WithdrawalRule | "">("")
-  const [withdrawalPassword, setWithdrawalPassword] = useState("");
+  const [step, setStep] = useState(initialState?.step ?? 1);
+  const [potName, setPotName] = useState(initialState?.potName ?? "");
+  const [currency, setCurrency] = useState(initialState?.currency ?? "EUR");
+  const [goalAmount, setGoalAmount] = useState(initialState?.goalAmount ?? "");
+  const [withdrawalRule, setWithdrawalRule] = useState<WithdrawalRule | "">(initialState?.withdrawalRule ?? "")
+  const [withdrawalPassword, setWithdrawalPassword] = useState(initialState?.withdrawalPassword ?? "");
   const [creating, setCreating] = useState(false);
   const [initialDeposit, setInitialDeposit] = useState("");
   const [createdPotId, setCreatedPotId] = useState<string | null>(null);
-  const [requireReceipt, setRequireReceipt] = useState(false);
-  const [maxWithdrawalAmount, setMaxWithdrawalAmount] = useState("");
-  const [maxWithdrawalsPerDay, setMaxWithdrawalsPerDay] = useState("");
-  const [selectedEmoji, setSelectedEmoji] = useState<string | null>(null);
-  const [depositPaymentMethod, setDepositPaymentMethod] = useState<PaymentMethod>("sepa");
+  const [requireReceipt, setRequireReceipt] = useState(initialState?.requireReceipt ?? false);
+  const [maxWithdrawalAmount, setMaxWithdrawalAmount] = useState(initialState?.maxWithdrawalAmount ?? "");
+  const [maxWithdrawalsPerDay, setMaxWithdrawalsPerDay] = useState(initialState?.maxWithdrawalsPerDay ?? "");
+  const [selectedEmoji, setSelectedEmoji] = useState<string | null>(initialState?.selectedEmoji ?? null);
+  const [depositPaymentMethod, setDepositPaymentMethod] = useState<PaymentMethod>(initialState?.depositPaymentMethod ?? "sepa");
+
+  // Restore state when initialState changes (e.g. returning from cancelled checkout)
+  useEffect(() => {
+    if (initialState) {
+      setStep(initialState.step);
+      setPotName(initialState.potName);
+      setCurrency(initialState.currency);
+      setGoalAmount(initialState.goalAmount);
+      setWithdrawalRule(initialState.withdrawalRule);
+      setWithdrawalPassword(initialState.withdrawalPassword);
+      setRequireReceipt(initialState.requireReceipt);
+      setMaxWithdrawalAmount(initialState.maxWithdrawalAmount);
+      setMaxWithdrawalsPerDay(initialState.maxWithdrawalsPerDay);
+      setSelectedEmoji(initialState.selectedEmoji);
+      setDepositPaymentMethod(initialState.depositPaymentMethod);
+    }
+  }, [initialState]);
   
 
   const POT_EMOJIS = [
@@ -62,6 +94,7 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
 
   const reset = () => {
     setStep(1); setPotName(""); setCurrency("EUR"); setGoalAmount(""); setWithdrawalRule(""); setWithdrawalPassword(""); setInitialDeposit(""); setRequireReceipt(false); setMaxWithdrawalAmount(""); setMaxWithdrawalsPerDay(""); setSelectedEmoji(null); setDepositPaymentMethod("sepa");
+    localStorage.removeItem('potCreationState');
   };
 
   const handleClose = (val: boolean) => { if (!val) reset(); onOpenChange(val); };
@@ -70,8 +103,17 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
     id: crypto.randomUUID(), name: potName.trim(), currency, goal_amount: goalAmount ? parseFloat(goalAmount) : null, withdrawal_rule: withdrawalRule || 'auto_approve', withdrawal_password: withdrawalRule === "requires_password" ? withdrawalPassword : null, require_receipt: requireReceipt, max_withdrawal_amount: maxWithdrawalAmount ? parseFloat(maxWithdrawalAmount) : null, max_withdrawals_per_day: maxWithdrawalsPerDay ? parseInt(maxWithdrawalsPerDay) : null, emoji: selectedEmoji,
   });
 
+  const saveFormState = () => {
+    const formState: PotCreationState = {
+      step: 4, potName, currency, goalAmount, withdrawalRule, withdrawalPassword,
+      requireReceipt, maxWithdrawalAmount, maxWithdrawalsPerDay, selectedEmoji, depositPaymentMethod,
+    };
+    localStorage.setItem('potCreationState', JSON.stringify(formState));
+  };
+
   const redirectToCheckout = async (potConfig: ReturnType<typeof buildPotConfig>, baseAmountEuros: number, method: PaymentMethod = 'card') => {
     localStorage.setItem('pendingPotData', JSON.stringify(potConfig));
+    saveFormState();
     const res = await supabase.functions.invoke("create-checkout-session", {
       body: { pot_id: potConfig.id, base_amount_cents: Math.round(baseAmountEuros * 100), is_new_pot: true, payment_method: method, pot_config: { name: potConfig.name, currency: potConfig.currency, goal_amount: potConfig.goal_amount, withdrawal_rule: potConfig.withdrawal_rule, withdrawal_password: potConfig.withdrawal_password, require_receipt: potConfig.require_receipt, max_withdrawal_amount: potConfig.max_withdrawal_amount, max_withdrawals_per_day: potConfig.max_withdrawals_per_day, emoji: potConfig.emoji } },
     });
