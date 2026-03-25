@@ -41,7 +41,7 @@ interface Props {
   initialState?: PotCreationState | null;
 }
 
-export default function CreatePotModal({ open, onOpenChange }: Props) {
+export default function CreatePotModal({ open, onOpenChange, initialState }: Props) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -53,20 +53,37 @@ export default function CreatePotModal({ open, onOpenChange }: Props) {
     { id: "requires_password", label: t('createPot.requiresPassword'), desc: t('createPot.requiresPasswordDesc') },
   ];
 
-  const [step, setStep] = useState(1);
-  const [potName, setPotName] = useState("");
-  const [currency, setCurrency] = useState("EUR");
-  const [goalAmount, setGoalAmount] = useState("");
-  const [withdrawalRule, setWithdrawalRule] = useState<WithdrawalRule | "">("")
-  const [withdrawalPassword, setWithdrawalPassword] = useState("");
+  const [step, setStep] = useState(initialState?.step ?? 1);
+  const [potName, setPotName] = useState(initialState?.potName ?? "");
+  const [currency, setCurrency] = useState(initialState?.currency ?? "EUR");
+  const [goalAmount, setGoalAmount] = useState(initialState?.goalAmount ?? "");
+  const [withdrawalRule, setWithdrawalRule] = useState<WithdrawalRule | "">(initialState?.withdrawalRule ?? "")
+  const [withdrawalPassword, setWithdrawalPassword] = useState(initialState?.withdrawalPassword ?? "");
   const [creating, setCreating] = useState(false);
   const [initialDeposit, setInitialDeposit] = useState("");
   const [createdPotId, setCreatedPotId] = useState<string | null>(null);
-  const [requireReceipt, setRequireReceipt] = useState(false);
-  const [maxWithdrawalAmount, setMaxWithdrawalAmount] = useState("");
-  const [maxWithdrawalsPerDay, setMaxWithdrawalsPerDay] = useState("");
-  const [selectedEmoji, setSelectedEmoji] = useState<string | null>(null);
-  const [depositPaymentMethod, setDepositPaymentMethod] = useState<PaymentMethod>("sepa");
+  const [requireReceipt, setRequireReceipt] = useState(initialState?.requireReceipt ?? false);
+  const [maxWithdrawalAmount, setMaxWithdrawalAmount] = useState(initialState?.maxWithdrawalAmount ?? "");
+  const [maxWithdrawalsPerDay, setMaxWithdrawalsPerDay] = useState(initialState?.maxWithdrawalsPerDay ?? "");
+  const [selectedEmoji, setSelectedEmoji] = useState<string | null>(initialState?.selectedEmoji ?? null);
+  const [depositPaymentMethod, setDepositPaymentMethod] = useState<PaymentMethod>(initialState?.depositPaymentMethod ?? "sepa");
+
+  // Restore state when initialState changes (e.g. returning from cancelled checkout)
+  useEffect(() => {
+    if (initialState) {
+      setStep(initialState.step);
+      setPotName(initialState.potName);
+      setCurrency(initialState.currency);
+      setGoalAmount(initialState.goalAmount);
+      setWithdrawalRule(initialState.withdrawalRule);
+      setWithdrawalPassword(initialState.withdrawalPassword);
+      setRequireReceipt(initialState.requireReceipt);
+      setMaxWithdrawalAmount(initialState.maxWithdrawalAmount);
+      setMaxWithdrawalsPerDay(initialState.maxWithdrawalsPerDay);
+      setSelectedEmoji(initialState.selectedEmoji);
+      setDepositPaymentMethod(initialState.depositPaymentMethod);
+    }
+  }, [initialState]);
   
 
   const POT_EMOJIS = [
