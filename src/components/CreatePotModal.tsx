@@ -102,8 +102,17 @@ export default function CreatePotModal({ open, onOpenChange, initialState }: Pro
     id: crypto.randomUUID(), name: potName.trim(), currency, goal_amount: goalAmount ? parseFloat(goalAmount) : null, withdrawal_rule: withdrawalRule || 'auto_approve', withdrawal_password: withdrawalRule === "requires_password" ? withdrawalPassword : null, require_receipt: requireReceipt, max_withdrawal_amount: maxWithdrawalAmount ? parseFloat(maxWithdrawalAmount) : null, max_withdrawals_per_day: maxWithdrawalsPerDay ? parseInt(maxWithdrawalsPerDay) : null, emoji: selectedEmoji,
   });
 
+  const saveFormState = () => {
+    const formState: PotCreationState = {
+      step: 4, potName, currency, goalAmount, withdrawalRule, withdrawalPassword,
+      requireReceipt, maxWithdrawalAmount, maxWithdrawalsPerDay, selectedEmoji, depositPaymentMethod,
+    };
+    localStorage.setItem('potCreationState', JSON.stringify(formState));
+  };
+
   const redirectToCheckout = async (potConfig: ReturnType<typeof buildPotConfig>, baseAmountEuros: number, method: PaymentMethod = 'card') => {
     localStorage.setItem('pendingPotData', JSON.stringify(potConfig));
+    saveFormState();
     const res = await supabase.functions.invoke("create-checkout-session", {
       body: { pot_id: potConfig.id, base_amount_cents: Math.round(baseAmountEuros * 100), is_new_pot: true, payment_method: method, pot_config: { name: potConfig.name, currency: potConfig.currency, goal_amount: potConfig.goal_amount, withdrawal_rule: potConfig.withdrawal_rule, withdrawal_password: potConfig.withdrawal_password, require_receipt: potConfig.require_receipt, max_withdrawal_amount: potConfig.max_withdrawal_amount, max_withdrawals_per_day: potConfig.max_withdrawals_per_day, emoji: potConfig.emoji } },
     });
