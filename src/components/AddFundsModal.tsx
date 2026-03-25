@@ -11,8 +11,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
+import { CreditCard, Building2 } from 'lucide-react';
 
 const QUICK_AMOUNTS = [10, 25, 50, 100];
+
+type PaymentMethod = 'card' | 'sepa';
+
+function calcFee(amount: number, method: PaymentMethod) {
+  if (method === 'sepa') {
+    return parseFloat(((amount * 0.005) + 0.35).toFixed(2));
+  }
+  return parseFloat(((amount * 0.015) + 0.25).toFixed(2));
+}
 
 interface AddFundsModalProps {
   open: boolean;
@@ -33,6 +43,7 @@ export default function AddFundsModal({
   const [selected, setSelected] = useState<number | null>(null);
   const [custom, setCustom] = useState('');
   const [loading, setLoading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card');
   const { toast } = useToast();
 
   const amount = selected ?? (custom ? parseFloat(custom) : null);
@@ -45,12 +56,17 @@ export default function AddFundsModal({
 
     setLoading(true);
 
-    const fee = parseFloat(((amount * 0.015) + 0.25).toFixed(2));
+    const fee = calcFee(amount, paymentMethod);
     const totalCharged = parseFloat((amount + fee).toFixed(2));
 
     try {
       const res = await supabase.functions.invoke('create-checkout-session', {
-        body: { pot_id: potId, amount_cents: Math.round(totalCharged * 100), base_amount_cents: Math.round(amount * 100) },
+        body: {
+          pot_id: potId,
+          amount_cents: Math.round(totalCharged * 100),
+          base_amount_cents: Math.round(amount * 100),
+          payment_method: paymentMethod,
+        },
       });
 
       if (res.error) throw res.error;
@@ -65,6 +81,7 @@ export default function AddFundsModal({
     }
   };
 
+  const fmt = (v: number) => new Intl.NumberFormat('en-IE', { style: 'currency', currency }).format(v);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -107,10 +124,43 @@ export default function AddFundsModal({
             />
           </div>
 
+          {/* Payment method selector */}
+          <div className="space-y-2">
+            <Label>{t('addFunds.paymentMethod')}</Label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('card')}
+                className={`flex flex-col items-center gap-1 rounded-xl border p-3 transition-all ${
+                  paymentMethod === 'card'
+                    ? 'bg-primary/10 border-primary ring-1 ring-primary'
+                    : 'bg-secondary border-border hover:border-primary/40'
+                }`}
+              >
+                <CreditCard className="h-5 w-5 text-foreground" />
+                <span className="text-sm font-semibold text-foreground">{t('addFunds.card')}</span>
+                <span className="text-xs text-muted-foreground">{t('addFunds.cardSubtitle')}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('sepa')}
+                className={`flex flex-col items-center gap-1 rounded-xl border p-3 transition-all ${
+                  paymentMethod === 'sepa'
+                    ? 'bg-primary/10 border-primary ring-1 ring-primary'
+                    : 'bg-secondary border-border hover:border-primary/40'
+                }`}
+              >
+                <Building2 className="h-5 w-5 text-foreground" />
+                <span className="text-sm font-semibold text-foreground">{t('addFunds.sepa')}</span>
+                <span className="text-xs text-muted-foreground">{t('addFunds.sepaSubtitle')}</span>
+              </button>
+            </div>
+          </div>
+
           {amount && amount > 0 && (() => {
-            const fee = parseFloat(((amount * 0.015) + 0.25).toFixed(2));
+            const fee = calcFee(amount, paymentMethod);
             const totalCharged = parseFloat((amount + fee).toFixed(2));
-            const fmt = (v: number) => new Intl.NumberFormat('en-IE', { style: 'currency', currency }).format(v);
+            const platformFee = paymentMethod === 'sepa' ? parseFloat((amount * 0.005).toFixed(2)) : 0;
             return (
               <div className="space-y-1">
                 <div className="text-sm text-foreground font-semibold">
@@ -120,7 +170,9 @@ export default function AddFundsModal({
                   {t('addFunds.totalCharged', { total: fmt(totalCharged) })}
                 </div>
                 <div className="text-xs text-muted-foreground/70">
-                  {t('addFunds.processingFee', { fee: fmt(fee) })}
+                  {paymentMethod === 'card'
+                    ? t('addFunds.processingFee', { fee: fmt(fee) })
+                    : t('addFunds.sepaFee', { fee: fmt(fee), platformFee: fmt(platformFee) })}
                 </div>
               </div>
             );
