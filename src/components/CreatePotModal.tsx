@@ -315,7 +315,7 @@ export default function CreatePotModal({ open, onOpenChange, initialState }: Pro
                 setCreatedPotId(potConfig.id);
                 setStep(4);
               }} disabled={creating}>
-                {creating ? t('createPot.creating') : t('createPot.createPot')}
+                {t('common.next')}
               </Button>
             </div>
           )}
@@ -388,7 +388,7 @@ export default function CreatePotModal({ open, onOpenChange, initialState }: Pro
               </div>
 
               <Button className="w-full h-11 rounded-xl" onClick={handlePayNow} disabled={creating} type="button">
-                {creating ? t('addFunds.redirecting') : t('createPot.payNow')}
+                {creating ? t('addFunds.redirecting') : t('createPot.createPot')}
               </Button>
             </div>
             );
