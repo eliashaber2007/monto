@@ -388,7 +388,7 @@ export default function CreatePotModal({ open, onOpenChange, initialState }: Pro
               </div>
 
               <Button className="w-full h-11 rounded-xl" onClick={handlePayNow} disabled={creating} type="button">
-                {creating ? t('addFunds.redirecting') : t('createPot.createPotFinal')}
+                {creating ? t('addFunds.redirecting') : t('createPot.createPot')}
               </Button>
             </div>
             );
