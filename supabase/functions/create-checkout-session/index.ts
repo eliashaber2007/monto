@@ -56,15 +56,18 @@ Deno.serve(async (req) => {
     const resolvedBaseCents = base_amount_cents;
 
     // Calculate total based on selected payment method
-    const isSepa = payment_method === 'sepa';
     let totalCents: number;
-    if (isSepa) {
-      totalCents = resolvedBaseCents + 70;
+    let paymentMethodTypes: string[];
+    if (payment_method === 'sepa') {
+      totalCents = Math.round(resolvedBaseCents * 1.005 + 35);
+      paymentMethodTypes = ['sepa_debit'];
+    } else if (payment_method === 'revolut_pay') {
+      totalCents = Math.round(resolvedBaseCents * 1.012 + 15);
+      paymentMethodTypes = ['revolut_pay'];
     } else {
-      totalCents = Math.round(resolvedBaseCents * 1.015 + 25);
+      totalCents = Math.round(resolvedBaseCents * 1.02 + 25);
+      paymentMethodTypes = ['card'];
     }
-
-    const paymentMethodTypes: string[] = isSepa ? ['sepa_debit'] : ['card'];
 
     // Build metadata
     const metadata: Record<string, string> = {
