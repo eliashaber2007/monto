@@ -8,17 +8,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ChevronLeft, CreditCard, Building2 } from "lucide-react";
+import { ChevronLeft, CreditCard, Building2, Wallet } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 type WithdrawalRule = "auto_approve" | "requires_approval" | "requires_password";
-type PaymentMethod = "card" | "sepa";
+type PaymentMethod = "card" | "revolut_pay" | "sepa";
 
 function calcFee(amount: number, method: PaymentMethod) {
   if (method === 'sepa') {
     return parseFloat(((amount * 0.005) + 0.35).toFixed(2));
   }
-  return parseFloat(((amount * 0.015) + 0.25).toFixed(2));
+  if (method === 'revolut_pay') {
+    return parseFloat(((amount * 0.012) + 0.15).toFixed(2));
+  }
+  return parseFloat(((amount * 0.02) + 0.25).toFixed(2));
 }
 
 export interface PotCreationState {
@@ -66,7 +69,7 @@ export default function CreatePotModal({ open, onOpenChange, initialState }: Pro
   const [maxWithdrawalAmount, setMaxWithdrawalAmount] = useState(initialState?.maxWithdrawalAmount ?? "");
   const [maxWithdrawalsPerDay, setMaxWithdrawalsPerDay] = useState(initialState?.maxWithdrawalsPerDay ?? "");
   const [selectedEmoji, setSelectedEmoji] = useState<string | null>(initialState?.selectedEmoji ?? null);
-  const [depositPaymentMethod, setDepositPaymentMethod] = useState<PaymentMethod>(initialState?.depositPaymentMethod ?? "sepa");
+  const [depositPaymentMethod, setDepositPaymentMethod] = useState<PaymentMethod>(initialState?.depositPaymentMethod ?? "revolut_pay");
 
   // Restore state when initialState changes (e.g. returning from cancelled checkout)
   useEffect(() => {
@@ -93,7 +96,7 @@ export default function CreatePotModal({ open, onOpenChange, initialState }: Pro
   ];
 
   const reset = () => {
-    setStep(1); setPotName(""); setCurrency("EUR"); setGoalAmount(""); setWithdrawalRule(""); setWithdrawalPassword(""); setInitialDeposit(""); setRequireReceipt(false); setMaxWithdrawalAmount(""); setMaxWithdrawalsPerDay(""); setSelectedEmoji(null); setDepositPaymentMethod("sepa");
+    setStep(1); setPotName(""); setCurrency("EUR"); setGoalAmount(""); setWithdrawalRule(""); setWithdrawalPassword(""); setInitialDeposit(""); setRequireReceipt(false); setMaxWithdrawalAmount(""); setMaxWithdrawalsPerDay(""); setSelectedEmoji(null); setDepositPaymentMethod("revolut_pay");
     localStorage.removeItem('potCreationState');
   };
 
