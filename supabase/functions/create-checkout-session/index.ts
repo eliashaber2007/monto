@@ -76,11 +76,8 @@ Deno.serve(async (req) => {
       base_amount_cents: String(resolvedBaseCents),
     };
 
-    if (isSepa) {
-      metadata.payment_method = 'sepa';
-      // Platform fee = 0.5% of base amount (for logging/reporting only)
-      const platformFeeCents = Math.round(resolvedBaseCents * 0.005);
-      metadata.platform_fee_cents = String(platformFeeCents);
+    if (payment_method === 'sepa' || payment_method === 'revolut_pay') {
+      metadata.payment_method = payment_method;
     }
 
     // If this is a new pot creation, store pot config in metadata
