@@ -8,17 +8,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ChevronLeft, CreditCard, Building2 } from "lucide-react";
+import { ChevronLeft, CreditCard, Building2, Wallet } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 type WithdrawalRule = "auto_approve" | "requires_approval" | "requires_password";
-type PaymentMethod = "card" | "sepa";
+type PaymentMethod = "card" | "revolut_pay" | "sepa";
 
 function calcFee(amount: number, method: PaymentMethod) {
   if (method === 'sepa') {
     return parseFloat(((amount * 0.005) + 0.35).toFixed(2));
   }
-  return parseFloat(((amount * 0.015) + 0.25).toFixed(2));
+  if (method === 'revolut_pay') {
+    return parseFloat(((amount * 0.012) + 0.15).toFixed(2));
+  }
+  return parseFloat(((amount * 0.02) + 0.25).toFixed(2));
 }
 
 export interface PotCreationState {
@@ -66,7 +69,7 @@ export default function CreatePotModal({ open, onOpenChange, initialState }: Pro
   const [maxWithdrawalAmount, setMaxWithdrawalAmount] = useState(initialState?.maxWithdrawalAmount ?? "");
   const [maxWithdrawalsPerDay, setMaxWithdrawalsPerDay] = useState(initialState?.maxWithdrawalsPerDay ?? "");
   const [selectedEmoji, setSelectedEmoji] = useState<string | null>(initialState?.selectedEmoji ?? null);
-  const [depositPaymentMethod, setDepositPaymentMethod] = useState<PaymentMethod>(initialState?.depositPaymentMethod ?? "sepa");
+  const [depositPaymentMethod, setDepositPaymentMethod] = useState<PaymentMethod>(initialState?.depositPaymentMethod ?? "revolut_pay");
 
   // Restore state when initialState changes (e.g. returning from cancelled checkout)
   useEffect(() => {
@@ -93,7 +96,7 @@ export default function CreatePotModal({ open, onOpenChange, initialState }: Pro
   ];
 
   const reset = () => {
-    setStep(1); setPotName(""); setCurrency("EUR"); setGoalAmount(""); setWithdrawalRule(""); setWithdrawalPassword(""); setInitialDeposit(""); setRequireReceipt(false); setMaxWithdrawalAmount(""); setMaxWithdrawalsPerDay(""); setSelectedEmoji(null); setDepositPaymentMethod("sepa");
+    setStep(1); setPotName(""); setCurrency("EUR"); setGoalAmount(""); setWithdrawalRule(""); setWithdrawalPassword(""); setInitialDeposit(""); setRequireReceipt(false); setMaxWithdrawalAmount(""); setMaxWithdrawalsPerDay(""); setSelectedEmoji(null); setDepositPaymentMethod("revolut_pay");
     localStorage.removeItem('potCreationState');
   };
 
@@ -323,18 +326,17 @@ export default function CreatePotModal({ open, onOpenChange, initialState }: Pro
           {/* Step 4: Payment Options */}
           {step === 4 && (() => {
             const baseAmount = goalAmount ? parseFloat(goalAmount) : 0;
+            const showSepa = baseAmount >= 200;
+            const effectiveMethod = depositPaymentMethod === 'sepa' && !showSepa ? 'revolut_pay' : depositPaymentMethod;
             const fmt = (v: number) => new Intl.NumberFormat('en-IE', { style: 'currency', currency }).format(v);
-            const cardFee = calcFee(baseAmount, 'card');
-            const cardTotal = parseFloat((baseAmount + cardFee).toFixed(2));
-            const sepaFee = calcFee(baseAmount, 'sepa');
-            const sepaTotal = parseFloat((baseAmount + sepaFee).toFixed(2));
-            
+            const fee = calcFee(baseAmount, effectiveMethod);
+            const total = parseFloat((baseAmount + fee).toFixed(2));
 
             const handlePayNow = async () => {
               setCreating(true);
               try {
                 const pendingData = JSON.parse(localStorage.getItem('pendingPotData') || '{}');
-                await redirectToCheckout(pendingData, baseAmount, depositPaymentMethod);
+                await redirectToCheckout(pendingData, baseAmount, effectiveMethod);
               } catch (err: any) {
                 setCreating(false);
                 toast({ title: t('createPot.checkoutError'), description: err.message, variant: "destructive" });
@@ -343,13 +345,13 @@ export default function CreatePotModal({ open, onOpenChange, initialState }: Pro
 
             return (
             <div className="space-y-5">
-              <div className="grid grid-cols-2 gap-2">
+              <div className={`grid gap-2 ${showSepa ? 'grid-cols-3' : 'grid-cols-2'}`}>
                 {/* Card option */}
                 <button
                   type="button"
                   onClick={() => setDepositPaymentMethod('card')}
                   className={`flex flex-col items-start gap-2 rounded-xl border p-3.5 transition-all text-left ${
-                    depositPaymentMethod === 'card'
+                    effectiveMethod === 'card'
                       ? 'border-primary ring-1 ring-primary bg-card'
                       : 'bg-card border-border hover:border-primary/40'
                   }`}
@@ -358,33 +360,56 @@ export default function CreatePotModal({ open, onOpenChange, initialState }: Pro
                     <CreditCard className="h-4 w-4 text-foreground" />
                     <span className="text-sm font-semibold text-foreground">{t('addFunds.card')}</span>
                   </div>
-                  <span className="text-xs text-muted-foreground">Instant</span>
+                  <span className="text-xs text-muted-foreground">{t('addFunds.cardSubtitle')}</span>
                   <div className="w-full border-t border-border/50 pt-2 mt-1 space-y-0.5">
                     <div className="text-xs text-muted-foreground">{t('addFunds.addedToPot', { amount: fmt(baseAmount) })}</div>
-                    <div className="text-sm font-semibold text-foreground">{t('addFunds.totalCharged', { total: fmt(cardTotal) })}</div>
+                    <div className="text-sm font-semibold text-foreground">{t('addFunds.totalCharged', { total: fmt(parseFloat((baseAmount + calcFee(baseAmount, 'card')).toFixed(2))) })}</div>
                   </div>
                 </button>
 
-                {/* SEPA option */}
+                {/* Revolut Pay option */}
                 <button
                   type="button"
-                  onClick={() => setDepositPaymentMethod('sepa')}
+                  onClick={() => setDepositPaymentMethod('revolut_pay')}
                   className={`flex flex-col items-start gap-2 rounded-xl border p-3.5 transition-all text-left ${
-                    depositPaymentMethod === 'sepa'
+                    effectiveMethod === 'revolut_pay'
                       ? 'border-primary ring-1 ring-primary bg-card'
                       : 'bg-card border-border hover:border-primary/40'
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <Building2 className="h-4 w-4 text-foreground" />
-                    <span className="text-sm font-semibold text-foreground">{t('addFunds.sepa')}</span>
+                    <Wallet className="h-4 w-4 text-foreground" />
+                    <span className="text-sm font-semibold text-foreground">{t('addFunds.revolut')}</span>
                   </div>
-                  <span className="text-xs text-muted-foreground">2-3 business days</span>
+                  <span className="text-xs text-muted-foreground">{t('addFunds.revolutSubtitle')}</span>
                   <div className="w-full border-t border-border/50 pt-2 mt-1 space-y-0.5">
                     <div className="text-xs text-muted-foreground">{t('addFunds.addedToPot', { amount: fmt(baseAmount) })}</div>
-                    <div className="text-sm font-semibold text-foreground">{t('addFunds.totalCharged', { total: fmt(sepaTotal) })}</div>
+                    <div className="text-sm font-semibold text-foreground">{t('addFunds.totalCharged', { total: fmt(parseFloat((baseAmount + calcFee(baseAmount, 'revolut_pay')).toFixed(2))) })}</div>
                   </div>
                 </button>
+
+                {/* SEPA option - only for amounts >= €200 */}
+                {showSepa && (
+                  <button
+                    type="button"
+                    onClick={() => setDepositPaymentMethod('sepa')}
+                    className={`flex flex-col items-start gap-2 rounded-xl border p-3.5 transition-all text-left ${
+                      effectiveMethod === 'sepa'
+                        ? 'border-primary ring-1 ring-primary bg-card'
+                        : 'bg-card border-border hover:border-primary/40'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Building2 className="h-4 w-4 text-foreground" />
+                      <span className="text-sm font-semibold text-foreground">{t('addFunds.sepa')}</span>
+                    </div>
+                    <span className="text-xs text-muted-foreground">{t('addFunds.sepaSubtitle')}</span>
+                    <div className="w-full border-t border-border/50 pt-2 mt-1 space-y-0.5">
+                      <div className="text-xs text-muted-foreground">{t('addFunds.addedToPot', { amount: fmt(baseAmount) })}</div>
+                      <div className="text-sm font-semibold text-foreground">{t('addFunds.totalCharged', { total: fmt(parseFloat((baseAmount + calcFee(baseAmount, 'sepa')).toFixed(2))) })}</div>
+                    </div>
+                  </button>
+                )}
               </div>
 
               <Button className="w-full h-11 rounded-xl" onClick={handlePayNow} disabled={creating} type="button">

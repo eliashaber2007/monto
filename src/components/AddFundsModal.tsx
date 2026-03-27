@@ -11,17 +11,20 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
-import { CreditCard, Building2 } from 'lucide-react';
+import { CreditCard, Building2, Wallet } from 'lucide-react';
 
 const QUICK_AMOUNTS = [10, 25, 50, 100];
 
-type PaymentMethod = 'card' | 'sepa';
+type PaymentMethod = 'card' | 'revolut_pay' | 'sepa';
 
 function calcFee(amount: number, method: PaymentMethod) {
   if (method === 'sepa') {
     return parseFloat(((amount * 0.005) + 0.35).toFixed(2));
   }
-  return parseFloat(((amount * 0.015) + 0.25).toFixed(2));
+  if (method === 'revolut_pay') {
+    return parseFloat(((amount * 0.012) + 0.15).toFixed(2));
+  }
+  return parseFloat(((amount * 0.02) + 0.25).toFixed(2));
 }
 
 interface AddFundsModalProps {
@@ -43,10 +46,14 @@ export default function AddFundsModal({
   const [selected, setSelected] = useState<number | null>(null);
   const [custom, setCustom] = useState('');
   const [loading, setLoading] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('sepa');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('revolut_pay');
   const { toast } = useToast();
 
   const amount = selected ?? (custom ? parseFloat(custom) : null);
+  const showSepa = amount != null && amount >= 200;
+
+  // If SEPA was selected but amount dropped below 200, reset to revolut_pay
+  const effectiveMethod = paymentMethod === 'sepa' && !showSepa ? 'revolut_pay' : paymentMethod;
 
   const handleConfirm = async () => {
     if (!amount || amount <= 0) {
@@ -61,7 +68,7 @@ export default function AddFundsModal({
         body: {
           pot_id: potId,
           base_amount_cents: Math.round(amount * 100),
-          payment_method: paymentMethod,
+          payment_method: effectiveMethod,
         },
       });
 
@@ -123,40 +130,55 @@ export default function AddFundsModal({
           {/* Payment method selector */}
           <div className="space-y-2">
             <Label>{t('addFunds.paymentMethod')}</Label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className={`grid gap-2 ${showSepa ? 'grid-cols-3' : 'grid-cols-2'}`}>
               <button
                 type="button"
                 onClick={() => setPaymentMethod('card')}
                 className={`flex flex-col items-center gap-1 rounded-xl border p-3 transition-all ${
-                  paymentMethod === 'card'
-                    ? 'bg-primary/10 border-primary ring-1 ring-primary'
-                    : 'bg-secondary border-border hover:border-primary/40'
+                  effectiveMethod === 'card'
+                    ? 'border-primary ring-1 ring-primary bg-card'
+                    : 'bg-card border-border hover:border-primary/40'
                 }`}
               >
                 <CreditCard className="h-5 w-5 text-foreground" />
                 <span className="text-sm font-semibold text-foreground">{t('addFunds.card')}</span>
-                <span className="text-xs text-muted-foreground">{t('addFunds.cardSubtitle')}</span>
+                <span className="text-xs text-muted-foreground text-center">{t('addFunds.cardSubtitle')}</span>
               </button>
               <button
                 type="button"
-                onClick={() => setPaymentMethod('sepa')}
+                onClick={() => setPaymentMethod('revolut_pay')}
                 className={`flex flex-col items-center gap-1 rounded-xl border p-3 transition-all ${
-                  paymentMethod === 'sepa'
-                    ? 'bg-primary/10 border-primary ring-1 ring-primary'
-                    : 'bg-secondary border-border hover:border-primary/40'
+                  effectiveMethod === 'revolut_pay'
+                    ? 'border-primary ring-1 ring-primary bg-card'
+                    : 'bg-card border-border hover:border-primary/40'
                 }`}
               >
-                <Building2 className="h-5 w-5 text-foreground" />
-                <span className="text-sm font-semibold text-foreground">{t('addFunds.sepa')}</span>
-                <span className="text-xs text-muted-foreground">{t('addFunds.sepaSubtitle')}</span>
+                <Wallet className="h-5 w-5 text-foreground" />
+                <span className="text-sm font-semibold text-foreground">{t('addFunds.revolut')}</span>
+                <span className="text-xs text-muted-foreground text-center">{t('addFunds.revolutSubtitle')}</span>
               </button>
+              {showSepa && (
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('sepa')}
+                  className={`flex flex-col items-center gap-1 rounded-xl border p-3 transition-all ${
+                    effectiveMethod === 'sepa'
+                      ? 'border-primary ring-1 ring-primary bg-card'
+                      : 'bg-card border-border hover:border-primary/40'
+                  }`}
+                >
+                  <Building2 className="h-5 w-5 text-foreground" />
+                  <span className="text-sm font-semibold text-foreground">{t('addFunds.sepa')}</span>
+                  <span className="text-xs text-muted-foreground text-center">{t('addFunds.sepaSubtitle')}</span>
+                </button>
+              )}
             </div>
           </div>
 
           {amount && amount > 0 && (() => {
-            const fee = calcFee(amount, paymentMethod);
+            const fee = calcFee(amount, effectiveMethod);
             const totalCharged = parseFloat((amount + fee).toFixed(2));
-            const platformFee = paymentMethod === 'sepa' ? parseFloat((amount * 0.005).toFixed(2)) : 0;
+            const feeKey = effectiveMethod === 'sepa' ? 'addFunds.sepaFee' : effectiveMethod === 'revolut_pay' ? 'addFunds.revolutFee' : 'addFunds.processingFee';
             return (
               <div className="space-y-1">
                 <div className="text-sm text-foreground font-semibold">
@@ -166,9 +188,7 @@ export default function AddFundsModal({
                   {t('addFunds.totalCharged', { total: fmt(totalCharged) })}
                 </div>
                 <div className="text-xs text-muted-foreground/70">
-                  {paymentMethod === 'card'
-                    ? t('addFunds.processingFee', { fee: fmt(fee) })
-                    : t('addFunds.sepaFee', { fee: fmt(fee), platformFee: fmt(platformFee) })}
+                  {t(feeKey, { fee: fmt(fee) })}
                 </div>
               </div>
             );
