@@ -10,14 +10,14 @@
     --primary-hover: 225 75% 48%;       /* #1D4ED8 */
     --primary-foreground: 0 0% 100%;
 
-    /* Page background — #F5F7FA */
-    --background: 220 20% 97%;
+    /* Page background — #F4F6FA (slightly cool off-white) */
+    --background: 220 33% 97%;
     --foreground: 222 47% 11%;          /* #0F172A */
 
-    /* Card / surface — pure white */
+    /* Card / surface — pure white with floating shadow */
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
-    --surface: 220 20% 97%;
+    --surface: 0 0% 100%;
 
     /* Muted */
     --muted: 214 32% 94%;
@@ -52,8 +52,12 @@
     --radius: 1rem;
     --radius-sm: 0.75rem;
 
+    /* Card shadow for floating premium feel (light mode) */
+    --shadow-card: 0 1px 4px rgba(0, 0, 0, 0.07);
+    --card-border: rgba(0, 0, 0, 0.04);
+
     /* Sidebar (unused but required by shadcn) */
-    --sidebar-background: 220 20% 97%;
+    --sidebar-background: 220 33% 97%;
     --sidebar-foreground: 222 47% 11%;
     --sidebar-primary: 221 83% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
@@ -64,40 +68,40 @@
   }
 
   .dark {
-    /* Background: #0F1117 */
-    --background: 228 25% 7%;
+    /* Background: #0F1117 deep charcoal */
+    --background: 225 22% 8%;
     --foreground: 220 13% 91%;          /* #E8EAED */
 
-    /* Cards/surfaces: #1A1D27 */
-    --card: 228 20% 13%;
+    /* Cards/surfaces: #1A1D27 elevated from background */
+    --card: 226 17% 13%;
     --card-foreground: 220 13% 91%;
-    --surface: 228 20% 13%;
+    --surface: 226 17% 13%;
 
-    /* Primary: #4D7EFF */
-    --primary: 221 83% 53%;             /* #2563EB */
-    --primary-hover: 225 75% 48%;       /* #1D4ED8 */
+    /* Primary stays royal blue #1D4ED8 */
+    --primary: 225 75% 48%;
+    --primary-hover: 224 76% 42%;
     --primary-foreground: 0 0% 100%;
 
     /* Muted */
-    --muted: 230 16% 20%;
-    --muted-foreground: 220 10% 60%;
+    --muted: 226 15% 18%;
+    --muted-foreground: 220 10% 65%;
 
-    /* Borders: #2A2D3A */
-    --border: 230 16% 19%;
-    --input: 230 16% 19%;
+    /* Borders: subtle white at 6% opacity feel — #2A2D3A */
+    --border: 228 14% 20%;
+    --input: 228 14% 20%;
     --ring: 222 100% 65%;
 
     /* Popover */
-    --popover: 228 20% 13%;
+    --popover: 226 17% 13%;
     --popover-foreground: 220 13% 91%;
 
     /* Secondary: #7C5CFC accent */
     --secondary: 252 96% 67%;
     --secondary-foreground: 0 0% 100%;
 
-    /* Accent */
-    --accent: 222 100% 15%;
-    --accent-foreground: 222 100% 65%;
+    /* Accent — subtle blue glow for badges (Creator) */
+    --accent: 225 75% 48%;
+    --accent-foreground: 222 100% 75%;
 
     /* Semantic */
     --success: 142 71% 45%;
@@ -107,14 +111,18 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
+    /* Card shadow disabled in dark; use subtle border instead */
+    --shadow-card: 0 0 0 rgba(0, 0, 0, 0);
+    --card-border: rgba(255, 255, 255, 0.06);
+
     /* Sidebar */
-    --sidebar-background: 228 25% 7%;
+    --sidebar-background: 225 22% 8%;
     --sidebar-foreground: 220 13% 91%;
     --sidebar-primary: 222 100% 65%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 230 16% 20%;
+    --sidebar-accent: 226 15% 18%;
     --sidebar-accent-foreground: 220 13% 91%;
-    --sidebar-border: 230 16% 19%;
+    --sidebar-border: 228 14% 20%;
     --sidebar-ring: 222 100% 65%;
   }
 }
@@ -126,8 +134,16 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
+    font-feature-settings: 'cv11', 'ss01', 'ss03';
+  }
+
+  /* Premium floating card treatment */
+  .rounded-lg.border.bg-card,
+  [class*="bg-card"].border {
+    box-shadow: var(--shadow-card);
+    border-color: var(--card-border);
   }
 
   /* Smooth scrollbars */
