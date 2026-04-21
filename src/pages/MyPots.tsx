@@ -194,13 +194,13 @@ export default function MyPots() {
                   <div className="flex items-center gap-2 mb-1">
                     {pot.emoji && <span className="text-lg flex-shrink-0">{pot.emoji}</span>}
                     <span className="font-bold text-foreground truncate text-lg">{pot.name}</span>
-                    <span className={`flex-shrink-0 text-[11px] px-2 py-0.5 rounded-full font-semibold border ${
-                      pot.role === 'creator' 
-                        ? 'bg-accent text-primary border-primary/20' 
-                        : pot.role === 'leader' 
-                          ? 'bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700' 
-                          : 'bg-accent text-primary border-primary/20'
-                    }`}>
+                    <span
+                      className="flex-shrink-0 inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full font-semibold text-foreground dark:text-white"
+                      style={{
+                        backgroundColor: 'rgba(29,78,216,0.18)',
+                        border: '1px solid rgba(29,78,216,0.4)',
+                      }}
+                    >
                       {pot.role === 'creator' ? `👑 ${t('common.creator')}` : pot.role === 'leader' ? `⭐ Leader` : `👤 ${t('common.member')}`}
                     </span>
                   </div>
