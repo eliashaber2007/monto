@@ -73,10 +73,13 @@ export default function MyPots() {
       if (savedState) {
         try {
           const parsed = JSON.parse(savedState) as PotCreationState;
+          // Always reopen at the payment step so the user can retry or go back
+          parsed.step = 4;
           setRestoredState(parsed);
           setShowCreate(true);
         } catch {
           localStorage.removeItem('potCreationState');
+          localStorage.removeItem('pendingPotData');
         }
       }
       setSearchParams({}, { replace: true });
