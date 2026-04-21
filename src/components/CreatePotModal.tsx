@@ -85,8 +85,18 @@ export default function CreatePotModal({ open, onOpenChange, initialState }: Pro
       setMaxWithdrawalsPerDay(initialState.maxWithdrawalsPerDay);
       setSelectedEmoji(initialState.selectedEmoji);
       setDepositPaymentMethod(initialState.depositPaymentMethod);
+      // Clear any lingering payment/loading state from a cancelled Stripe redirect
+      setCreating(false);
     }
   }, [initialState]);
+
+  // When the modal is (re)opened, reset transient payment/loading flags so
+  // returning from a cancelled Stripe checkout never leaves buttons disabled.
+  useEffect(() => {
+    if (open) {
+      setCreating(false);
+    }
+  }, [open]);
   
 
   const POT_EMOJIS = [
