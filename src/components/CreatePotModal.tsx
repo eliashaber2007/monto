@@ -326,8 +326,9 @@ export default function CreatePotModal({ open, onOpenChange, initialState }: Pro
                 const potConfig = buildPotConfig();
                 localStorage.setItem('pendingPotData', JSON.stringify(potConfig));
                 setCreatedPotId(potConfig.id);
+                setCreating(false);
                 setStep(4);
-              }} disabled={creating}>
+              }} type="button">
                 {t('common.next')}
               </Button>
             </div>
