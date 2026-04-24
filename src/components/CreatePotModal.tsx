@@ -71,7 +71,7 @@ export default function CreatePotModal({ open, onOpenChange, initialState }: Pro
   const [maxWithdrawalAmount, setMaxWithdrawalAmount] = useState(initialState?.maxWithdrawalAmount ?? "");
   const [maxWithdrawalsPerDay, setMaxWithdrawalsPerDay] = useState(initialState?.maxWithdrawalsPerDay ?? "");
   const [selectedEmoji, setSelectedEmoji] = useState<string | null>(initialState?.selectedEmoji ?? null);
-  const [depositPaymentMethod, setDepositPaymentMethod] = useState<PaymentMethod>(initialState?.depositPaymentMethod ?? "revolut_pay");
+  const [depositPaymentMethod, setDepositPaymentMethod] = useState<PaymentMethodOrNull>(initialState?.depositPaymentMethod ?? null);
 
   // Restore state when initialState changes (e.g. returning from cancelled checkout)
   useEffect(() => {
