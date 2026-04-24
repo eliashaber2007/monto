@@ -45,6 +45,19 @@ export default function AddFundsModal({
     }
   }, [open]);
 
+  // Reset loading state if user returns from Stripe redirect without completing payment
+  useEffect(() => {
+    if (!open) return;
+    const resetLoading = () => setLoading(false);
+    const onVisibility = () => { if (document.visibilityState === 'visible') resetLoading(); };
+    window.addEventListener('focus', resetLoading);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      window.removeEventListener('focus', resetLoading);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, [open]);
+
   const amount = selected ?? (custom ? parseFloat(custom) : null);
   const showSepa = amount != null && amount >= 200;
 
