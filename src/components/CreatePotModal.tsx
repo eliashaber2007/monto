@@ -37,7 +37,7 @@ export interface PotCreationState {
   maxWithdrawalAmount: string;
   maxWithdrawalsPerDay: string;
   selectedEmoji: string | null;
-  depositPaymentMethod: PaymentMethod;
+  depositPaymentMethod: PaymentMethodOrNull;
 }
 
 interface Props {
