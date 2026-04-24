@@ -239,7 +239,6 @@
     "leadersOnly": "Leaders only",
     "leadersOnlyDesc": "Only you and your leaders can add funds",
     "targetRequired": "Please enter a target amount",
-    "noLimit": "No limit",
     "createPot": "Create Pot 🎉",
     "creating": "Creating…",
     "depositAmount": "Deposit amount ({{symbol}})",
@@ -553,5 +552,11 @@
     "receiptWarningTitle": "Turn off receipt verification?",
     "receiptWarningDesc": "Turning off receipt verification means members no longer need to justify withdrawals. Are you sure?",
     "turnOff": "Turn Off"
+  },
+  "paymentMethods": {
+    "instant": "Instant",
+    "twoToThreeDays": "2–3 days",
+    "feeLabel": "Fee: {{fee}}",
+    "payWith": "Pay with {{method}}"
   }
 }

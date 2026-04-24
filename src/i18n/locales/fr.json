@@ -552,5 +552,11 @@
     "receiptWarningTitle": "Désactiver la vérification des reçus ?",
     "receiptWarningDesc": "Désactiver la vérification des reçus signifie que les membres n'auront plus besoin de justifier leurs retraits. Êtes-vous sûr ?",
     "turnOff": "Désactiver"
+  },
+  "paymentMethods": {
+    "instant": "Instantané",
+    "twoToThreeDays": "2–3 jours",
+    "feeLabel": "Frais : {{fee}}",
+    "payWith": "Payer avec {{method}}"
   }
 }

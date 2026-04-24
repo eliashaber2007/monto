@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import {
   Dialog,
@@ -11,21 +11,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
-import { CreditCard, Building2, Wallet } from 'lucide-react';
+import PaymentMethodList, { PaymentMethod } from '@/components/PaymentMethodList';
 
 const QUICK_AMOUNTS = [10, 25, 50, 100];
-
-type PaymentMethod = 'card' | 'revolut_pay' | 'sepa';
-
-function calcFee(amount: number, method: PaymentMethod) {
-  if (method === 'sepa') {
-    return parseFloat(((amount * 0.005) + 0.35).toFixed(2));
-  }
-  if (method === 'revolut_pay') {
-    return parseFloat(((amount * 0.012) + 0.15).toFixed(2));
-  }
-  return parseFloat(((amount * 0.02) + 0.25).toFixed(2));
-}
 
 interface AddFundsModalProps {
   open: boolean;
@@ -46,17 +34,29 @@ export default function AddFundsModal({
   const [selected, setSelected] = useState<number | null>(null);
   const [custom, setCustom] = useState('');
   const [loading, setLoading] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('revolut_pay');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
   const { toast } = useToast();
+
+  // Reset selection whenever modal opens
+  useEffect(() => {
+    if (open) {
+      setPaymentMethod(null);
+      setLoading(false);
+    }
+  }, [open]);
 
   const amount = selected ?? (custom ? parseFloat(custom) : null);
   const showSepa = amount != null && amount >= 200;
 
-  // If SEPA was selected but amount dropped below 200, reset to revolut_pay
-  const effectiveMethod = paymentMethod === 'sepa' && !showSepa ? 'revolut_pay' : paymentMethod;
+  // If SEPA was selected but amount dropped below 200, clear it
+  useEffect(() => {
+    if (paymentMethod === 'sepa' && !showSepa) {
+      setPaymentMethod(null);
+    }
+  }, [showSepa, paymentMethod]);
 
   const handleConfirm = async () => {
-    if (!amount || amount <= 0) {
+    if (!amount || amount <= 0 || !paymentMethod) {
       toast({ title: t('addFunds.invalidAmount'), description: t('addFunds.invalidAmountDesc'), variant: 'destructive' });
       return;
     }
@@ -68,7 +68,7 @@ export default function AddFundsModal({
         body: {
           pot_id: potId,
           base_amount_cents: Math.round(amount * 100),
-          payment_method: effectiveMethod,
+          payment_method: paymentMethod,
         },
       });
 
@@ -84,7 +84,8 @@ export default function AddFundsModal({
     }
   };
 
-  const fmt = (v: number) => new Intl.NumberFormat('en-IE', { style: 'currency', currency }).format(v);
+  const methodLabel = (m: PaymentMethod) =>
+    m === 'card' ? t('addFunds.card') : m === 'revolut_pay' ? t('addFunds.revolut') : t('addFunds.sepa');
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -127,72 +128,18 @@ export default function AddFundsModal({
             />
           </div>
 
-          {/* Payment method selector */}
-          <div className="space-y-2">
-            <Label>{t('addFunds.paymentMethod')}</Label>
-            <div className={`grid gap-2 ${showSepa ? 'grid-cols-3' : 'grid-cols-2'}`}>
-              <button
-                type="button"
-                onClick={() => setPaymentMethod('card')}
-                className={`flex flex-col items-center gap-1 rounded-xl border p-3 transition-all ${
-                  effectiveMethod === 'card'
-                    ? 'border-primary ring-1 ring-primary bg-card'
-                    : 'bg-card border-border hover:border-primary/40'
-                }`}
-              >
-                <CreditCard className="h-5 w-5 text-foreground" />
-                <span className="text-sm font-semibold text-foreground">{t('addFunds.card')}</span>
-                <span className="text-xs text-muted-foreground text-center">{t('addFunds.cardSubtitle')}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setPaymentMethod('revolut_pay')}
-                className={`flex flex-col items-center gap-1 rounded-xl border p-3 transition-all ${
-                  effectiveMethod === 'revolut_pay'
-                    ? 'border-primary ring-1 ring-primary bg-card'
-                    : 'bg-card border-border hover:border-primary/40'
-                }`}
-              >
-                <Wallet className="h-5 w-5 text-foreground" />
-                <span className="text-sm font-semibold text-foreground">{t('addFunds.revolut')}</span>
-                <span className="text-xs text-muted-foreground text-center">{t('addFunds.revolutSubtitle')}</span>
-              </button>
-              {showSepa && (
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod('sepa')}
-                  className={`flex flex-col items-center gap-1 rounded-xl border p-3 transition-all ${
-                    effectiveMethod === 'sepa'
-                      ? 'border-primary ring-1 ring-primary bg-card'
-                      : 'bg-card border-border hover:border-primary/40'
-                  }`}
-                >
-                  <Building2 className="h-5 w-5 text-foreground" />
-                  <span className="text-sm font-semibold text-foreground">{t('addFunds.sepa')}</span>
-                  <span className="text-xs text-muted-foreground text-center">{t('addFunds.sepaSubtitle')}</span>
-                </button>
-              )}
+          {amount != null && amount > 0 && (
+            <div className="space-y-2">
+              <Label>{t('addFunds.paymentMethod')}</Label>
+              <PaymentMethodList
+                amount={amount}
+                currency={currency}
+                selected={paymentMethod}
+                onSelect={setPaymentMethod}
+                showSepa={showSepa}
+              />
             </div>
-          </div>
-
-          {amount && amount > 0 && (() => {
-            const fee = calcFee(amount, effectiveMethod);
-            const totalCharged = parseFloat((amount + fee).toFixed(2));
-            const feeKey = effectiveMethod === 'sepa' ? 'addFunds.sepaFee' : effectiveMethod === 'revolut_pay' ? 'addFunds.revolutFee' : 'addFunds.processingFee';
-            return (
-              <div className="space-y-1">
-                <div className="text-sm text-foreground font-semibold">
-                  {t('addFunds.addedToPot', { amount: fmt(amount) })}
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  {t('addFunds.totalCharged', { total: fmt(totalCharged) })}
-                </div>
-                <div className="text-xs text-muted-foreground/70">
-                  {t(feeKey, { fee: fmt(fee) })}
-                </div>
-              </div>
-            );
-          })()}
+          )}
 
           <div className="flex gap-3">
             <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
@@ -201,9 +148,13 @@ export default function AddFundsModal({
             <Button
               className="flex-1"
               onClick={handleConfirm}
-              disabled={loading || !amount || amount <= 0}
+              disabled={loading || !amount || amount <= 0 || !paymentMethod}
             >
-              {loading ? t('addFunds.redirecting') : t('addFunds.payWithStripe')}
+              {loading
+                ? t('addFunds.redirecting')
+                : paymentMethod
+                  ? `${t('paymentMethods.payWith', { method: methodLabel(paymentMethod), defaultValue: 'Pay with {{method}}' })} 🎉`
+                  : t('addFunds.payWithStripe')}
             </Button>
           </div>
         </div>

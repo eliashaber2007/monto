@@ -552,5 +552,11 @@
     "receiptWarningTitle": "¿Desactivar verificación de recibos?",
     "receiptWarningDesc": "Desactivar la verificación de recibos significa que los miembros ya no necesitarán justificar sus retiros. ¿Estás seguro?",
     "turnOff": "Desactivar"
+  },
+  "paymentMethods": {
+    "instant": "Instantáneo",
+    "twoToThreeDays": "2–3 días",
+    "feeLabel": "Tarifa: {{fee}}",
+    "payWith": "Pagar con {{method}}"
   }
 }
