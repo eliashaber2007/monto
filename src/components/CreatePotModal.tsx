@@ -221,7 +221,7 @@ export default function CreatePotModal({ open, onOpenChange, initialState }: Pro
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-sm rounded-2xl p-0 overflow-hidden gap-0 max-h-[90vh] flex flex-col">
+      <DialogContent className="max-w-sm rounded-2xl p-0 overflow-hidden gap-0 max-h-[90vh] flex flex-col outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0" style={{ outline: 'none', boxShadow: 'none' }}>
         <div className="h-1 bg-muted flex-shrink-0">
           <div className="h-full bg-primary transition-all duration-300 ease-out" style={{ width: `${(Math.min(step, totalSteps) / totalSteps) * 100}%` }} />
         </div>

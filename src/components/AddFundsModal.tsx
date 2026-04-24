@@ -102,7 +102,7 @@ export default function AddFundsModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm rounded-2xl">
+      <DialogContent className="max-w-sm rounded-2xl outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0" style={{ outline: 'none', boxShadow: 'none' }}>
         <DialogHeader>
           <DialogTitle>{t('addFunds.title', { name: potName })}</DialogTitle>
         </DialogHeader>
