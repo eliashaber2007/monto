@@ -705,7 +705,7 @@ export default function PotDetail() {
                   border: '1px solid rgba(29,78,216,0.4)',
                 }}
               >
-                {isCreator ? `👑 ${t('potDetail.creatorRole')}` : isLeader ? `⭐ ${t('potDetail.leaderRole')}` : `👤 ${t('potDetail.memberRole')}`}
+                {isCreator ? t('potDetail.creatorRole') : isLeader ? t('potDetail.leaderRole') : t('potDetail.memberRole')}
               </span>
             </div>
           </div>
