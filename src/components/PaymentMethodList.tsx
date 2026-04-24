@@ -33,11 +33,11 @@ interface RowProps {
   onSelect: () => void;
 }
 
-function Row({ icon, name, speedLabel, speedTone, amount, currency, selected, onSelect }: RowProps) {
+function Row({ method, icon, name, speedLabel, speedTone, amount, currency, selected, onSelect }: RowProps) {
   const { t } = useTranslation();
   const fmt = (v: number) =>
     new Intl.NumberFormat('en-IE', { style: 'currency', currency }).format(v);
-  const fee = calcFee(amount, arguments[0].method);
+  const fee = calcFee(amount, method);
   const total = parseFloat((amount + fee).toFixed(2));
 
   return (
