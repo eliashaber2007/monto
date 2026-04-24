@@ -14,6 +14,7 @@ import PaymentMethodList from "@/components/PaymentMethodList";
 
 type WithdrawalRule = "auto_approve" | "requires_approval" | "requires_password";
 type PaymentMethod = "card" | "revolut_pay" | "sepa";
+type PaymentMethodOrNull = PaymentMethod | null;
 
 function calcFee(amount: number, method: PaymentMethod) {
   if (method === 'sepa') {
