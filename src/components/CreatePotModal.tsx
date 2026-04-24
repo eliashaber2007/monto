@@ -369,7 +369,7 @@ export default function CreatePotModal({ open, onOpenChange, initialState }: Pro
                 />
 
                 <Button
-                  className="w-full h-11 rounded-xl"
+                  className="w-full h-11 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={handlePayNow}
                   disabled={creating || !effectiveMethod}
                   type="button"

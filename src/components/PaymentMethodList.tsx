@@ -47,7 +47,7 @@ function Row({ method, icon, name, speedLabel, speedTone, amount, currency, sele
       className="w-full flex items-center gap-3 rounded-xl p-3.5 text-left transition-all"
       style={{
         border: selected
-          ? '1.5px solid hsl(var(--primary))'
+          ? '1.5px solid #1D4ED8'
           : '1px solid rgba(127,127,127,0.18)',
         backgroundColor: selected ? 'rgba(29,78,216,0.08)' : 'transparent',
       }}
@@ -58,10 +58,17 @@ function Row({ method, icon, name, speedLabel, speedTone, amount, currency, sele
         style={{
           width: 18,
           height: 18,
-          border: selected ? '5px solid hsl(var(--primary))' : '1.5px solid rgba(127,127,127,0.5)',
-          backgroundColor: selected ? 'hsl(var(--background))' : 'transparent',
+          border: selected ? '1.5px solid #1D4ED8' : '1.5px solid rgba(127,127,127,0.5)',
+          backgroundColor: 'transparent',
         }}
-      />
+      >
+        {selected && (
+          <span
+            className="rounded-full"
+            style={{ width: 10, height: 10, backgroundColor: '#1D4ED8' }}
+          />
+        )}
+      </span>
 
       {/* Icon + name + amounts */}
       <div className="flex-1 min-w-0">
