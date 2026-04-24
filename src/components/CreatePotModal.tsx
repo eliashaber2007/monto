@@ -8,8 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ChevronLeft, CreditCard, Building2, Wallet } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import PaymentMethodList from "@/components/PaymentMethodList";
 
 type WithdrawalRule = "auto_approve" | "requires_approval" | "requires_password";
 type PaymentMethod = "card" | "revolut_pay" | "sepa";
