@@ -99,6 +99,19 @@ export default function CreatePotModal({ open, onOpenChange, initialState }: Pro
       setCreating(false);
     }
   }, [open]);
+
+  // Reset loading state if user returns from Stripe redirect without completing payment
+  useEffect(() => {
+    if (!open) return;
+    const resetLoading = () => setCreating(false);
+    const onVisibility = () => { if (document.visibilityState === 'visible') resetLoading(); };
+    window.addEventListener('focus', resetLoading);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      window.removeEventListener('focus', resetLoading);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, [open]);
   
 
   const POT_EMOJIS = [
