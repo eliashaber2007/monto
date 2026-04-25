@@ -147,7 +147,7 @@ async function sendWebPush(
     const authInfo = encoder.encode('Content-Encoding: auth\0');
     const prkeyMaterial = await crypto.subtle.importKey('raw', sharedSecret, { name: 'HKDF' }, false, ['deriveBits']);
     const ikm = new Uint8Array(await crypto.subtle.deriveBits(
-      { name: 'HKDF', hash: 'SHA-256', salt: clientAuthSecret, info: authInfo },
+      { name: 'HKDF', hash: 'SHA-256', salt: clientAuthSecret as BufferSource, info: authInfo as BufferSource },
       prkeyMaterial,
       256,
     ));
