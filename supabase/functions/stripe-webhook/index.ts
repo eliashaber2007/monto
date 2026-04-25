@@ -1,16 +1,7 @@
 import Stripe from 'npm:stripe@14';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, stripe-signature',
-};
-
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
-
   const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, {
     apiVersion: '2024-06-20',
   });
@@ -27,9 +18,9 @@ Deno.serve(async (req) => {
     event = await stripe.webhooks.constructEventAsync(body, sig, webhookSecret);
   } catch (err: any) {
     console.error('Webhook signature verification failed:', err.message);
-    return new Response(JSON.stringify({ error: err.message }), {
+    return new Response(JSON.stringify({ error: 'Invalid webhook signature' }), {
       status: 400,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
     });
   }
 
@@ -37,11 +28,11 @@ Deno.serve(async (req) => {
     const session = event.data.object as Stripe.Checkout.Session;
     const metadata = session.metadata ?? {};
     const { pot_id, user_id } = metadata;
-    const amountTotal = session.amount_total ?? 0; // cents (total charged including fee)
+    const amountTotal = session.amount_total ?? 0;
 
     if (!pot_id || !user_id) {
       console.error('Missing metadata:', metadata);
-      return new Response('Missing metadata', { status: 400, headers: corsHeaders });
+      return new Response('Missing metadata', { status: 400 });
     }
 
     const supabaseAdmin = createClient(
@@ -49,8 +40,21 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     );
 
-    // Use base_amount_cents from metadata (what the user intended for the pot)
-    // NOT the total charged amount (which includes the processing fee)
+    // Idempotency check — if this session was already processed, return 200 immediately
+    const { data: existingTx } = await supabaseAdmin
+      .from('transactions')
+      .select('id')
+      .eq('stripe_session_id', session.id)
+      .maybeSingle();
+
+    if (existingTx) {
+      console.log('Duplicate webhook event, already processed:', session.id);
+      return new Response(JSON.stringify({ received: true, duplicate: true }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     const baseAmountCents = metadata.base_amount_cents ? parseInt(metadata.base_amount_cents) : amountTotal;
     const amountEur = baseAmountCents / 100;
 
@@ -58,7 +62,6 @@ Deno.serve(async (req) => {
 
     // If this is a new pot creation, create the pot first
     if (metadata.is_new_pot === 'true') {
-      // Check if pot already exists (idempotency)
       const { data: existingPot } = await supabaseAdmin
         .from('pots')
         .select('id')
@@ -78,7 +81,6 @@ Deno.serve(async (req) => {
           currency: metadata.pot_currency || 'EUR',
           goal_amount: isNaN(goalAmount as number) ? null : goalAmount,
           withdrawal_rule: metadata.pot_withdrawal_rule || 'auto_approve',
-          withdrawal_password: metadata.pot_withdrawal_password || null,
           require_receipt: metadata.pot_require_receipt === 'true',
           max_withdrawal_amount: isNaN(maxWdAmount as number) ? null : maxWdAmount,
           max_withdrawals_per_day: isNaN(maxWdPerDay as number) ? null : maxWdPerDay,
@@ -87,13 +89,12 @@ Deno.serve(async (req) => {
 
         if (potError) {
           console.error('Error creating pot in webhook:', potError);
-          return new Response(JSON.stringify({ error: potError.message }), {
+          return new Response(JSON.stringify({ error: 'Internal server error' }), {
             status: 500,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json' },
           });
         }
 
-        // Add creator as pot member
         await supabaseAdmin.from('pot_members').insert({
           pot_id,
           user_id,
@@ -104,7 +105,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Insert transaction with BASE amount (what goes to pot)
+    // Insert transaction with BASE amount
     const { error: txError } = await supabaseAdmin.from('transactions').insert({
       pot_id,
       user_id,
@@ -115,9 +116,9 @@ Deno.serve(async (req) => {
 
     if (txError) {
       console.error('Transaction insert error:', txError);
-      return new Response(JSON.stringify({ error: txError.message }), {
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
       });
     }
 
@@ -128,7 +129,6 @@ Deno.serve(async (req) => {
     });
 
     if (balanceError) {
-      // Fallback: direct update
       const { data: pot } = await supabaseAdmin.from('pots').select('balance').eq('id', pot_id).single();
       await supabaseAdmin.from('pots').update({ balance: (pot?.balance ?? 0) + amountEur }).eq('id', pot_id);
     }
@@ -157,6 +157,6 @@ Deno.serve(async (req) => {
 
   return new Response(JSON.stringify({ received: true }), {
     status: 200,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json' },
   });
 });
