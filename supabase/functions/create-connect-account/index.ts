@@ -2,7 +2,7 @@ import Stripe from "npm:stripe@14";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "https://montofinance.app",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
@@ -35,6 +35,7 @@ Deno.serve(async (req) => {
       data: { user },
       error: userError,
     } = await supabase.auth.getUser(token);
+
     if (userError || !user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
@@ -54,6 +55,7 @@ Deno.serve(async (req) => {
       .single();
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, { apiVersion: "2024-06-20" });
+
     const body = await req.json().catch(() => ({}));
 
     // Account-token based onboarding (preferred)
@@ -86,7 +88,6 @@ Deno.serve(async (req) => {
             payouts: { schedule: { interval: "manual" } },
           },
         } as any);
-
         accountId = account.id;
       } else {
         await stripe.accounts.update(accountId, {
@@ -117,6 +118,7 @@ Deno.serve(async (req) => {
 
     // Legacy Express fallback
     let accountId = profile?.stripe_account_id;
+
     if (!accountId) {
       const account = await stripe.accounts.create({
         type: "express",
@@ -134,6 +136,7 @@ Deno.serve(async (req) => {
       req.headers.get("origin") ||
       req.headers.get("referer")?.replace(/\/$/, "") ||
       "https://montofinance.app";
+
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
       return_url: `${origin}/profile?connect=success`,
@@ -148,7 +151,7 @@ Deno.serve(async (req) => {
     });
   } catch (err: any) {
     console.error("create-connect-account error:", err);
-    return new Response(JSON.stringify({ error: err.message }), {
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
