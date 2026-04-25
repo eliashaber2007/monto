@@ -44,6 +44,7 @@ export default function StripeOnboardingForm({ onComplete, onCancel, mode = 'con
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [phone, setPhone] = useState('');
   const [dobDay, setDobDay] = useState('');
   const [dobMonth, setDobMonth] = useState('');
   const [dobYear, setDobYear] = useState('');
@@ -58,7 +59,7 @@ export default function StripeOnboardingForm({ onComplete, onCancel, mode = 'con
   const totalSteps = 3;
 
   const canGoNext = () => {
-    if (step === 1) return firstName.trim() && lastName.trim() && dobDay && dobMonth && dobYear;
+    if (step === 1) return firstName.trim() && lastName.trim() && phone.trim().length >= 6 && dobDay && dobMonth && dobYear;
     if (step === 2) return line1.trim() && city.trim() && postalCode.trim() && country;
     if (step === 3) return iban.trim().length >= 15;
     return false;
@@ -77,6 +78,7 @@ export default function StripeOnboardingForm({ onComplete, onCancel, mode = 'con
         individual: {
           first_name: firstName.trim(),
           last_name: lastName.trim(),
+          phone: phone.trim(),
           dob: {
             day: parseInt(dobDay),
             month: parseInt(dobMonth),
@@ -111,6 +113,7 @@ export default function StripeOnboardingForm({ onComplete, onCancel, mode = 'con
             account_token: accountToken.id,
             iban: iban.trim().replace(/\s/g, ''),
             country,
+            phone: phone.trim(),
           }),
         }
       );
@@ -162,6 +165,10 @@ export default function StripeOnboardingForm({ onComplete, onCancel, mode = 'con
           <div className="space-y-1.5">
             <Label htmlFor="ob-ln">{t('stripeOnboarding.lastName')}</Label>
             <Input id="ob-ln" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Doe" className="h-11 rounded-xl" />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="ob-phone">{t('stripeOnboarding.phone', 'Phone number')}</Label>
+            <Input id="ob-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+33 6 12 34 56 78" className="h-11 rounded-xl" />
           </div>
           <div className="space-y-1.5">
             <Label>{t('stripeOnboarding.dateOfBirth')}</Label>
