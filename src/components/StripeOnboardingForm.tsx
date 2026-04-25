@@ -78,6 +78,7 @@ export default function StripeOnboardingForm({ onComplete, onCancel, mode = 'con
         individual: {
           first_name: firstName.trim(),
           last_name: lastName.trim(),
+          email: user.email,
           phone: phone.trim(),
           dob: {
             day: parseInt(dobDay),
