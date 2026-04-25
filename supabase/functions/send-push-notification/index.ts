@@ -30,7 +30,7 @@ async function importVapidKeys() {
 
   const publicKey = await crypto.subtle.importKey(
     'raw',
-    publicKeyBytes,
+    publicKeyBytes as BufferSource,
     { name: 'ECDSA', namedCurve: 'P-256' },
     true,
     [],
@@ -38,7 +38,7 @@ async function importVapidKeys() {
 
   const privateKey = await crypto.subtle.importKey(
     'pkcs8',
-    privateKeyBytes,
+    privateKeyBytes as BufferSource,
     { name: 'ECDSA', namedCurve: 'P-256' },
     true,
     ['sign'],
