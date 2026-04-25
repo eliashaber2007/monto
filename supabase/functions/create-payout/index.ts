@@ -2,7 +2,7 @@ import Stripe from "npm:stripe@14";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "https://montofinance.app",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
@@ -60,10 +60,10 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Auth check: requester must be pot creator, a leader, OR the recipient themselves
+    // Auth check: only creator or leader can approve withdrawals — never the recipient themselves
     const { data: requesterMember } = await supabaseAdmin.from("pot_members").select("role").eq("pot_id", pot_id).eq("user_id", requestingUserId).single();
     const isCreatorOrLeader = pot.created_by === requestingUserId || requesterMember?.role === 'leader';
-    if (!isCreatorOrLeader && requestingUserId !== recipient_user_id) {
+    if (!isCreatorOrLeader) {
       return new Response(JSON.stringify({ error: "Not authorized" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -117,7 +117,6 @@ Deno.serve(async (req) => {
         simulated = true;
         console.log("TEST MODE: Simulating successful payout due to insufficient Stripe balance");
       } else {
-        // Stripe transfer failed — do NOT deduct balance, do NOT mark approved
         throw transferErr;
       }
     }
@@ -144,7 +143,6 @@ Deno.serve(async (req) => {
         .update({ status: "approved", processed_at: new Date().toISOString(), total_deducted: totalDeducted })
         .eq("id", withdrawal_id);
     } else {
-      // Fallback: update matching pending/approved withdrawal by pot/user/amount
       await supabaseAdmin
         .from("withdrawals")
         .update({ total_deducted: totalDeducted })
@@ -199,7 +197,7 @@ Deno.serve(async (req) => {
     );
   } catch (err: any) {
     console.error("create-payout error:", err);
-    return new Response(JSON.stringify({ error: err.message }), {
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
