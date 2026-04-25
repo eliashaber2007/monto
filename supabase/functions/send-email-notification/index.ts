@@ -2,7 +2,7 @@ import { Resend } from 'npm:resend@4.0.0';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': 'https://montofinance.app',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
@@ -119,18 +119,16 @@ async function handleNotification(payload: EmailPayload) {
     case 'withdrawal_requested': {
       const profile = payload.user_id ? await getProfile(payload.user_id) : null;
       const name = profile?.first_name || 'Someone';
-      
-      // Notify creator
+
       const creatorEmail = await getUserEmail(pot.created_by);
       if (creatorEmail) {
         await sendEmail(creatorEmail, `Withdrawal request in ${pot.name}`, `${name} has requested a withdrawal of <strong>${formatCurrency(payload.amount ?? 0, currency)}</strong> from <strong>${pot.name}</strong>. Log in to approve or reject it.`);
         await sendPush(pot.created_by, pot.name, `${name} requested a withdrawal of ${formatCurrency(payload.amount ?? 0, currency)}`, potUrl);
       }
-      
-      // Also notify all leaders
+
       const { data: leaders } = await supabaseAdmin.from('pot_members').select('user_id').eq('pot_id', payload.pot_id).eq('role', 'leader');
       for (const leader of (leaders ?? [])) {
-        if (leader.user_id === payload.user_id) continue; // Don't notify the requester
+        if (leader.user_id === payload.user_id) continue;
         const leaderEmail = await getUserEmail(leader.user_id);
         if (leaderEmail) {
           await sendEmail(leaderEmail, `Withdrawal request in ${pot.name}`, `${name} has requested a withdrawal of <strong>${formatCurrency(payload.amount ?? 0, currency)}</strong> from <strong>${pot.name}</strong>. Log in to approve or reject it.`);
@@ -187,7 +185,6 @@ async function handleNotification(payload: EmailPayload) {
       const creatorName = payload.creator_name || 'The pot creator';
       const reminderMessage = `${pot.name}: ${creatorName} is requesting you to justify your withdrawal of ${formatCurrency(payload.amount ?? 0, currency)}. Please add your expenses and receipts.`;
 
-      // Insert in-app notification
       await supabaseAdmin.from('notifications').insert({
         user_id: payload.user_id,
         pot_id: payload.pot_id,
@@ -196,7 +193,6 @@ async function handleNotification(payload: EmailPayload) {
         variables: { name: creatorName, amount: String(payload.amount ?? 0), pot: pot.name },
       });
 
-      // Send email
       const recipientEmail = await getUserEmail(payload.user_id);
       if (recipientEmail) {
         await sendEmail(
@@ -221,8 +217,7 @@ async function handleNotification(payload: EmailPayload) {
       if (!payload.user_id) break;
       const creatorName = payload.creator_name || 'The creator';
       const message = `You've been made a leader of ${pot.name} by ${creatorName}.`;
-      
-      // In-app notification
+
       await supabaseAdmin.from('notifications').insert({
         user_id: payload.user_id,
         pot_id: payload.pot_id,
@@ -230,7 +225,7 @@ async function handleNotification(payload: EmailPayload) {
         message,
         variables: { name: creatorName, pot: pot.name },
       });
-      
+
       const recipientEmail = await getUserEmail(payload.user_id);
       if (recipientEmail) {
         await sendEmail(recipientEmail, `You're now a leader of ${pot.name}`, `${creatorName} has made you a leader of <strong>${pot.name}</strong>. You can now approve withdrawals and manage the pot.`);
@@ -242,8 +237,7 @@ async function handleNotification(payload: EmailPayload) {
     case 'leader_removed': {
       if (!payload.user_id) break;
       const removedMessage = `You are no longer a leader of ${pot.name}.`;
-      
-      // In-app notification
+
       await supabaseAdmin.from('notifications').insert({
         user_id: payload.user_id,
         pot_id: payload.pot_id,
@@ -251,7 +245,7 @@ async function handleNotification(payload: EmailPayload) {
         message: removedMessage,
         variables: { pot: pot.name },
       });
-      
+
       const removedEmail = await getUserEmail(payload.user_id);
       if (removedEmail) {
         await sendEmail(removedEmail, `Leader role removed in ${pot.name}`, `You are no longer a leader of <strong>${pot.name}</strong>.`);
@@ -269,7 +263,6 @@ Deno.serve(async (req) => {
 
   try {
     const payload: EmailPayload = await req.json();
-    // Fire and forget — don't block the caller
     handleNotification(payload).catch((err) => console.error('Notification handler error:', err));
 
     return new Response(JSON.stringify({ success: true }), {
@@ -278,7 +271,7 @@ Deno.serve(async (req) => {
     });
   } catch (err: any) {
     console.error('send-email-notification error:', err);
-    return new Response(JSON.stringify({ error: err.message }), {
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
