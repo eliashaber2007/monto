@@ -93,7 +93,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, { apiVersion: "2024-06-20" });
+    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, { apiVersion: "2024-06-20" as any });
     const fee = parseFloat(((amount * 0.0025) + 0.25).toFixed(2));
     const totalDeducted = parseFloat((amount + fee).toFixed(2));
     const amountCents = Math.round(amount * 100);

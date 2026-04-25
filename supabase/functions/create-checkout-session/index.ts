@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
     }
 
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, {
-      apiVersion: '2024-06-20',
+      apiVersion: '2024-06-20' as any,
     });
 
     const origin = req.headers.get('origin') ?? 'https://montofinance.app';
@@ -104,7 +104,7 @@ Deno.serve(async (req) => {
     // Charge the computed total (base + fee)
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
-      payment_method_types: paymentMethodTypes,
+      payment_method_types: paymentMethodTypes as any,
       line_items: [
         {
           price_data: {
