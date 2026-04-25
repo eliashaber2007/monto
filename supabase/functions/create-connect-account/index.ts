@@ -63,8 +63,6 @@ Deno.serve(async (req) => {
       const ibanCountry = countryFromIban(body.iban);
       const accountCountry = body.country || ibanCountry;
 
-      let accountId = profile?.stripe_account_id;
-
       const createNewAccount = async () => {
         const account = await stripe.accounts.create({
           type: "custom",
@@ -91,47 +89,21 @@ Deno.serve(async (req) => {
         return account.id;
       };
 
-      if (!accountId) {
-        accountId = await createNewAccount();
-      } else {
-        try {
-          await stripe.accounts.update(accountId, {
-            account_token: body.account_token,
-            business_profile: {
-              url: "https://monto.app",
-              mcc: "7372",
-            },
-            external_account: {
-              object: "bank_account",
-              country: ibanCountry,
-              currency: "eur",
-              account_number: body.iban.replace(/\s/g, ""),
-            } as any,
-          } as any);
-        } catch (updateErr: any) {
-          // If the saved account is inaccessible (revoked, deleted, or belongs to a different platform key),
-          // create a fresh account instead of failing the whole request.
-          const code = updateErr?.code || updateErr?.raw?.code;
-          const status = updateErr?.statusCode;
-          const isInaccessible =
-            code === "account_invalid" ||
-            code === "resource_missing" ||
-            status === 403 ||
-            status === 404;
+      const { error: resetError } = await supabaseAdmin
+        .from("profiles")
+        .update({ stripe_account_id: null, stripe_onboarding_complete: false })
+        .eq("id", userId);
 
-          if (!isInaccessible) throw updateErr;
+      if (resetError) throw resetError;
 
-          console.warn(
-            `Existing stripe account ${accountId} inaccessible (code=${code}, status=${status}). Creating a new account.`
-          );
-          accountId = await createNewAccount();
-        }
-      }
+      const accountId = await createNewAccount();
 
-      await supabaseAdmin
+      const { error: saveError } = await supabaseAdmin
         .from("profiles")
         .update({ stripe_account_id: accountId, stripe_onboarding_complete: true })
         .eq("id", userId);
+
+      if (saveError) throw saveError;
 
       return new Response(JSON.stringify({ success: true, account_id: accountId }), {
         status: 200,
