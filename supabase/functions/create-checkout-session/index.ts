@@ -2,7 +2,7 @@ import Stripe from 'npm:stripe@14';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': 'https://montofinance.app',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
@@ -87,7 +87,6 @@ Deno.serve(async (req) => {
       metadata.pot_currency = pot_config.currency || 'EUR';
       metadata.pot_goal_amount = String(pot_config.goal_amount ?? '');
       metadata.pot_withdrawal_rule = pot_config.withdrawal_rule || 'auto_approve';
-      metadata.pot_withdrawal_password = pot_config.withdrawal_password || '';
       metadata.pot_require_receipt = String(pot_config.require_receipt ?? false);
       metadata.pot_max_withdrawal_amount = String(pot_config.max_withdrawal_amount ?? '');
       metadata.pot_max_withdrawals_per_day = String(pot_config.max_withdrawals_per_day ?? '');
@@ -127,7 +126,7 @@ Deno.serve(async (req) => {
     });
   } catch (err: any) {
     console.error('create-checkout-session error:', err);
-    return new Response(JSON.stringify({ error: err.message }), {
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
