@@ -167,6 +167,10 @@ export default function StripeOnboardingForm({ onComplete, onCancel, mode = 'con
             <Input id="ob-ln" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Doe" className="h-11 rounded-xl" />
           </div>
           <div className="space-y-1.5">
+            <Label htmlFor="ob-phone">{t('stripeOnboarding.phone', 'Phone number')}</Label>
+            <Input id="ob-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+33 6 12 34 56 78" className="h-11 rounded-xl" />
+          </div>
+          <div className="space-y-1.5">
             <Label>{t('stripeOnboarding.dateOfBirth')}</Label>
             <div className="flex gap-2">
               <Input type="number" placeholder="DD" min="1" max="31" value={dobDay} onChange={(e) => setDobDay(e.target.value)} className="h-11 rounded-xl flex-1" />
