@@ -242,10 +242,8 @@ export default function PotDetail() {
 
   const fetchWithdrawals = useCallback(() => {
     if (!id) return;
-    console.log('[Withdrawals] Fetching withdrawals for pot:', id);
     supabase.from('withdrawals').select('*').eq('pot_id', id).order('created_at', { ascending: false })
       .then(({ data }) => {
-        console.log('[Withdrawals] Fetched', data?.length ?? 0, 'withdrawals:', data?.map(w => ({ id: w.id, status: w.status, amount: w.amount })));
         setWithdrawals(data ?? []);
       });
   }, [id]);
@@ -279,21 +277,17 @@ export default function PotDetail() {
     const channel = supabase
       .channel(`pot-${id}`)
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'pots', filter: `id=eq.${id}` }, (payload) => {
-        console.log('[Realtime] Pot updated:', payload);
         refetch();
       })
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'transactions', filter: `pot_id=eq.${id}` }, (payload) => {
-        console.log('[Realtime] New transaction:', payload);
         refetch();
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'withdrawals', filter: `pot_id=eq.${id}` }, (payload) => {
-        console.log('[Realtime] Withdrawal change:', payload);
         fetchWithdrawals();
         refetch();
         setTimeout(() => { fetchWithdrawals(); refetch(); }, 1000);
       })
       .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'pot_members', filter: `pot_id=eq.${id}` }, (payload) => {
-        console.log('[Realtime] Member removed:', payload);
         const old = payload.old as any;
         if (old?.user_id === user.id) {
           toast({ title: t('potDetail.removedFromPot'), variant: 'destructive' });
@@ -303,7 +297,6 @@ export default function PotDetail() {
         refetch();
       })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'pot_members', filter: `pot_id=eq.${id}` }, (payload) => {
-        console.log('[Realtime] Member role changed:', payload);
         refetch();
       })
       .subscribe();
@@ -362,7 +355,6 @@ export default function PotDetail() {
   }, [id, user, showChat]);
 
   const handleApproveWithdrawal = async (withdrawal: any) => {
-    console.log('[Approve] Starting approval for withdrawal:', withdrawal.id, 'amount:', withdrawal.amount, 'status:', withdrawal.status);
     if (withdrawal.user_id === user?.id) {
       toast({ title: t('common.error'), description: t('potDetail.cannotApproveOwn'), variant: 'destructive' });
       return;
@@ -800,7 +792,6 @@ export default function PotDetail() {
                   generatePotReport(pot, members, allTx ?? [], allW ?? [], allExpenses);
                   toast({ title: t('potDetail.reportDownloaded') });
                 } catch (e) {
-                  console.error('Report generation failed:', e);
                   toast({ title: t('potDetail.reportFailed'), variant: 'destructive' });
                 } finally {
                   setGeneratingReport(false);
@@ -816,7 +807,7 @@ export default function PotDetail() {
         )}
 
         {/* Tabs */}
-        <Tabs defaultValue="activity" onValueChange={(val) => { if (val === 'activity') { console.log('[Tabs] Activity tab focused, re-fetching withdrawals'); fetchWithdrawals(); refetch(); } }}>
+        <Tabs defaultValue="activity" onValueChange={(val) => { if (val === 'activity') { fetchWithdrawals(); refetch(); } }}>
           <TabsList className="w-full rounded-xl p-1 h-11 pot-tabs-list">
             <TabsTrigger value="activity" className="pot-tab-trigger flex-1 rounded-lg text-sm">{t('potDetail.activity')}</TabsTrigger>
             <TabsTrigger value="members" className="pot-tab-trigger flex-1 rounded-lg text-sm">{t('potDetail.members')}</TabsTrigger>
