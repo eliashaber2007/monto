@@ -28,10 +28,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(false);
 
         if (event === 'SIGNED_IN') {
-          // Mark that user explicitly logged in during this browser tab session
           sessionStorage.setItem('auth_active', 'true');
         }
-
         if (event === 'SIGNED_OUT') {
           sessionStorage.removeItem('auth_active');
         }
@@ -43,33 +41,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (pendingUrl) {
             localStorage.removeItem('pendingInviteUrl');
             localStorage.removeItem('pending_join_pot_id');
-            setTimeout(() => {
-              window.location.href = pendingUrl;
-            }, 0);
+            // Validate URL is same origin before redirecting
+            if (pendingUrl.startsWith(window.location.origin + '/')) {
+              setTimeout(() => {
+                window.location.href = pendingUrl;
+              }, 0);
+            }
           }
         }
       }
     );
 
-    // Detect OAuth redirect (URL contains hash fragments or query params from OAuth flow)
-    const isOAuthRedirect = window.location.hash.includes('access_token') ||
-      window.location.search.includes('code=') ||
-      window.location.pathname.includes('~oauth');
+    // Use Supabase's built-in session detection instead of fragile string matching
+    supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN') {
+        hasHandledOAuthRedirect.current = false;
+      }
+    });
 
-    // If no explicit login happened in this tab, clear any persisted session
-    // BUT skip if this is an OAuth redirect — the session is being established
     const wasExplicitlyLoggedIn = sessionStorage.getItem('auth_active');
-    if (!wasExplicitlyLoggedIn && !isOAuthRedirect) {
-      supabase.auth.signOut().then(() => {
-        setSession(null);
-        setLoading(false);
-      });
-    } else {
-      supabase.auth.getSession().then(({ data: { session } }) => {
+
+    // Detect OAuth redirect using Supabase session check rather than URL string matching
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      const hasSessionFromOAuth = !!session && (
+        window.location.hash.includes('access_token') ||
+        window.location.search.includes('code=') ||
+        window.location.pathname.includes('~oauth')
+      );
+
+      if (!wasExplicitlyLoggedIn && !hasSessionFromOAuth) {
+        supabase.auth.signOut().then(() => {
+          setSession(null);
+          setLoading(false);
+        });
+      } else {
         setSession(session);
         setLoading(false);
-      });
-    }
+      }
+    });
 
     return () => subscription.unsubscribe();
   }, []);
