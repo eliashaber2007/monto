@@ -71,6 +71,7 @@ Deno.serve(async (req) => {
           account_token: body.account_token,
           capabilities: {
             transfers: { requested: true },
+            card_payments: { requested: true },
           },
           business_profile: {
             url: "https://monto.app",
