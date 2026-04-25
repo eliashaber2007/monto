@@ -30,7 +30,7 @@ async function importVapidKeys() {
 
   const publicKey = await crypto.subtle.importKey(
     'raw',
-    publicKeyBytes,
+    publicKeyBytes as BufferSource,
     { name: 'ECDSA', namedCurve: 'P-256' },
     true,
     [],
@@ -38,7 +38,7 @@ async function importVapidKeys() {
 
   const privateKey = await crypto.subtle.importKey(
     'pkcs8',
-    privateKeyBytes,
+    privateKeyBytes as BufferSource,
     { name: 'ECDSA', namedCurve: 'P-256' },
     true,
     ['sign'],
@@ -127,7 +127,7 @@ async function sendWebPush(
 
     const peerPublicKey = await crypto.subtle.importKey(
       'raw',
-      clientPublicKey,
+      clientPublicKey as BufferSource,
       { name: 'ECDH', namedCurve: 'P-256' },
       false,
       [],
@@ -147,7 +147,7 @@ async function sendWebPush(
     const authInfo = encoder.encode('Content-Encoding: auth\0');
     const prkeyMaterial = await crypto.subtle.importKey('raw', sharedSecret, { name: 'HKDF' }, false, ['deriveBits']);
     const ikm = new Uint8Array(await crypto.subtle.deriveBits(
-      { name: 'HKDF', hash: 'SHA-256', salt: clientAuthSecret, info: authInfo },
+      { name: 'HKDF', hash: 'SHA-256', salt: clientAuthSecret as BufferSource, info: authInfo as BufferSource },
       prkeyMaterial,
       256,
     ));

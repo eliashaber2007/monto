@@ -3,7 +3,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2';
 
 Deno.serve(async (req) => {
   const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, {
-    apiVersion: '2024-06-20',
+    apiVersion: '2024-06-20' as any,
   });
 
   const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET')!;
