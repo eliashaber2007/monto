@@ -32,7 +32,6 @@ export default function WithdrawalModal({
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
   const [password, setPassword] = useState('');
@@ -42,7 +41,6 @@ export default function WithdrawalModal({
   const formatCurrency = (val: number) =>
     new Intl.NumberFormat('en-IE', { style: 'currency', currency, minimumFractionDigits: 2 }).format(val);
 
-  // Calculate the max base amount that exactly empties the pot: base + (base*0.0025 + 0.25) = balance
   const maxBaseAmount = parseFloat(((potBalance - 0.25) / 1.0025).toFixed(2));
   const maxBaseFee = parseFloat(((maxBaseAmount * 0.0025) + 0.25).toFixed(2));
 
@@ -51,15 +49,17 @@ export default function WithdrawalModal({
 
   const handleSubmit = async () => {
     if (!user) return;
-    const numAmount = parseFloat(amount);
-    if (isNaN(numAmount) || numAmount <= 0) {
+
+    const numAmount = Math.round(parseFloat(amount) * 100) / 100;
+    if (!Number.isFinite(numAmount) || numAmount <= 0 || numAmount > 999999.99) {
       toast({ title: t('withdrawalModal.invalidAmount'), variant: 'destructive' });
       return;
     }
+
     const fee = parseFloat(((numAmount * 0.0025) + 0.25).toFixed(2));
     const totalDeducted = parseFloat((numAmount + fee).toFixed(2));
+
     if (totalDeducted > potBalance) {
-      // Auto-cap to max withdrawable amount
       if (maxBaseAmount > 0) {
         setAmount(maxBaseAmount.toFixed(2));
         toast({ title: t('withdrawalModal.maxCapMessage', { amount: formatCurrency(maxBaseAmount), fee: formatCurrency(maxBaseFee) }), variant: 'destructive' });
@@ -68,6 +68,7 @@ export default function WithdrawalModal({
       }
       return;
     }
+
     if (maxWithdrawalAmount && numAmount > maxWithdrawalAmount) {
       toast({ title: t('withdrawalModal.maxWithdrawal', { amount: formatCurrency(maxWithdrawalAmount) }), variant: 'destructive' });
       return;
@@ -107,20 +108,13 @@ export default function WithdrawalModal({
       const token = sessionData?.session?.access_token;
       const isCreator = user.id === createdBy;
 
-      // Auto-payout for: auto_approve (no security), requires_password (password already validated above),
-      // or creator on requires_approval pots
-      // Leaders must NOT self-approve on requires_approval pots
       const shouldAutoPayout = withdrawalRule === 'auto_approve' || withdrawalRule === 'requires_password' || (withdrawalRule === 'requires_approval' && isCreator);
 
-      console.log('[Withdrawal] Rule:', withdrawalRule, 'isCreator:', isCreator, 'shouldAutoPayout:', shouldAutoPayout, 'amount:', numAmount);
-
       if (shouldAutoPayout) {
-        console.log('[Withdrawal] Auto-payout: inserting withdrawal record first');
         const { data: wData, error: wErr } = await supabase.from('withdrawals').insert({ pot_id: potId, user_id: user.id, amount: numAmount, note: note.trim(), status: 'pending' }).select('id').single();
         if (wErr) throw wErr;
         const withdrawalId = (wData as any).id;
 
-        console.log('[Withdrawal] Auto-payout: calling create-payout edge function');
         const response = await fetch(
           `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-payout`,
           {
@@ -130,16 +124,11 @@ export default function WithdrawalModal({
           }
         );
         const result = await response.json();
-        console.log('[Withdrawal] Auto-payout response:', result);
         if (!response.ok) throw new Error(result.error || 'Payout failed');
-
         toast({ title: t('withdrawalModal.withdrawalApproved') });
       } else {
-        // requires_approval and user is NOT creator — insert pending
-        console.log('[Withdrawal] Pending approval: inserting pending withdrawal');
         const { error: wErr } = await supabase.from('withdrawals').insert({ pot_id: potId, user_id: user.id, amount: numAmount, note: note.trim(), status: 'pending' });
         if (wErr) throw wErr;
-
         try {
           await fetch(
             `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email-notification`,
@@ -150,9 +139,8 @@ export default function WithdrawalModal({
             }
           );
         } catch (emailErr) {
-          console.error('[Withdrawal] Email notification failed:', emailErr);
+          // Email notification failed silently
         }
-
         toast({ title: t('withdrawalModal.requestSentApproval') });
       }
 
@@ -160,7 +148,6 @@ export default function WithdrawalModal({
       queryClient.invalidateQueries({ queryKey: ['pots'] });
       handleClose(false);
     } catch (err: any) {
-      console.error('[Withdrawal] Error:', err);
       toast({ title: t('common.error'), description: err.message, variant: 'destructive' });
     } finally {
       setLoading(false);
@@ -173,7 +160,6 @@ export default function WithdrawalModal({
         <DialogHeader>
           <DialogTitle className="text-center">{t('withdrawalModal.title')}</DialogTitle>
         </DialogHeader>
-
         <div className="space-y-4 mt-2">
           <div>
             <Label htmlFor="withdrawal-amount" className="text-sm font-medium">{t('withdrawalModal.amountToWithdraw')}</Label>
@@ -208,13 +194,11 @@ export default function WithdrawalModal({
               );
             })()}
           </div>
-
           <div>
             <Label htmlFor="withdrawal-note" className="text-sm font-medium">{t('withdrawalModal.reason')} <span className="text-destructive">*</span></Label>
             <Textarea id="withdrawal-note" placeholder={t('withdrawalModal.reasonPlaceholder')} value={note} onChange={(e) => setNote(e.target.value)} rows={2} className="mt-1 resize-none" />
             {!note.trim() && amount && <p className="text-xs text-destructive mt-1">{t('withdrawalModal.reasonRequired')}</p>}
           </div>
-
           {withdrawalRule === 'requires_password' && (
             <div>
               <Label htmlFor="withdrawal-password" className="text-sm font-medium">{t('withdrawalModal.withdrawalPasswordLabel')}</Label>
@@ -222,11 +206,9 @@ export default function WithdrawalModal({
               {passwordError && <p className="text-xs text-destructive mt-1">{passwordError}</p>}
             </div>
           )}
-
           {withdrawalRule === 'requires_approval' && (
             <p className="text-xs rounded-lg p-3" style={{ color: '#FFFFFF', backgroundColor: 'hsl(var(--primary))' }}>{t('withdrawalModal.requiresApprovalInfo')}</p>
           )}
-
           <Button onClick={handleSubmit} disabled={loading || !amount || !note.trim()} className="w-full h-11 rounded-xl font-semibold">
             {loading ? t('withdrawalModal.processing') : t('withdrawalModal.confirmWithdrawal')}
           </Button>
