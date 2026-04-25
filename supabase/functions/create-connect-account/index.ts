@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
 
       let accountId = profile?.stripe_account_id;
 
-      if (!accountId) {
+      const createNewAccount = async () => {
         const account = await stripe.accounts.create({
           type: "custom",
           country: accountCountry,
@@ -88,21 +88,44 @@ Deno.serve(async (req) => {
             payouts: { schedule: { interval: "manual" } },
           },
         } as any);
-        accountId = account.id;
+        return account.id;
+      };
+
+      if (!accountId) {
+        accountId = await createNewAccount();
       } else {
-        await stripe.accounts.update(accountId, {
-          account_token: body.account_token,
-          business_profile: {
-            url: "https://monto.app",
-            mcc: "7372",
-          },
-          external_account: {
-            object: "bank_account",
-            country: ibanCountry,
-            currency: "eur",
-            account_number: body.iban.replace(/\s/g, ""),
-          } as any,
-        } as any);
+        try {
+          await stripe.accounts.update(accountId, {
+            account_token: body.account_token,
+            business_profile: {
+              url: "https://monto.app",
+              mcc: "7372",
+            },
+            external_account: {
+              object: "bank_account",
+              country: ibanCountry,
+              currency: "eur",
+              account_number: body.iban.replace(/\s/g, ""),
+            } as any,
+          } as any);
+        } catch (updateErr: any) {
+          // If the saved account is inaccessible (revoked, deleted, or belongs to a different platform key),
+          // create a fresh account instead of failing the whole request.
+          const code = updateErr?.code || updateErr?.raw?.code;
+          const status = updateErr?.statusCode;
+          const isInaccessible =
+            code === "account_invalid" ||
+            code === "resource_missing" ||
+            status === 403 ||
+            status === 404;
+
+          if (!isInaccessible) throw updateErr;
+
+          console.warn(
+            `Existing stripe account ${accountId} inaccessible (code=${code}, status=${status}). Creating a new account.`
+          );
+          accountId = await createNewAccount();
+        }
       }
 
       await supabaseAdmin
