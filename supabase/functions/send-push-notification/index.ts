@@ -1,7 +1,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': 'https://montofinance.app',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
@@ -75,14 +75,12 @@ async function createJWT(endpoint: string, privateKey: CryptoKey): Promise<strin
     encoder.encode(unsigned),
   );
 
-  // Convert DER signature to raw r||s format if needed
   const sigArray = new Uint8Array(signature);
   let rawSig: Uint8Array;
-  
+
   if (sigArray.length === 64) {
     rawSig = sigArray;
   } else {
-    // DER encoded - parse it
     const r = parseDERInteger(sigArray, 2);
     const sOffset = 2 + sigArray[3] + 2;
     const s = parseDERInteger(sigArray, sOffset);
@@ -118,7 +116,6 @@ async function sendWebPush(
     const jwt = await createJWT(subscription.endpoint, vapidPrivateKey);
     const vapidPublicB64 = uint8ArrayToBase64Url(vapidPublicKeyBytes);
 
-    // Generate encryption keys for payload
     const localKeyPair = await crypto.subtle.generateKey(
       { name: 'ECDH', namedCurve: 'P-256' },
       true,
@@ -145,10 +142,8 @@ async function sendWebPush(
     const localPublicKeyRaw = await crypto.subtle.exportKey('raw', localKeyPair.publicKey);
     const localPublicKeyBytes = new Uint8Array(localPublicKeyRaw);
 
-    // HKDF-based key derivation (RFC 8291)
     const encoder = new TextEncoder();
-    
-    // Auth info
+
     const authInfo = encoder.encode('Content-Encoding: auth\0');
     const prkeyMaterial = await crypto.subtle.importKey('raw', sharedSecret, { name: 'HKDF' }, false, ['deriveBits']);
     const ikm = new Uint8Array(await crypto.subtle.deriveBits(
@@ -157,12 +152,10 @@ async function sendWebPush(
       256,
     ));
 
-    // Build context for CEK and nonce
     const keyLabel = encoder.encode('Content-Encoding: aes128gcm\0');
     const nonceLabel = encoder.encode('Content-Encoding: nonce\0');
 
     const context = new Uint8Array(140);
-    // "P-256" + 0x00 + len(client) + client + len(local) + local
     const contextPrefix = encoder.encode('P-256\0');
     let offset = 0;
     context.set(contextPrefix, offset); offset += contextPrefix.length;
@@ -172,13 +165,13 @@ async function sendWebPush(
     context.set(localPublicKeyBytes, offset);
 
     const salt = crypto.getRandomValues(new Uint8Array(16));
-    
+
     const ikmKey = await crypto.subtle.importKey('raw', ikm, { name: 'HKDF' }, false, ['deriveBits']);
-    
+
     const cekInfoBuf = new Uint8Array(keyLabel.length + context.length);
     cekInfoBuf.set(keyLabel);
     cekInfoBuf.set(context, keyLabel.length);
-    
+
     const cekBits = await crypto.subtle.deriveBits(
       { name: 'HKDF', hash: 'SHA-256', salt, info: cekInfoBuf },
       ikmKey,
@@ -196,12 +189,10 @@ async function sendWebPush(
       96,
     );
 
-    // Encrypt payload
     const payloadBytes = encoder.encode(payload);
     const paddedPayload = new Uint8Array(payloadBytes.length + 2);
     paddedPayload.set(payloadBytes);
-    paddedPayload[payloadBytes.length] = 2; // delimiter
-    // rest is already 0 (padding)
+    paddedPayload[payloadBytes.length] = 2;
 
     const cekKey = await crypto.subtle.importKey('raw', cekBits, { name: 'AES-GCM' }, false, ['encrypt']);
     const encrypted = await crypto.subtle.encrypt(
@@ -210,8 +201,7 @@ async function sendWebPush(
       paddedPayload,
     );
 
-    // Build aes128gcm header: salt(16) + rs(4) + idlen(1) + keyid(65) + ciphertext
-    const rs = payloadBytes.length + 2 + 16 + 1; // +16 for tag, +1 for padding
+    const rs = payloadBytes.length + 2 + 16 + 1;
     const header = new Uint8Array(86);
     header.set(salt, 0);
     new DataView(header.buffer).setUint32(16, rs > 4096 ? 4096 : rs);
@@ -234,7 +224,6 @@ async function sendWebPush(
     });
 
     if (response.status === 410 || response.status === 404) {
-      // Subscription expired, remove it
       await supabaseAdmin
         .from('push_subscriptions')
         .delete()
@@ -270,7 +259,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Get all push subscriptions for this user
     const { data: subscriptions, error } = await supabaseAdmin
       .from('push_subscriptions')
       .select('endpoint, p256dh, auth')
@@ -285,7 +273,7 @@ Deno.serve(async (req) => {
     }
 
     const { publicKey: _pk, privateKey: vapidPrivateKey, publicKeyBytes: vapidPublicKeyBytes } = await importVapidKeys();
-    
+
     const payload = JSON.stringify({
       title: title || 'Monto',
       body,
@@ -304,7 +292,7 @@ Deno.serve(async (req) => {
     });
   } catch (err: any) {
     console.error('send-push-notification error:', err);
-    return new Response(JSON.stringify({ error: err.message }), {
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
