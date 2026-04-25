@@ -59,7 +59,7 @@ export default function StripeOnboardingForm({ onComplete, onCancel, mode = 'con
   const totalSteps = 3;
 
   const canGoNext = () => {
-    if (step === 1) return firstName.trim() && lastName.trim() && dobDay && dobMonth && dobYear;
+    if (step === 1) return firstName.trim() && lastName.trim() && phone.trim().length >= 6 && dobDay && dobMonth && dobYear;
     if (step === 2) return line1.trim() && city.trim() && postalCode.trim() && country;
     if (step === 3) return iban.trim().length >= 15;
     return false;
