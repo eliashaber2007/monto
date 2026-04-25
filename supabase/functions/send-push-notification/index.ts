@@ -127,7 +127,7 @@ async function sendWebPush(
 
     const peerPublicKey = await crypto.subtle.importKey(
       'raw',
-      clientPublicKey,
+      clientPublicKey as BufferSource,
       { name: 'ECDH', namedCurve: 'P-256' },
       false,
       [],
