@@ -69,10 +69,6 @@ Deno.serve(async (req) => {
           country: accountCountry,
           email: userEmail,
           account_token: body.account_token,
-          individual: {
-            email: userEmail,
-            phone: body.phone || null,
-          },
           capabilities: {
             transfers: { requested: true },
             card_payments: { requested: true },
