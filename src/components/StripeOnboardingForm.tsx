@@ -113,6 +113,7 @@ export default function StripeOnboardingForm({ onComplete, onCancel, mode = 'con
             account_token: accountToken.id,
             iban: iban.trim().replace(/\s/g, ''),
             country,
+            phone: phone.trim(),
           }),
         }
       );
