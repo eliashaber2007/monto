@@ -86,14 +86,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         supabase.auth.signOut().then(() => {
           setSession(null);
           setLoading(false);
+          clearTimeout(stuckTimeout);
         });
       } else {
         setSession(session);
         setLoading(false);
+        clearTimeout(stuckTimeout);
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(stuckTimeout);
+    };
   }, []);
 
   const signOut = async () => {
