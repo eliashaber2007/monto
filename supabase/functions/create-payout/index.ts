@@ -121,37 +121,43 @@ Deno.serve(async (req) => {
       }
     }
 
-    // 2. Transfer succeeded — now deduct balance atomically
-    await supabaseAdmin.rpc("increment_pot_balance", {
+    // 2. Transfer succeeded — deduct balance with error checking
+    const { error: balanceErr } = await supabaseAdmin.rpc("increment_pot_balance", {
       p_pot_id: pot_id,
       p_amount: -totalDeducted,
     });
+    if (balanceErr) {
+      console.error("Balance deduction failed after successful transfer:", balanceErr);
+      return new Response(JSON.stringify({ error: "Payout sent but balance update failed. Contact support.", transfer_id: transferId }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-    // 3. Record transaction
-    await supabaseAdmin.from("transactions").insert({
+    // 3. Record transaction — roll back balance if this fails
+    const { error: txErr } = await supabaseAdmin.from("transactions").insert({
       pot_id,
       user_id: recipient_user_id,
       amount: -totalDeducted,
       status: "completed",
       stripe_session_id: transferId,
     });
+    if (txErr) {
+      console.error("Transaction insert failed, rolling back balance:", txErr);
+      await supabaseAdmin.rpc("increment_pot_balance", { p_pot_id: pot_id, p_amount: totalDeducted });
+      return new Response(JSON.stringify({ error: "Failed to record transaction", transfer_id: transferId }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-    // 4. Mark the withdrawal as approved with total_deducted (if withdrawal_id provided)
+    // 4. Mark withdrawal approved (legacy path — only if withdrawal_id provided).
+    // New client flow inserts the withdrawal record AFTER this function succeeds.
     if (withdrawal_id) {
       await supabaseAdmin
         .from("withdrawals")
         .update({ status: "approved", processed_at: new Date().toISOString(), total_deducted: totalDeducted })
         .eq("id", withdrawal_id);
-    } else {
-      await supabaseAdmin
-        .from("withdrawals")
-        .update({ total_deducted: totalDeducted })
-        .eq("pot_id", pot_id)
-        .eq("user_id", recipient_user_id)
-        .eq("amount", amount)
-        .is("total_deducted", null)
-        .order("created_at", { ascending: false })
-        .limit(1);
     }
 
     // 5. In-app notification
