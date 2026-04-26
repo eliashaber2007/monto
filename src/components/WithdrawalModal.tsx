@@ -111,20 +111,31 @@ export default function WithdrawalModal({
       const shouldAutoPayout = withdrawalRule === 'auto_approve' || withdrawalRule === 'requires_password' || (withdrawalRule === 'requires_approval' && isCreator);
 
       if (shouldAutoPayout) {
-        const { data: wData, error: wErr } = await supabase.from('withdrawals').insert({ pot_id: potId, user_id: user.id, amount: numAmount, note: note.trim(), status: 'pending' }).select('id').single();
-        if (wErr) throw wErr;
-        const withdrawalId = (wData as any).id;
-
+        // Call payout FIRST — only insert withdrawal record if it succeeds
         const response = await fetch(
           `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-payout`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
-            body: JSON.stringify({ pot_id: potId, amount: numAmount, currency: currency.toLowerCase(), recipient_user_id: user.id, withdrawal_id: withdrawalId }),
+            body: JSON.stringify({ pot_id: potId, amount: numAmount, currency: currency.toLowerCase(), recipient_user_id: user.id }),
           }
         );
         const result = await response.json();
         if (!response.ok) throw new Error(result.error || 'Payout failed');
+
+        // Payout succeeded — now record the withdrawal as approved
+        const fee = parseFloat(((numAmount * 0.0025) + 0.25).toFixed(2));
+        const totalDeducted = parseFloat((numAmount + fee).toFixed(2));
+        const { error: wErr } = await supabase.from('withdrawals').insert({
+          pot_id: potId,
+          user_id: user.id,
+          amount: numAmount,
+          note: note.trim(),
+          status: 'approved',
+          processed_at: new Date().toISOString(),
+          total_deducted: totalDeducted,
+        });
+        if (wErr) console.error('Failed to record withdrawal after successful payout:', wErr);
         toast({ title: t('withdrawalModal.withdrawalApproved') });
       } else {
         const { error: wErr } = await supabase.from('withdrawals').insert({ pot_id: potId, user_id: user.id, amount: numAmount, note: note.trim(), status: 'pending' });
