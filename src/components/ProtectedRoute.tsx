@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/usePots';
+import LoadingWithTimeout from '@/components/LoadingWithTimeout';
 
 export default function ProtectedRoute({ children }: { children: ReactNode }) {
   const { session, loading } = useAuth();
@@ -11,7 +12,7 @@ export default function ProtectedRoute({ children }: { children: ReactNode }) {
   if (loading || profileLoading) {
     return (
       <div className="min-h-screen bg-surface flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        <LoadingWithTimeout />
       </div>
     );
   }
