@@ -25,7 +25,19 @@ import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Cached data is shown instantly on repeat visits; revalidated in background
+      staleTime: 1000 * 60, // 1 minute
+      gcTime: 1000 * 60 * 10, // 10 minutes in cache
+      retry: 1,
+      retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 5000),
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: true,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
