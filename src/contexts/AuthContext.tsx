@@ -38,6 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       (event, session) => {
         setSession(session);
         setLoading(false);
+        clearTimeout(stuckTimeout);
 
         if (event === 'SIGNED_IN') {
           sessionStorage.setItem('auth_active', 'true');
