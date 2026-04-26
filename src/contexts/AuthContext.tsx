@@ -22,10 +22,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const hasHandledOAuthRedirect = useRef(false);
 
   useEffect(() => {
+    // Safety net: if auth restoration takes too long (e.g. after Stripe redirect),
+    // force the app out of the loading state to avoid an infinite spinner.
+    const stuckTimeout = setTimeout(() => {
+      setLoading((prev) => {
+        if (prev) {
+          console.warn('Auth session restoration timed out — forcing reload.');
+          window.location.href = '/';
+        }
+        return prev;
+      });
+    }, 3000);
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
         setLoading(false);
+        clearTimeout(stuckTimeout);
 
         if (event === 'SIGNED_IN') {
           sessionStorage.setItem('auth_active', 'true');
@@ -73,14 +86,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         supabase.auth.signOut().then(() => {
           setSession(null);
           setLoading(false);
+          clearTimeout(stuckTimeout);
         });
       } else {
         setSession(session);
         setLoading(false);
+        clearTimeout(stuckTimeout);
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(stuckTimeout);
+    };
   }, []);
 
   const signOut = async () => {
