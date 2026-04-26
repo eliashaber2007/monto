@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
+import LoadingWithTimeout from '@/components/LoadingWithTimeout';
 
 export default function PotSuccess() {
   const { t } = useTranslation();
@@ -81,7 +82,10 @@ export default function PotSuccess() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center space-y-3">
-          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+          <LoadingWithTimeout
+            onRetry={() => navigate('/', { replace: true })}
+            className="flex items-center justify-center"
+          />
           <p className="text-sm text-muted-foreground">{t('potSuccess.settingUp')}</p>
         </div>
       </div>

@@ -6,6 +6,7 @@ import { useProfile, usePots } from '@/hooks/usePots';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import CreatePotModal, { type PotCreationState } from '@/components/CreatePotModal';
+import PotCardSkeleton from '@/components/PotCardSkeleton';
 import NotificationBell from '@/components/NotificationBell';
 import NotificationPrompt from '@/components/NotificationPrompt';
 import { useTranslation } from 'react-i18next';
@@ -163,8 +164,10 @@ export default function MyPots() {
         )}
 
         {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <div className="space-y-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <PotCardSkeleton key={i} />
+            ))}
           </div>
         ) : activePots.length === 0 ? (
           <div className="bg-card rounded-2xl border border-border p-12 text-center shadow-sm">
