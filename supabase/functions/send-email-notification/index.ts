@@ -52,6 +52,19 @@ interface EmailPayload {
   creator_name?: string;
 }
 
+async function hasPushSubscription(userId: string): Promise<boolean> {
+  const { count } = await supabaseAdmin
+    .from('push_subscriptions')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId);
+  return (count ?? 0) > 0;
+}
+
+async function sendEmailIfNoPush(userId: string, to: string, subject: string, body: string) {
+  if (await hasPushSubscription(userId)) return;
+  await sendEmail(to, subject, body);
+}
+
 async function sendEmail(to: string, subject: string, body: string) {
   try {
     const { error } = await resend.emails.send({
