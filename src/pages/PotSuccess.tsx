@@ -1,11 +1,14 @@
-import { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
-import LoadingWithTimeout from '@/components/LoadingWithTimeout';
+
+const FALLBACK_MESSAGE_DELAY_MS = 10_000;
+const POLL_INTERVAL_MS = 5_000;
+const MAX_POLL_DURATION_MS = 120_000;
 
 export default function PotSuccess() {
   const { t } = useTranslation();
@@ -13,7 +16,9 @@ export default function PotSuccess() {
   const { user, loading: authLoading } = useAuth();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const [processing, setProcessing] = useState(true);
+  const [showFallback, setShowFallback] = useState(false);
+  const startedAtRef = useRef<number>(Date.now());
+  const cancelledRef = useRef(false);
 
   useEffect(() => {
     if (authLoading) return;
@@ -21,6 +26,13 @@ export default function PotSuccess() {
       navigate('/login', { replace: true });
       return;
     }
+
+    cancelledRef.current = false;
+    startedAtRef.current = Date.now();
+
+    const fallbackTimer = setTimeout(() => {
+      if (!cancelledRef.current) setShowFallback(true);
+    }, FALLBACK_MESSAGE_DELAY_MS);
 
     const handleSuccess = async () => {
       const pendingRaw = localStorage.getItem('pendingPotData');
@@ -69,28 +81,60 @@ export default function PotSuccess() {
       localStorage.removeItem('pendingPotData');
       localStorage.removeItem('potCreationState');
 
+      // Poll for balance update from the Stripe webhook.
+      // Resolves as soon as balance > 0, or after MAX_POLL_DURATION_MS.
+      const pollForBalance = async () => {
+        while (!cancelledRef.current) {
+          const { data: pot } = await supabase
+            .from('pots')
+            .select('balance')
+            .eq('id', potId)
+            .maybeSingle();
+
+          if (cancelledRef.current) return;
+
+          if (pot && Number(pot.balance ?? 0) > 0) return;
+
+          if (Date.now() - startedAtRef.current >= MAX_POLL_DURATION_MS) return;
+
+          await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
+        }
+      };
+
+      await pollForBalance();
+      if (cancelledRef.current) return;
+
       queryClient.invalidateQueries({ queryKey: ['pots'] });
+      queryClient.invalidateQueries({ queryKey: ['pot', potId] });
 
       toast({ title: t('potSuccess.created'), description: t('potSuccess.paymentSuccess') });
       navigate(`/pots/${potId}?payment=success`, { replace: true });
     };
 
     handleSuccess();
+
+    return () => {
+      cancelledRef.current = true;
+      clearTimeout(fallbackTimer);
+    };
   }, [user, authLoading]);
 
-  if (processing) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center space-y-3">
-          <LoadingWithTimeout
-            onRetry={() => navigate('/', { replace: true })}
-            className="flex items-center justify-center"
-          />
-          <p className="text-sm text-muted-foreground">{t('potSuccess.settingUp')}</p>
-        </div>
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background px-6">
+      <div className="text-center space-y-4 max-w-sm">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+        <p className="text-sm text-muted-foreground">
+          {t('potSuccess.settingUp')}
+        </p>
+        {showFallback && (
+          <p className="text-sm text-foreground/80">
+            {t(
+              'potSuccess.paymentReceivedFallback',
+              'Your payment was received and will appear shortly.'
+            )}
+          </p>
+        )}
       </div>
-    );
-  }
-
-  return null;
+    </div>
+  );
 }
