@@ -236,6 +236,15 @@ export default function Login() {
           <Link to="/signup" className="text-primary font-semibold hover:underline">{t('auth.createOne')}</Link>
         </p>
       </div>
+
+      <footer className="mt-10 text-center text-xs text-muted-foreground">
+        <a
+          href="https://montofinance.app/privacy"
+          className="hover:text-foreground hover:underline transition-colors"
+        >
+          Politique de Confidentialité
+        </a>
+      </footer>
     </div>
   );
 }
