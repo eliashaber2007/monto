@@ -141,6 +141,12 @@ export default function Signup() {
             <Button type="submit" className="w-full h-11 rounded-xl mt-2" disabled={loading}>
               {loading ? t('auth.creatingAccount') : t('auth.createAccount')}
             </Button>
+            <p className="text-xs text-muted-foreground text-center leading-relaxed">
+              En créant un compte, vous acceptez notre{" "}
+              <Link to="/privacy" className="text-primary hover:underline font-medium">
+                Politique de Confidentialité
+              </Link>
+            </p>
           </form>
         </div>
 

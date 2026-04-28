@@ -510,9 +510,16 @@ export default function Profile() {
           </button>
           <button
             onClick={() => navigate('/faq')}
-            className="w-full p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors rounded-b-2xl"
+            className="w-full p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors"
           >
             <span className="text-sm font-semibold text-foreground pl-[30px]">{t('profile.faq')}</span>
+            <span className="text-muted-foreground text-xs">→</span>
+          </button>
+          <button
+            onClick={() => navigate('/privacy')}
+            className="w-full p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors rounded-b-2xl"
+          >
+            <span className="text-sm font-semibold text-foreground pl-[30px]">Politique de Confidentialité</span>
             <span className="text-muted-foreground text-xs">→</span>
           </button>
         </div>
