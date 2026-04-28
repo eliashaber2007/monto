@@ -5,7 +5,7 @@ import fr from './locales/fr.json';
 import de from './locales/de.json';
 import es from './locales/es.json';
 
-const savedLang = localStorage.getItem('preferredLanguage') || 'en';
+const savedLang = localStorage.getItem('preferredLanguage') || 'fr';
 
 i18n
   .use(initReactI18next)
@@ -17,7 +17,7 @@ i18n
       es: { translation: es },
     },
     lng: savedLang,
-    fallbackLng: 'en',
+    fallbackLng: 'fr',
     interpolation: {
       escapeValue: false,
     },
