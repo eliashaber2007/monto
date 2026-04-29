@@ -9,24 +9,77 @@ export default function SocialLoginButtons() {
   const [loadingApple, setLoadingApple] = useState(false);
   const { toast } = useToast();
 
+  // If running inside an iframe (e.g. Lovable preview), break out so OAuth
+  // redirect can navigate the top-level window properly.
+  const isInIframe = () => {
+    try {
+      return window.self !== window.top;
+    } catch {
+      return true;
+    }
+  };
+
   const handleGoogle = async () => {
     setLoadingGoogle(true);
-    const { error } = await lovable.auth.signInWithOAuth('google', {
-      redirect_uri: window.location.origin,
-    });
-    if (error) {
-      toast({ title: t('auth.googleSignInFailed'), description: String(error), variant: 'destructive' });
+    try {
+      const origin = isInIframe() && window.top
+        ? (window.top.location.origin as string)
+        : window.location.origin;
+
+      const result = await lovable.auth.signInWithOAuth('google', {
+        redirect_uri: origin,
+      });
+
+      if (result?.error) {
+        console.error('Google OAuth error:', result.error);
+        toast({
+          title: t('auth.googleSignInFailed'),
+          description: String((result.error as any)?.message ?? result.error),
+          variant: 'destructive',
+        });
+        setLoadingGoogle(false);
+        return;
+      }
+      // If redirected, browser is navigating away — keep loading state.
+    } catch (err: any) {
+      console.error('Google OAuth exception:', err);
+      toast({
+        title: t('auth.googleSignInFailed'),
+        description: err?.message ?? String(err),
+        variant: 'destructive',
+      });
       setLoadingGoogle(false);
     }
   };
 
   const handleApple = async () => {
     setLoadingApple(true);
-    const { error } = await lovable.auth.signInWithOAuth('apple', {
-      redirect_uri: window.location.origin,
-    });
-    if (error) {
-      toast({ title: t('auth.appleSignInFailed'), description: String(error), variant: 'destructive' });
+    try {
+      const origin = isInIframe() && window.top
+        ? (window.top.location.origin as string)
+        : window.location.origin;
+
+      const result = await lovable.auth.signInWithOAuth('apple', {
+        redirect_uri: origin,
+      });
+
+      if (result?.error) {
+        console.error('Apple OAuth error:', result.error);
+        toast({
+          title: t('auth.appleSignInFailed'),
+          description: String((result.error as any)?.message ?? result.error),
+          variant: 'destructive',
+        });
+        setLoadingApple(false);
+        return;
+      }
+    } catch (err: any) {
+      console.error('Apple OAuth exception:', err);
+      toast({
+        title: t('auth.appleSignInFailed'),
+        description: err?.message ?? String(err),
+        variant: 'destructive',
+      });
       setLoadingApple(false);
     }
   };
