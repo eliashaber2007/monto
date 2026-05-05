@@ -68,7 +68,7 @@ async function sendEmailIfNoPush(userId: string, to: string, subject: string, bo
 async function sendEmail(to: string, subject: string, body: string) {
   try {
     const { error } = await resend.emails.send({
-      from: 'Monto <notifications@resend.dev>',
+      from: 'Monto <noreply@montofinance.app>',
       to: [to],
       subject,
       html: `
