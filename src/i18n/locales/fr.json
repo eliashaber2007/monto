@@ -26,6 +26,8 @@
   "auth": {
     "signIn": "Se connecter",
     "signingIn": "Connexion…",
+    "byCreatingAccount": "En créant un compte, vous acceptez notre",
+    "privacyPolicy": "Politique de confidentialité",
     "createAccount": "Créer un compte",
     "creatingAccount": "Création du compte…",
     "email": "E-mail",
