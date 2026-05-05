@@ -96,10 +96,29 @@ export default function ResetPassword() {
     navigate('/login', { replace: true });
   };
 
-  if (!ready) {
+  if (!ready && !sessionError) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (sessionError) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <div className="w-full max-w-sm">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-foreground">{t('common.monto')}</h1>
+          </div>
+          <div className="bg-card rounded-2xl shadow-card p-6 border border-border space-y-4">
+            <h2 className="text-lg font-semibold text-foreground">{t('auth.resetPassword')}</h2>
+            <p className="text-sm text-muted-foreground">{sessionError}</p>
+            <Button type="button" className="w-full h-11 rounded-xl" onClick={() => navigate('/forgot-password', { replace: true })}>
+              {t('auth.sendResetLink')}
+            </Button>
+          </div>
+        </div>
       </div>
     );
   }
