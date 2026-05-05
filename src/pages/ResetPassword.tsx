@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
+import { establishRecoverySessionFromUrl } from '@/lib/authRecovery';
 
 export default function ResetPassword() {
   const { t } = useTranslation();
@@ -13,34 +14,34 @@ export default function ResetPassword() {
   const [confirm, setConfirm] = useState('');
   const [loading, setLoading] = useState(false);
   const [ready, setReady] = useState(false);
+  const [sessionError, setSessionError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
     let cancelled = false;
 
-    const markReadyIfSessionExists = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+    const confirmSession = async () => {
+      const { isRecovery, session, error } = await establishRecoverySessionFromUrl(window.location.href);
+      if (error) throw error;
+
+      if (!session && !isRecovery) {
+        const { data } = await supabase.auth.getSession();
+        if (data.session?.access_token) {
+          sessionStorage.setItem('auth_active', 'true');
+          setReady(true);
+          return;
+        }
+      }
+
       if (session?.access_token && !cancelled) {
         sessionStorage.setItem('auth_active', 'true');
+        window.history.replaceState({}, document.title, '/reset-password');
         setReady(true);
-        return true;
+        return;
       }
-      return false;
-    };
 
-    const readCallbackParams = () => {
-      const searchParams = new URLSearchParams(window.location.search);
-      const rawHash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : window.location.hash;
-      const hashQuery = rawHash.includes('?') ? rawHash.slice(rawHash.indexOf('?') + 1) : rawHash;
-      const hashParams = new URLSearchParams(hashQuery);
-
-      return {
-        code: searchParams.get('code') ?? hashParams.get('code'),
-        accessToken: searchParams.get('access_token') ?? hashParams.get('access_token'),
-        refreshToken: searchParams.get('refresh_token') ?? hashParams.get('refresh_token'),
-        type: searchParams.get('type') ?? hashParams.get('type'),
-      };
+      throw new Error(t('auth.resetSessionMissing'));
     };
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -52,29 +53,13 @@ export default function ResetPassword() {
 
     (async () => {
       try {
-        if (await markReadyIfSessionExists()) return;
-
-        const { code, accessToken, refreshToken, type } = readCallbackParams();
-        if (code) {
-          const { error } = await supabase.auth.exchangeCodeForSession(code);
-          if (error) throw error;
-          if (await markReadyIfSessionExists()) return;
-        }
-
-        if (accessToken && refreshToken) {
-          const { error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
-          if (error) throw error;
-          if (await markReadyIfSessionExists()) return;
-        }
-
-        for (let attempt = 0; attempt < 5; attempt += 1) {
-          await new Promise((resolve) => window.setTimeout(resolve, 200));
-          if (await markReadyIfSessionExists()) return;
-        }
-
-        if (type === 'recovery') throw new Error(t('auth.resetSessionMissing'));
+        await confirmSession();
       } catch (err: any) {
-        if (!cancelled) toast({ title: t('common.error'), description: err.message, variant: 'destructive' });
+        if (!cancelled) {
+          const message = err.message ?? t('auth.resetSessionMissing');
+          setSessionError(message);
+          toast({ title: t('common.error'), description: message, variant: 'destructive' });
+        }
       }
     })();
 
