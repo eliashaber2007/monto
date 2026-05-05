@@ -242,7 +242,7 @@ export default function Login() {
           href="https://montofinance.app/privacy"
           className="hover:text-foreground hover:underline transition-colors"
         >
-          Politique de Confidentialité
+          {t('auth.privacyPolicy')}
         </a>
       </footer>
     </div>
