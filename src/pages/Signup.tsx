@@ -142,9 +142,9 @@ export default function Signup() {
               {loading ? t('auth.creatingAccount') : t('auth.createAccount')}
             </Button>
             <p className="text-xs text-muted-foreground text-center leading-relaxed">
-              En créant un compte, vous acceptez notre{" "}
+              {t('auth.byCreatingAccount')}{" "}
               <Link to="/privacy" className="text-primary hover:underline font-medium">
-                Politique de Confidentialité
+                {t('auth.privacyPolicy')}
               </Link>
             </p>
           </form>
