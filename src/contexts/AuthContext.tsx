@@ -74,15 +74,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const wasExplicitlyLoggedIn = sessionStorage.getItem('auth_active');
 
+    // Capture URL signals BEFORE Supabase strips them via detectSessionInUrl
+    const initialHash = window.location.hash;
+    const initialSearch = window.location.search;
+    const initialPath = window.location.pathname;
+    const isRecoveryFlow =
+      initialPath === '/reset-password' ||
+      initialHash.includes('type=recovery') ||
+      initialSearch.includes('type=recovery');
+
     // Detect OAuth redirect using Supabase session check rather than URL string matching
     supabase.auth.getSession().then(({ data: { session } }) => {
       const hasSessionFromOAuth = !!session && (
-        window.location.hash.includes('access_token') ||
-        window.location.search.includes('code=') ||
-        window.location.pathname.includes('~oauth')
+        initialHash.includes('access_token') ||
+        initialSearch.includes('code=') ||
+        initialPath.includes('~oauth')
       );
 
-      if (!wasExplicitlyLoggedIn && !hasSessionFromOAuth) {
+      if (!wasExplicitlyLoggedIn && !hasSessionFromOAuth && !isRecoveryFlow) {
         supabase.auth.signOut().then(() => {
           setSession(null);
           setLoading(false);
