@@ -76,6 +76,7 @@
     "passwordsDoNotMatch": "Les mots de passe ne correspondent pas",
     "passwordMinChars": "Le mot de passe doit contenir au moins 6 caractères",
     "passwordUpdated": "Mot de passe mis à jour avec succès",
+    "resetSessionMissing": "Ce lien de réinitialisation est invalide ou expiré. Veuillez demander un nouveau lien de réinitialisation.",
     "googleSignInFailed": "Échec de la connexion Google",
     "appleSignInFailed": "Échec de la connexion Apple"
   },
