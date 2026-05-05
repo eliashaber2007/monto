@@ -76,6 +76,7 @@
     "passwordsDoNotMatch": "Las contraseñas no coinciden",
     "passwordMinChars": "La contraseña debe tener al menos 6 caracteres",
     "passwordUpdated": "Contraseña actualizada exitosamente",
+    "resetSessionMissing": "Este enlace de restablecimiento no es válido o ha caducado. Solicita un nuevo enlace de restablecimiento.",
     "googleSignInFailed": "Error de inicio de sesión con Google",
     "appleSignInFailed": "Error de inicio de sesión con Apple"
   },

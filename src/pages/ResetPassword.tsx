@@ -17,48 +17,80 @@ export default function ResetPassword() {
   const { toast } = useToast();
 
   useEffect(() => {
+    let cancelled = false;
+
+    const markReadyIfSessionExists = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.access_token && !cancelled) {
+        sessionStorage.setItem('auth_active', 'true');
+        setReady(true);
+        return true;
+      }
+      return false;
+    };
+
+    const readCallbackParams = () => {
+      const searchParams = new URLSearchParams(window.location.search);
+      const rawHash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : window.location.hash;
+      const hashQuery = rawHash.includes('?') ? rawHash.slice(rawHash.indexOf('?') + 1) : rawHash;
+      const hashParams = new URLSearchParams(hashQuery);
+
+      return {
+        code: searchParams.get('code') ?? hashParams.get('code'),
+        accessToken: searchParams.get('access_token') ?? hashParams.get('access_token'),
+        refreshToken: searchParams.get('refresh_token') ?? hashParams.get('refresh_token'),
+        type: searchParams.get('type') ?? hashParams.get('type'),
+      };
+    };
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && session)) {
+        sessionStorage.setItem('auth_active', 'true');
         setReady(true);
       }
     });
 
     (async () => {
       try {
-        const url = new URL(window.location.href);
-        const code = url.searchParams.get('code');
+        if (await markReadyIfSessionExists()) return;
+
+        const { code, accessToken, refreshToken, type } = readCallbackParams();
         if (code) {
           const { error } = await supabase.auth.exchangeCodeForSession(code);
           if (error) throw error;
-          setReady(true);
-          return;
+          if (await markReadyIfSessionExists()) return;
         }
 
-        const hash = window.location.hash.startsWith('#')
-          ? window.location.hash.slice(1)
-          : window.location.hash;
-        const params = new URLSearchParams(hash);
-        const access_token = params.get('access_token');
-        const refresh_token = params.get('refresh_token');
-        if (access_token && refresh_token) {
-          const { error } = await supabase.auth.setSession({ access_token, refresh_token });
+        if (accessToken && refreshToken) {
+          const { error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
           if (error) throw error;
-          setReady(true);
-          return;
+          if (await markReadyIfSessionExists()) return;
         }
 
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) setReady(true);
+        for (let attempt = 0; attempt < 5; attempt += 1) {
+          await new Promise((resolve) => window.setTimeout(resolve, 200));
+          if (await markReadyIfSessionExists()) return;
+        }
+
+        if (type === 'recovery') throw new Error(t('auth.resetSessionMissing'));
       } catch (err: any) {
-        toast({ title: t('common.error'), description: err.message, variant: 'destructive' });
+        if (!cancelled) toast({ title: t('common.error'), description: err.message, variant: 'destructive' });
       }
     })();
 
-    return () => subscription.unsubscribe();
-  }, []);
+    return () => {
+      cancelled = true;
+      subscription.unsubscribe();
+    };
+  }, [t, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      toast({ title: t('common.error'), description: t('auth.resetSessionMissing'), variant: 'destructive' });
+      return;
+    }
     if (password !== confirm) {
       toast({ title: t('auth.passwordsDoNotMatch'), variant: 'destructive' });
       return;
