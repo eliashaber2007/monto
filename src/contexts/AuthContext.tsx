@@ -47,19 +47,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           sessionStorage.removeItem('auth_active');
         }
 
-        // Handle OAuth redirect: if user just signed in and there's a pending invite URL, redirect
+        // Handle OAuth/email redirect: if user just signed in and there's a pending invite URL, redirect
         if (event === 'SIGNED_IN' && session && !hasHandledOAuthRedirect.current) {
           hasHandledOAuthRedirect.current = true;
           const pendingUrl = localStorage.getItem('pendingInviteUrl');
-          if (pendingUrl) {
+          const pendingPotId = localStorage.getItem('pending_join_pot_id');
+          const target = pendingUrl && pendingUrl.startsWith('/')
+            ? pendingUrl
+            : pendingPotId
+              ? `/join/${pendingPotId}`
+              : null;
+          if (target) {
             localStorage.removeItem('pendingInviteUrl');
             localStorage.removeItem('pending_join_pot_id');
-            // Validate URL is same origin before redirecting
-            if (pendingUrl.startsWith(window.location.origin + '/')) {
-              setTimeout(() => {
-                window.location.href = pendingUrl;
-              }, 0);
-            }
+            setTimeout(() => {
+              window.location.href = target;
+            }, 0);
           }
         }
       }
