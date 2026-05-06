@@ -63,16 +63,6 @@ function normalizeJoinError(error: any): Error {
   return new Error(error?.message ?? 'Unable to join this pot. Please try again.');
 }
 
-function logSupabaseJoinError(stage: string, error: any) {
-  console.error('[inviteJoin] Supabase pot_members join failed', {
-    stage,
-    code: error?.code,
-    message: error?.message,
-    details: error?.details,
-    hint: error?.hint,
-  });
-}
-
 function logFunctionJoinError(stage: string, error: any) {
   console.error('[inviteJoin] join-pot function failed', {
     stage,
