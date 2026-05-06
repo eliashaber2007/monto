@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import SocialLoginButtons from '@/components/SocialLoginButtons';
 import { CheckCircle2, AlertCircle, ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { joinPendingInviteForUser } from '@/lib/inviteJoin';
 
 const LANGUAGES = [
   { code: 'en', emoji: '🇬🇧', label: 'EN' },
@@ -69,8 +70,11 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [inviteProcessing, setInviteProcessing] = useState(false);
+  const [inviteError, setInviteError] = useState<string | null>(null);
   const [resending, setResending] = useState(false);
   const [showUnverified, setShowUnverified] = useState(false);
+  const hasProcessedPendingInvite = useRef(false);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
@@ -79,24 +83,34 @@ export default function Login() {
   const isVerified = searchParams.get('verified') === 'true';
 
   useEffect(() => {
-    if (!authLoading && session) {
-      const pendingInviteUrl = localStorage.getItem('pendingInviteUrl');
-      const pendingPotId = localStorage.getItem('pending_join_pot_id');
-      if (pendingInviteUrl && pendingInviteUrl.startsWith('/')) {
-        // Let JoinPot perform the insert + redirect; clear the stored URL once consumed.
-        localStorage.removeItem('pendingInviteUrl');
-        localStorage.removeItem('pending_join_pot_id');
-        navigate(pendingInviteUrl, { replace: true });
-        return;
+    if (authLoading || !session || hasProcessedPendingInvite.current) return;
+
+    const processSession = async () => {
+      hasProcessedPendingInvite.current = true;
+      setInviteError(null);
+      const timeoutMessage = t('joinPot.timeout');
+
+      try {
+        setInviteProcessing(true);
+        const result = await joinPendingInviteForUser(session.user.id, 5000, timeoutMessage);
+        if (result) {
+          toast({ title: t('joinPot.joined') });
+          navigate(`/pots/${result.potId}`, { replace: true });
+        } else {
+          navigate('/', { replace: true });
+        }
+      } catch (err: any) {
+        const description = err?.message === timeoutMessage ? timeoutMessage : t('joinPot.errorDescription');
+        setInviteError(description);
+        toast({ title: t('joinPot.error'), description, variant: 'destructive' });
+      } finally {
+        setInviteProcessing(false);
+        setLoading(false);
       }
-      if (pendingPotId) {
-        localStorage.removeItem('pending_join_pot_id');
-        navigate(`/join/${pendingPotId}`, { replace: true });
-        return;
-      }
-      navigate('/', { replace: true });
-    }
-  }, [session, authLoading, navigate]);
+    };
+
+    processSession();
+  }, [session, authLoading, navigate, toast, t]);
 
   useEffect(() => {
     if (isVerified) {
@@ -127,19 +141,13 @@ export default function Login() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setInviteError(null);
     setShowUnverified(false);
 
-    const pendingInviteUrl = localStorage.getItem('pendingInviteUrl');
-    const pendingJoinPotId = localStorage.getItem('pending_join_pot_id');
-    localStorage.removeItem('pendingInviteUrl');
-    localStorage.removeItem('pending_join_pot_id');
-
-    const { data: signInData, error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
-      if (pendingInviteUrl) localStorage.setItem('pendingInviteUrl', pendingInviteUrl);
-      if (pendingJoinPotId) localStorage.setItem('pending_join_pot_id', pendingJoinPotId);
+      setLoading(false);
 
       if (error.message.toLowerCase().includes('email not confirmed')) {
         setShowUnverified(true);
@@ -150,39 +158,8 @@ export default function Login() {
       return;
     }
 
-    if (pendingInviteUrl) {
-      const match = pendingInviteUrl.match(/\/(invite|join)\/([^/?#]+)/);
-      const potId = match?.[2];
-      const userId = signInData.user?.id;
-
-      if (potId && userId) {
-        const { data: existing } = await supabase
-          .from('pot_members')
-          .select('id')
-          .eq('pot_id', potId)
-          .eq('user_id', userId)
-          .maybeSingle();
-
-        if (!existing) {
-          try {
-            const { error: insertError } = await supabase.from('pot_members').insert({
-              pot_id: potId,
-              user_id: userId,
-              role: 'member',
-            });
-            if (insertError) throw insertError;
-          } catch (err: any) {
-            if (err?.code !== '23505') {
-              console.error('Error joining pot after login:', err);
-            }
-          }
-        }
-        navigate(`/pots/${potId}`, { replace: true });
-      } else {
-        navigate('/', { replace: true });
-      }
-    } else {
-      navigate('/');
+    if (data.session && !session) {
+      hasProcessedPendingInvite.current = false;
     }
   };
 
@@ -224,6 +201,12 @@ export default function Login() {
           </div>
         )}
 
+        {inviteError && (
+          <div className="bg-destructive/10 border border-destructive/30 text-destructive rounded-xl px-4 py-3 mb-5 text-sm">
+            {inviteError}
+          </div>
+        )}
+
         <div className="bg-card rounded-2xl shadow-card p-7 border border-border space-y-5">
           <SocialLoginButtons />
 
@@ -240,7 +223,7 @@ export default function Login() {
               <Link to="/forgot-password" className="text-xs text-primary hover:underline">{t('auth.forgotPassword')}</Link>
             </div>
             <Button type="submit" className="w-full h-12 rounded-xl mt-1" disabled={loading}>
-              {loading ? t('auth.signingIn') : t('auth.signIn')}
+              {loading || inviteProcessing ? t('auth.signingIn') : t('auth.signIn')}
             </Button>
           </form>
         </div>

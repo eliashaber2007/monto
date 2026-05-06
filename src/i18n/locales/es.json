@@ -492,7 +492,9 @@
   "joinPot": {
     "joining": "Uniéndose al bote…",
     "joined": "¡Te has unido a {{name}}! 🎉",
-    "error": "Error al unirse al bote"
+    "error": "Error al unirse al bote",
+    "errorDescription": "No pudimos unirte a este bote. Comprueba el enlace de invitación e inténtalo de nuevo.",
+    "timeout": "Unirse a este bote está tardando más de lo esperado. Intenta usar el enlace de invitación de nuevo."
   },
   "notFound": {
     "title": "404",
