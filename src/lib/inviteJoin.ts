@@ -63,6 +63,16 @@ function normalizeJoinError(error: any): Error {
   return new Error(error?.message ?? 'Unable to join this pot. Please try again.');
 }
 
+function logSupabaseJoinError(stage: string, error: any) {
+  console.error('[inviteJoin] Supabase pot_members join failed', {
+    stage,
+    code: error?.code,
+    message: error?.message,
+    details: error?.details,
+    hint: error?.hint,
+  });
+}
+
 export async function joinPotFromInviteToken(token: string, userId: string) {
   const potId = token.trim();
   if (!UUID_RE.test(potId)) {
@@ -76,7 +86,10 @@ export async function joinPotFromInviteToken(token: string, userId: string) {
     .eq('user_id', userId)
     .maybeSingle();
 
-  if (existingError) throw normalizeJoinError(existingError);
+  if (existingError) {
+    logSupabaseJoinError('select-existing-membership', existingError);
+    throw normalizeJoinError(existingError);
+  }
   if (existing) return { potId, alreadyMember: true };
 
   const { error: insertError } = await supabase
@@ -84,6 +97,7 @@ export async function joinPotFromInviteToken(token: string, userId: string) {
     .insert({ pot_id: potId, user_id: userId, role: 'member' });
 
   if (insertError && insertError.code !== '23505') {
+    logSupabaseJoinError('insert-membership', insertError);
     throw normalizeJoinError(insertError);
   }
 
