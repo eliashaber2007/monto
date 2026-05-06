@@ -492,7 +492,9 @@
   "joinPot": {
     "joining": "Rejoindre la cagnotte…",
     "joined": "Vous avez rejoint {{name}} ! 🎉",
-    "error": "Erreur lors de l'adhésion à la cagnotte"
+    "error": "Erreur lors de l'adhésion à la cagnotte",
+    "errorDescription": "Nous n'avons pas pu vous faire rejoindre cette cagnotte. Vérifiez le lien d'invitation et réessayez.",
+    "timeout": "L'adhésion à cette cagnotte prend plus de temps que prévu. Réessayez avec le lien d'invitation."
   },
   "notFound": {
     "title": "404",

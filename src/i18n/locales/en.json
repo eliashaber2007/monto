@@ -492,7 +492,9 @@
   "joinPot": {
     "joining": "Joining pot…",
     "joined": "You've joined {{name}}! 🎉",
-    "error": "Error joining pot"
+    "error": "Error joining pot",
+    "errorDescription": "We couldn't join this pot. Please check the invite link and try again.",
+    "timeout": "Joining this pot is taking longer than expected. Please try the invite link again."
   },
   "notFound": {
     "title": "404",

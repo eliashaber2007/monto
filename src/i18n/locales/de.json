@@ -491,7 +491,9 @@
   "joinPot": {
     "joining": "Kasse beitreten…",
     "joined": "Sie sind {{name}} beigetreten! 🎉",
-    "error": "Fehler beim Beitreten der Kasse"
+    "error": "Fehler beim Beitreten der Kasse",
+    "errorDescription": "Wir konnten Sie dieser Kasse nicht hinzufügen. Prüfen Sie den Einladungslink und versuchen Sie es erneut.",
+    "timeout": "Der Beitritt zu dieser Kasse dauert länger als erwartet. Bitte versuchen Sie den Einladungslink erneut."
   },
   "notFound": {
     "title": "404",

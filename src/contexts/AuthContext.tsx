@@ -47,21 +47,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           sessionStorage.removeItem('auth_active');
         }
 
-        // Handle OAuth/email redirect: if user just signed in and there's a pending invite URL, redirect
+        // For OAuth redirects, send the user back to Login so it can process
+        // the pending invite with timeout/error handling before navigating.
         if (event === 'SIGNED_IN' && session && !hasHandledOAuthRedirect.current) {
           hasHandledOAuthRedirect.current = true;
-          const pendingUrl = localStorage.getItem('pendingInviteUrl');
-          const pendingPotId = localStorage.getItem('pending_join_pot_id');
-          const target = pendingUrl && pendingUrl.startsWith('/')
-            ? pendingUrl
-            : pendingPotId
-              ? `/join/${pendingPotId}`
-              : null;
-          if (target) {
-            localStorage.removeItem('pendingInviteUrl');
-            localStorage.removeItem('pending_join_pot_id');
+          const hasPendingInvite =
+            !!localStorage.getItem('pending_invite_token') ||
+            !!localStorage.getItem('pendingInviteUrl') ||
+            !!localStorage.getItem('pending_join_pot_id');
+          if (hasPendingInvite && window.location.pathname !== '/login') {
             setTimeout(() => {
-              window.location.href = target;
+              window.location.href = '/login';
             }, 0);
           }
         }

@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { joinPotFromInviteToken, savePendingInviteToken, withTimeout } from '@/lib/inviteJoin';
 
 const PENDING_JOIN_KEY = 'pending_join_pot_id';
 const PENDING_INVITE_URL_KEY = 'pendingInviteUrl';
@@ -31,15 +31,14 @@ export default function JoinPot() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
-  const [joining, setJoining] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (authLoading) return;
 
     if (!user) {
       if (potId) {
-        localStorage.setItem(PENDING_JOIN_KEY, potId);
-        localStorage.setItem(PENDING_INVITE_URL_KEY, `/join/${potId}`);
+        savePendingInviteToken(potId);
       }
       navigate('/login', { replace: true });
       return;
@@ -48,51 +47,27 @@ export default function JoinPot() {
     if (!potId) return;
 
     const joinPot = async () => {
-      setJoining(true);
-
-      const { data: pot } = await supabase
-        .from('pots')
-        .select('name, created_by')
-        .eq('id', potId)
-        .maybeSingle();
-
-      if (pot?.created_by === user.id) {
-        navigate(`/pots/${potId}`, { replace: true });
-        return;
-      }
-
-      const { data: existing } = await supabase
-        .from('pot_members')
-        .select('id')
-        .eq('pot_id', potId)
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (existing) {
-        navigate(`/pots/${potId}`, { replace: true });
-        return;
-      }
+      setErrorMessage(null);
+      const timeoutMessage = t('joinPot.timeout');
 
       try {
-        const { error: insertError } = await supabase
-          .from('pot_members')
-          .insert({ pot_id: potId, user_id: user.id, role: 'member' });
-
-        if (insertError) throw insertError;
+        const result = await withTimeout(
+          joinPotFromInviteToken(potId, user.id),
+          5000,
+          timeoutMessage
+        );
+        toast({ title: t('joinPot.joined') });
+        navigate(`/pots/${result.potId}`, { replace: true });
       } catch (err: any) {
-        if (err?.code !== '23505') {
-          toast({ title: t('joinPot.error'), description: err.message, variant: 'destructive' });
-          navigate('/', { replace: true });
-          return;
-        }
+        const description = err?.message === timeoutMessage ? timeoutMessage : t('joinPot.errorDescription');
+        setErrorMessage(description);
+        toast({ title: t('joinPot.error'), description, variant: 'destructive' });
+      } finally {
       }
-
-      toast({ title: t('joinPot.joined', { name: pot?.name ?? 'the pot' }) });
-      navigate(`/pots/${potId}`, { replace: true });
     };
 
     joinPot();
-  }, [user, authLoading, potId, navigate, toast]);
+  }, [user, authLoading, potId, navigate, toast, t]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
@@ -100,8 +75,20 @@ export default function JoinPot() {
         <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center mx-auto mb-5">
           <Users size={28} className="text-primary" />
         </div>
-        <h1 className="text-xl font-bold text-foreground mb-2">{t('joinPot.joining')}</h1>
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mt-4" />
+        <h1 className="text-xl font-bold text-foreground mb-2">{errorMessage ? t('joinPot.error') : t('joinPot.joining')}</h1>
+        {errorMessage ? (
+          <>
+            <p className="text-sm text-muted-foreground">{errorMessage}</p>
+            <button
+              onClick={() => navigate('/', { replace: true })}
+              className="mt-5 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 transition-colors"
+            >
+              {t('common.returnHome')}
+            </button>
+          </>
+        ) : (
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mt-4" />
+        )}
       </div>
     </div>
   );
