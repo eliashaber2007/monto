@@ -21,3 +21,6 @@ verify_jwt = false
 [functions.send-email-notification]
 verify_jwt = false
 
+[functions.join-pot]
+verify_jwt = false
+

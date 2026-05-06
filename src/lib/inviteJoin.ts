@@ -63,13 +63,14 @@ function normalizeJoinError(error: any): Error {
   return new Error(error?.message ?? 'Unable to join this pot. Please try again.');
 }
 
-function logSupabaseJoinError(stage: string, error: any) {
-  console.error('[inviteJoin] Supabase pot_members join failed', {
+function logFunctionJoinError(stage: string, error: any) {
+  console.error('[inviteJoin] join-pot function failed', {
     stage,
-    code: error?.code,
+    status: error?.status,
+    name: error?.name,
     message: error?.message,
     details: error?.details,
-    hint: error?.hint,
+    context: error?.context,
   });
 }
 
@@ -79,29 +80,16 @@ export async function joinPotFromInviteToken(token: string, userId: string) {
     throw new Error('This invite link is invalid or expired.');
   }
 
-  const { data: existing, error: existingError } = await supabase
-    .from('pot_members')
-    .select('id')
-    .eq('pot_id', potId)
-    .eq('user_id', userId)
-    .maybeSingle();
+  const { data, error } = await supabase.functions.invoke('join-pot', {
+    body: { pot_id: potId, user_id: userId },
+  });
 
-  if (existingError) {
-    logSupabaseJoinError('select-existing-membership', existingError);
-    throw normalizeJoinError(existingError);
-  }
-  if (existing) return { potId, alreadyMember: true };
-
-  const { error: insertError } = await supabase
-    .from('pot_members')
-    .insert({ pot_id: potId, user_id: userId, role: 'member' });
-
-  if (insertError && insertError.code !== '23505') {
-    logSupabaseJoinError('insert-membership', insertError);
-    throw normalizeJoinError(insertError);
+  if (error) {
+    logFunctionJoinError('invoke-join-pot', error);
+    throw normalizeJoinError(error);
   }
 
-  return { potId, alreadyMember: false };
+  return { potId: data?.pot_id ?? potId, alreadyMember: Boolean(data?.already_member) };
 }
 
 export async function joinPendingInviteForUser(userId: string, timeoutMs: number, timeoutMessage: string) {
