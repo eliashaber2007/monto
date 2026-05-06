@@ -1080,12 +1080,12 @@ export default function PotDetail() {
                       <p className="text-xs text-muted-foreground capitalize">{m.role}</p>
                     </div>
                     {m.role === 'creator' && (
-                      <span className="text-[11px] px-2 py-0.5 rounded-full bg-accent text-primary border border-primary/20 font-semibold">
+                      <span className="text-[11px] px-2 py-0.5 rounded-full bg-primary text-primary-foreground border border-primary font-semibold">
                         {t('potDetail.creatorRole')}
                       </span>
                     )}
                     {m.role === 'leader' && (
-                      <span className="text-[11px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-300 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700 font-semibold">
+                      <span className="text-[11px] px-2 py-0.5 rounded-full bg-amber-500 text-white border border-amber-600 dark:bg-amber-500 dark:text-white dark:border-amber-400 font-semibold">
                         {t('potDetail.leaderRole')}
                       </span>
                     )}
