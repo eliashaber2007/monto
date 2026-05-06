@@ -80,6 +80,20 @@ export default function Login() {
 
   useEffect(() => {
     if (!authLoading && session) {
+      const pendingInviteUrl = localStorage.getItem('pendingInviteUrl');
+      const pendingPotId = localStorage.getItem('pending_join_pot_id');
+      if (pendingInviteUrl && pendingInviteUrl.startsWith('/')) {
+        // Let JoinPot perform the insert + redirect; clear the stored URL once consumed.
+        localStorage.removeItem('pendingInviteUrl');
+        localStorage.removeItem('pending_join_pot_id');
+        navigate(pendingInviteUrl, { replace: true });
+        return;
+      }
+      if (pendingPotId) {
+        localStorage.removeItem('pending_join_pot_id');
+        navigate(`/join/${pendingPotId}`, { replace: true });
+        return;
+      }
       navigate('/', { replace: true });
     }
   }, [session, authLoading, navigate]);
