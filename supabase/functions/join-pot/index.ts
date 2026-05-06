@@ -30,41 +30,36 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "Unauthorized" }, 401);
     }
 
-    const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? Deno.env.get("SUPABASE_PUBLISHABLE_KEY");
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
 
-    if (!anonKey || !serviceRoleKey || !supabaseUrl) {
+    if (!serviceRoleKey || !supabaseUrl) {
       console.error("join-pot missing required environment variables");
       return jsonResponse({ error: "Server configuration error" }, 500);
     }
 
-    const userClient = createClient(supabaseUrl, anonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
+    const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
-    const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await userClient.auth.getClaims(token);
+    const token = authHeader.replace(/^Bearer\s+/i, "").trim();
+    const { data: userData, error: userError } = await adminClient.auth.getUser(token);
 
-    if (claimsError || !claimsData?.claims?.sub) {
-      console.error("join-pot auth validation failed", claimsError);
+    if (userError || !userData?.user?.id) {
+      console.error("join-pot auth validation failed", userError);
       return jsonResponse({ error: "Unauthorized" }, 401);
     }
 
-    const authenticatedUserId = claimsData.claims.sub;
+    const authenticatedUserId = userData.user.id;
     const body = await req.json().catch(() => null);
     const potId = String(body?.pot_id ?? "").trim();
-    const requestedUserId = String(body?.user_id ?? "").trim();
+    const requestedUserId = body?.user_id ? String(body.user_id).trim() : authenticatedUserId;
 
-    if (!UUID_RE.test(potId) || !UUID_RE.test(requestedUserId)) {
+    if (!UUID_RE.test(potId)) {
       return jsonResponse({ error: "Invalid invite link" }, 400);
     }
 
     if (requestedUserId !== authenticatedUserId) {
       return jsonResponse({ error: "User mismatch" }, 403);
     }
-
-    const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
     const { data: existingMembership, error: existingError } = await adminClient
       .from("pot_members")
