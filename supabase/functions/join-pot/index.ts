@@ -87,6 +87,10 @@ Deno.serve(async (req) => {
       .insert({ pot_id: potId, user_id: authenticatedUserId, role: "member" });
 
     if (insertError) {
+      if (insertError.code === "23505") {
+        return jsonResponse({ pot_id: potId, already_member: true });
+      }
+
       console.error("join-pot service-role insert failed", insertError);
       return jsonResponse({ error: "Failed to join pot" }, 500);
     }
