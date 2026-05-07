@@ -112,7 +112,12 @@ export async function joinPotFromInviteToken(token: string, userId: string) {
   });
 
   const responseBodyText = await response.text();
-  const data = responseBodyText ? JSON.parse(responseBodyText) : null;
+  let data: any = null;
+  try {
+    data = responseBodyText ? JSON.parse(responseBodyText) : null;
+  } catch {
+    data = { error: responseBodyText || response.statusText };
+  }
 
   if (!response.ok) {
     await logJoinPotResponseError(response, responseBodyText);
