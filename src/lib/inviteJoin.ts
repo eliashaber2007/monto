@@ -74,6 +74,18 @@ function logFunctionJoinError(stage: string, error: any) {
   });
 }
 
+function cleanInvitePotId(value: string): string {
+  const trimmed = value.trim();
+  const extractedFromPath = extractInviteToken(trimmed);
+  const candidate = (extractedFromPath ?? trimmed).trim();
+
+  try {
+    return decodeURIComponent(candidate).trim();
+  } catch {
+    return candidate;
+  }
+}
+
 async function logJoinPotResponseError(response: Response, responseBodyText: string) {
   let responseBody: unknown = responseBodyText;
   try {
@@ -90,7 +102,7 @@ async function logJoinPotResponseError(response: Response, responseBodyText: str
 }
 
 export async function joinPotFromInviteToken(token: string, userId: string) {
-  const potId = token.trim();
+  const potId = cleanInvitePotId(token);
   if (!UUID_RE.test(potId)) {
     throw new Error('This invite link is invalid or expired.');
   }
