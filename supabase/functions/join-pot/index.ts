@@ -42,11 +42,17 @@ Deno.serve(async (req) => {
       console.error("join-pot request body parse failed", serializeError(error));
       return null;
     });
-    const potId = String(body?.pot_id ?? "").trim();
+    const rawPotId = body?.pot_id;
+    const potId = String(rawPotId ?? "").trim();
     const requestedUserId = body?.user_id ? String(body.user_id).trim() : null;
 
     console.log("join-pot called", {
       pot_id: potId || null,
+      raw_pot_id: rawPotId ?? null,
+      raw_pot_id_type: typeof rawPotId,
+      raw_pot_id_json: JSON.stringify(rawPotId ?? null),
+      trimmed_pot_id_json: JSON.stringify(potId),
+      trimmed_pot_id_length: potId.length,
       has_user_id: Boolean(requestedUserId),
     });
 
@@ -84,7 +90,14 @@ Deno.serve(async (req) => {
     const effectiveRequestedUserId = requestedUserId ?? authenticatedUserId;
 
     if (!UUID_RE.test(potId)) {
-      console.error("join-pot invalid pot_id", { pot_id: potId || null });
+      console.error("join-pot invalid pot_id", {
+        pot_id: potId || null,
+        raw_pot_id: rawPotId ?? null,
+        raw_pot_id_type: typeof rawPotId,
+        raw_pot_id_json: JSON.stringify(rawPotId ?? null),
+        trimmed_pot_id_json: JSON.stringify(potId),
+        trimmed_pot_id_length: potId.length,
+      });
       return jsonResponse({ error: "Invalid invite link", stage: "validate_pot_id", pot_id: potId || null }, 400);
     }
 
