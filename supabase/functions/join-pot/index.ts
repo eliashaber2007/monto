@@ -103,9 +103,17 @@ Deno.serve(async (req) => {
       .eq("user_id", authenticatedUserId)
       .maybeSingle();
 
+    console.log("join-pot existing membership check result", {
+      pot_id: potId,
+      user_id: authenticatedUserId,
+      has_membership: Boolean(existingMembership),
+      membership_id: existingMembership?.id ?? null,
+      error: serializeError(existingError),
+    });
+
     if (existingError) {
-      console.error("join-pot membership check failed", existingError);
-      return jsonResponse({ error: "Unable to check membership" }, 500);
+      console.error("join-pot membership check failed", serializeError(existingError));
+      return jsonResponse({ error: "Unable to check membership", stage: "membership_check", supabase_error: serializeError(existingError) }, 500);
     }
 
     if (existingMembership) {
@@ -117,17 +125,23 @@ Deno.serve(async (req) => {
       .insert({ pot_id: potId, user_id: authenticatedUserId, role: "member" });
 
     if (insertError) {
+      console.error("join-pot service-role insert failed", {
+        pot_id: potId,
+        user_id: authenticatedUserId,
+        error: serializeError(insertError),
+      });
+
       if (insertError.code === "23505") {
         return jsonResponse({ pot_id: potId, already_member: true });
       }
 
-      console.error("join-pot service-role insert failed", insertError);
-      return jsonResponse({ error: "Failed to join pot" }, 500);
+      return jsonResponse({ error: "Failed to join pot", stage: "insert_membership", supabase_error: serializeError(insertError) }, 500);
     }
 
+    console.log("join-pot insert succeeded", { pot_id: potId, user_id: authenticatedUserId });
     return jsonResponse({ pot_id: potId, already_member: false });
   } catch (error) {
-    console.error("join-pot unexpected error", error);
-    return jsonResponse({ error: "Internal server error" }, 500);
+    console.error("join-pot unexpected error", serializeError(error));
+    return jsonResponse({ error: "Internal server error", stage: "unexpected", details: serializeError(error) }, 500);
   }
 });
