@@ -74,19 +74,54 @@ function logFunctionJoinError(stage: string, error: any) {
   });
 }
 
+async function logJoinPotResponseError(response: Response, responseBodyText: string) {
+  let responseBody: unknown = responseBodyText;
+  try {
+    responseBody = JSON.parse(responseBodyText);
+  } catch {
+    // Keep raw text when the function returns non-JSON output.
+  }
+
+  console.error('[inviteJoin] join-pot response error body', {
+    status: response.status,
+    statusText: response.statusText,
+    body: responseBody,
+  });
+}
+
 export async function joinPotFromInviteToken(token: string, userId: string) {
   const potId = token.trim();
   if (!UUID_RE.test(potId)) {
     throw new Error('This invite link is invalid or expired.');
   }
 
-  const { data, error } = await supabase.functions.invoke('join-pot', {
-    body: { pot_id: potId, user_id: userId },
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError || !sessionData.session?.access_token) {
+    logFunctionJoinError('get-session', sessionError ?? new Error('Missing active session'));
+    throw normalizeJoinError(sessionError ?? new Error('Missing active session'));
+  }
+
+  const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/join-pot`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${sessionData.session.access_token}`,
+      apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ pot_id: potId, user_id: userId }),
   });
 
-  if (error) {
-    logFunctionJoinError('invoke-join-pot', error);
-    throw normalizeJoinError(error);
+  const responseBodyText = await response.text();
+  let data: any = null;
+  try {
+    data = responseBodyText ? JSON.parse(responseBodyText) : null;
+  } catch {
+    data = { error: responseBodyText || response.statusText };
+  }
+
+  if (!response.ok) {
+    await logJoinPotResponseError(response, responseBodyText);
+    throw normalizeJoinError(data ?? new Error(response.statusText));
   }
 
   return { potId: data?.pot_id ?? potId, alreadyMember: Boolean(data?.already_member) };

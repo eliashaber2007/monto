@@ -15,6 +15,19 @@ const jsonResponse = (body: Record<string, unknown>, status = 200) =>
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{12}$/i;
 
+function serializeError(error: any) {
+  if (!error) return null;
+
+  return {
+    code: error.code ?? null,
+    message: error.message ?? String(error),
+    details: error.details ?? null,
+    hint: error.hint ?? null,
+    status: error.status ?? null,
+    name: error.name ?? null,
+  };
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -25,9 +38,22 @@ Deno.serve(async (req) => {
   }
 
   try {
+    const body = await req.json().catch((error) => {
+      console.error("join-pot request body parse failed", serializeError(error));
+      return null;
+    });
+    const potId = String(body?.pot_id ?? "").trim();
+    const requestedUserId = body?.user_id ? String(body.user_id).trim() : null;
+
+    console.log("join-pot called", {
+      pot_id: potId || null,
+      has_user_id: Boolean(requestedUserId),
+    });
+
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
-      return jsonResponse({ error: "Unauthorized" }, 401);
+      console.error("join-pot missing bearer authorization header");
+      return jsonResponse({ error: "Unauthorized", stage: "authorization_header" }, 401);
     }
 
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -35,7 +61,7 @@ Deno.serve(async (req) => {
 
     if (!serviceRoleKey || !supabaseUrl) {
       console.error("join-pot missing required environment variables");
-      return jsonResponse({ error: "Server configuration error" }, 500);
+      return jsonResponse({ error: "Server configuration error", stage: "environment" }, 500);
     }
 
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
@@ -43,22 +69,31 @@ Deno.serve(async (req) => {
     const token = authHeader.replace(/^Bearer\s+/i, "").trim();
     const { data: userData, error: userError } = await adminClient.auth.getUser(token);
 
+    console.log("join-pot auth.getUser result", {
+      has_user: Boolean(userData?.user?.id),
+      user_id: userData?.user?.id ?? null,
+      error: serializeError(userError),
+    });
+
     if (userError || !userData?.user?.id) {
-      console.error("join-pot auth validation failed", userError);
-      return jsonResponse({ error: "Unauthorized" }, 401);
+      console.error("join-pot auth validation failed", serializeError(userError));
+      return jsonResponse({ error: "Unauthorized", stage: "auth_get_user", auth_error: serializeError(userError) }, 401);
     }
 
     const authenticatedUserId = userData.user.id;
-    const body = await req.json().catch(() => null);
-    const potId = String(body?.pot_id ?? "").trim();
-    const requestedUserId = body?.user_id ? String(body.user_id).trim() : authenticatedUserId;
+    const effectiveRequestedUserId = requestedUserId ?? authenticatedUserId;
 
     if (!UUID_RE.test(potId)) {
-      return jsonResponse({ error: "Invalid invite link" }, 400);
+      console.error("join-pot invalid pot_id", { pot_id: potId || null });
+      return jsonResponse({ error: "Invalid invite link", stage: "validate_pot_id", pot_id: potId || null }, 400);
     }
 
-    if (requestedUserId !== authenticatedUserId) {
-      return jsonResponse({ error: "User mismatch" }, 403);
+    if (effectiveRequestedUserId !== authenticatedUserId) {
+      console.error("join-pot user mismatch", {
+        requested_user_id: effectiveRequestedUserId,
+        authenticated_user_id: authenticatedUserId,
+      });
+      return jsonResponse({ error: "User mismatch", stage: "validate_user", requested_user_id: effectiveRequestedUserId, authenticated_user_id: authenticatedUserId }, 403);
     }
 
     const { data: existingMembership, error: existingError } = await adminClient
@@ -68,9 +103,17 @@ Deno.serve(async (req) => {
       .eq("user_id", authenticatedUserId)
       .maybeSingle();
 
+    console.log("join-pot existing membership check result", {
+      pot_id: potId,
+      user_id: authenticatedUserId,
+      has_membership: Boolean(existingMembership),
+      membership_id: existingMembership?.id ?? null,
+      error: serializeError(existingError),
+    });
+
     if (existingError) {
-      console.error("join-pot membership check failed", existingError);
-      return jsonResponse({ error: "Unable to check membership" }, 500);
+      console.error("join-pot membership check failed", serializeError(existingError));
+      return jsonResponse({ error: "Unable to check membership", stage: "membership_check", supabase_error: serializeError(existingError) }, 500);
     }
 
     if (existingMembership) {
@@ -82,17 +125,23 @@ Deno.serve(async (req) => {
       .insert({ pot_id: potId, user_id: authenticatedUserId, role: "member" });
 
     if (insertError) {
+      console.error("join-pot service-role insert failed", {
+        pot_id: potId,
+        user_id: authenticatedUserId,
+        error: serializeError(insertError),
+      });
+
       if (insertError.code === "23505") {
         return jsonResponse({ pot_id: potId, already_member: true });
       }
 
-      console.error("join-pot service-role insert failed", insertError);
-      return jsonResponse({ error: "Failed to join pot" }, 500);
+      return jsonResponse({ error: "Failed to join pot", stage: "insert_membership", supabase_error: serializeError(insertError) }, 500);
     }
 
+    console.log("join-pot insert succeeded", { pot_id: potId, user_id: authenticatedUserId });
     return jsonResponse({ pot_id: potId, already_member: false });
   } catch (error) {
-    console.error("join-pot unexpected error", error);
-    return jsonResponse({ error: "Internal server error" }, 500);
+    console.error("join-pot unexpected error", serializeError(error));
+    return jsonResponse({ error: "Internal server error", stage: "unexpected", details: serializeError(error) }, 500);
   }
 });
