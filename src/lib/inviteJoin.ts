@@ -136,7 +136,11 @@ export async function joinPotFromInviteToken(token: string, userId: string) {
     throw normalizeJoinError(data ?? new Error(response.statusText));
   }
 
-  return { potId: data?.pot_id ?? potId, potName: data?.pot_name ?? null, alreadyMember: Boolean(data?.already_member) };
+  return {
+    potId: data?.potId ?? data?.pot_id ?? potId,
+    potName: data?.potName ?? data?.pot_name ?? null,
+    alreadyMember: Boolean(data?.alreadyMember ?? data?.already_member),
+  };
 }
 
 export async function joinPendingInviteForUser(userId: string, timeoutMs: number, timeoutMessage: string) {

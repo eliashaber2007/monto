@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -30,11 +30,21 @@ export default function JoinPot() {
   const { potId } = useParams<{ potId: string }>();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-  const { toast, dismiss } = useToast();
+  const { toast, dismiss, clear } = useToast();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const attemptedRef = useRef<string | null>(null);
 
+  useLayoutEffect(() => {
+    clear();
+    dismiss();
+    setErrorMessage(null);
+  }, [clear, dismiss]);
+
   useEffect(() => {
+    clear();
+    dismiss();
+    setErrorMessage(null);
+
     if (authLoading) return;
 
     if (!user) {
@@ -53,10 +63,6 @@ export default function JoinPot() {
     attemptedRef.current = potId;
 
     const joinPot = async () => {
-      // Clear any previous error state and dismiss any leftover toasts before
-      // starting a fresh attempt.
-      setErrorMessage(null);
-      dismiss();
       const timeoutMessage = t('joinPot.timeout');
 
       try {
@@ -65,17 +71,20 @@ export default function JoinPot() {
           5000,
           timeoutMessage
         );
+        console.log('[JoinPot] join result', result, 'potName:', result.potName);
         toast({ title: t('joinPot.joined', { name: result.potName ?? '' }) });
         navigate(`/pots/${result.potId}`, { replace: true });
       } catch (err: any) {
         const description = err?.message === timeoutMessage ? timeoutMessage : t('joinPot.errorDescription');
         setErrorMessage(description);
-        toast({ title: t('joinPot.error'), description, variant: 'destructive' });
+        setTimeout(() => {
+          toast({ title: t('joinPot.error'), description, variant: 'destructive' });
+        }, 0);
       }
     };
 
     joinPot();
-  }, [user, authLoading, potId, navigate, toast, dismiss, t]);
+  }, [user, authLoading, potId, navigate, toast, dismiss, clear, t]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">

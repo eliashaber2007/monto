@@ -20,6 +20,8 @@ i18n
     fallbackLng: 'fr',
     interpolation: {
       escapeValue: false,
+      prefix: '{{',
+      suffix: '}}',
     },
   });
 
