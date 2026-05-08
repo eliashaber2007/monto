@@ -133,6 +133,33 @@ Deno.serve(async (req) => {
       return jsonResponse({ pot_id: potId, already_member: true });
     }
 
+    // Ensure a profile row exists for this user (handle_new_user trigger
+    // may not have fired for OAuth users). pot_members.user_id has an FK
+    // to profiles.id, so a missing row triggers a 23503 violation.
+    const userMeta = (userData.user.user_metadata ?? {}) as Record<string, any>;
+    const fallbackEmail = userData.user.email ?? "";
+    const derivedFirstName =
+      userMeta.first_name ||
+      userMeta.full_name ||
+      userMeta.name ||
+      (fallbackEmail ? fallbackEmail.split("@")[0] : "User");
+    const derivedAvatar = userMeta.avatar_url || userMeta.picture || null;
+
+    const { error: profileError } = await adminClient
+      .from("profiles")
+      .upsert(
+        { id: authenticatedUserId, first_name: derivedFirstName, avatar_url: derivedAvatar },
+        { onConflict: "id", ignoreDuplicates: true },
+      );
+
+    if (profileError) {
+      console.error("join-pot profile upsert failed", {
+        user_id: authenticatedUserId,
+        error: serializeError(profileError),
+      });
+      return jsonResponse({ error: "Failed to ensure profile", stage: "ensure_profile", supabase_error: serializeError(profileError) }, 500);
+    }
+
     const { error: insertError } = await adminClient
       .from("pot_members")
       .insert({ pot_id: potId, user_id: authenticatedUserId, role: "member" });
