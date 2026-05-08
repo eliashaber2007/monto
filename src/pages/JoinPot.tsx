@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -33,6 +33,12 @@ export default function JoinPot() {
   const { toast, dismiss, clear } = useToast();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const attemptedRef = useRef<string | null>(null);
+
+  useLayoutEffect(() => {
+    clear();
+    dismiss();
+    setErrorMessage(null);
+  }, [clear, dismiss]);
 
   useEffect(() => {
     clear();
