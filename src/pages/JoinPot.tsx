@@ -56,7 +56,7 @@ export default function JoinPot() {
           5000,
           timeoutMessage
         );
-        toast({ title: t('joinPot.joined') });
+        toast({ title: t('joinPot.joined', { name: result.potName ?? '' }) });
         navigate(`/pots/${result.potId}`, { replace: true });
       } catch (err: any) {
         const description = err?.message === timeoutMessage ? timeoutMessage : t('joinPot.errorDescription');
