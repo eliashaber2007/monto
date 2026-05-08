@@ -179,7 +179,7 @@ Deno.serve(async (req) => {
       });
 
       if (insertError.code === "23505") {
-        return jsonResponse({ pot_id: potId, already_member: true });
+        return jsonResponse({ pot_id: potId, pot_name: potName, already_member: true });
       }
 
       return jsonResponse({ error: "Failed to join pot", stage: "insert_membership", supabase_error: serializeError(insertError) }, 500);
