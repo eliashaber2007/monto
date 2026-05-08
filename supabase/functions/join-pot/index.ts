@@ -186,7 +186,7 @@ Deno.serve(async (req) => {
     }
 
     console.log("join-pot insert succeeded", { pot_id: potId, user_id: authenticatedUserId });
-    return jsonResponse({ pot_id: potId, already_member: false });
+    return jsonResponse({ pot_id: potId, pot_name: potName, already_member: false });
   } catch (error) {
     console.error("join-pot unexpected error", serializeError(error));
     return jsonResponse({ error: "Internal server error", stage: "unexpected", details: serializeError(error) }, 500);
