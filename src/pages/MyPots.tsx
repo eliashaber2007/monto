@@ -59,7 +59,7 @@ export default function MyPots() {
   const { t } = useTranslation();
   const { signOut, user } = useAuth();
   const { data: profile } = useProfile();
-  const { data: pots, isLoading } = usePots();
+  const { data: pots, isPending } = usePots();
   const [showCreate, setShowCreate] = useState(false);
   const [showNotificationPrompt, setShowNotificationPrompt] = useState(false);
   const [restoredState, setRestoredState] = useState<PotCreationState | null>(null);
