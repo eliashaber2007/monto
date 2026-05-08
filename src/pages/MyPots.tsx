@@ -163,7 +163,7 @@ export default function MyPots() {
           </p>
         )}
 
-        {isLoading ? (
+        {isPending ? (
           <div className="space-y-3">
             {Array.from({ length: 3 }).map((_, i) => (
               <PotCardSkeleton key={i} />
