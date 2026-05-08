@@ -77,7 +77,7 @@ export default function Login() {
   const hasProcessedPendingInvite = useRef(false);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { toast, dismiss } = useToast();
+  const { toast, dismiss, clear } = useToast();
   const { session, loading: authLoading } = useAuth();
 
   const isVerified = searchParams.get('verified') === 'true';
@@ -87,6 +87,7 @@ export default function Login() {
 
     const processSession = async () => {
       hasProcessedPendingInvite.current = true;
+      clear();
       dismiss();
       setInviteError(null);
       const timeoutMessage = t('joinPot.timeout');
@@ -114,7 +115,7 @@ export default function Login() {
     };
 
     processSession();
-  }, [session, authLoading, navigate, toast, dismiss, t]);
+  }, [session, authLoading, navigate, toast, dismiss, clear, t]);
 
   useEffect(() => {
     if (isVerified) {
