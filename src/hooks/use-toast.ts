@@ -165,6 +165,8 @@ function toast({ ...props }: Toast) {
 
 function useToast() {
   const [state, setState] = React.useState<State>(memoryState);
+  const dismiss = React.useCallback((toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }), []);
+  const clear = React.useCallback(() => dispatch({ type: "REMOVE_TOAST" }), []);
 
   React.useEffect(() => {
     listeners.push(setState);
@@ -179,7 +181,8 @@ function useToast() {
   return {
     ...state,
     toast,
-    dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
+    dismiss,
+    clear,
   };
 }
 
