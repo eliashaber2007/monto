@@ -61,16 +61,16 @@ export default function Onboarding() {
     if (user?.id) {
       const { error } = await supabase
         .from('profiles')
-        .update({ has_seen_onboarding: true })
+        .update({ onboarding_completed: true, has_seen_onboarding: true } as any)
         .eq('id', user.id);
       if (error) {
-        console.error('[onboarding] failed to persist has_seen_onboarding', error);
+        console.error('[onboarding] failed to persist onboarding_completed', error);
         // Don't navigate — leave user on onboarding so the flag isn't lost.
         return;
       }
       // Update cache immediately so ProtectedRoute doesn't redirect back here
       queryClient.setQueryData(['profile', user.id], (old: any) =>
-        old ? { ...old, has_seen_onboarding: true } : old
+        old ? { ...old, onboarding_completed: true, has_seen_onboarding: true } : old
       );
       await queryClient.refetchQueries({ queryKey: ['profile', user.id] });
     }
