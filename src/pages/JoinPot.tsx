@@ -35,6 +35,9 @@ export default function JoinPot() {
   const attemptedRef = useRef<string | null>(null);
 
   useEffect(() => {
+    dismiss();
+    setErrorMessage(null);
+
     if (authLoading) return;
 
     if (!user) {
@@ -53,10 +56,6 @@ export default function JoinPot() {
     attemptedRef.current = potId;
 
     const joinPot = async () => {
-      // Clear any previous error state and dismiss any leftover toasts before
-      // starting a fresh attempt.
-      setErrorMessage(null);
-      dismiss();
       const timeoutMessage = t('joinPot.timeout');
 
       try {
@@ -65,12 +64,15 @@ export default function JoinPot() {
           5000,
           timeoutMessage
         );
+        console.log('[JoinPot] join result', result, 'potName:', result.potName);
         toast({ title: t('joinPot.joined', { name: result.potName ?? '' }) });
         navigate(`/pots/${result.potId}`, { replace: true });
       } catch (err: any) {
         const description = err?.message === timeoutMessage ? timeoutMessage : t('joinPot.errorDescription');
         setErrorMessage(description);
-        toast({ title: t('joinPot.error'), description, variant: 'destructive' });
+        setTimeout(() => {
+          toast({ title: t('joinPot.error'), description, variant: 'destructive' });
+        }, 0);
       }
     };
 
