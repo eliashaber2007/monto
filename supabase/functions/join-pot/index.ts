@@ -129,8 +129,15 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "Unable to check membership", stage: "membership_check", supabase_error: serializeError(existingError) }, 500);
     }
 
+    const { data: potRow } = await adminClient
+      .from("pots")
+      .select("name")
+      .eq("id", potId)
+      .maybeSingle();
+    const potName = potRow?.name ?? null;
+
     if (existingMembership) {
-      return jsonResponse({ pot_id: potId, already_member: true });
+      return jsonResponse({ pot_id: potId, pot_name: potName, already_member: true });
     }
 
     // Ensure a profile row exists for this user (handle_new_user trigger
