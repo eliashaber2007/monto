@@ -77,7 +77,7 @@ export default function Login() {
   const hasProcessedPendingInvite = useRef(false);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { toast } = useToast();
+  const { toast, dismiss } = useToast();
   const { session, loading: authLoading } = useAuth();
 
   const isVerified = searchParams.get('verified') === 'true';
@@ -87,6 +87,7 @@ export default function Login() {
 
     const processSession = async () => {
       hasProcessedPendingInvite.current = true;
+      dismiss();
       setInviteError(null);
       const timeoutMessage = t('joinPot.timeout');
 
@@ -94,7 +95,8 @@ export default function Login() {
         setInviteProcessing(true);
         const result = await joinPendingInviteForUser(session.user.id, 5000, timeoutMessage);
         if (result) {
-          toast({ title: t('joinPot.joined') });
+          console.log('[Login] pending invite join result', result, 'potName:', result.potName);
+          toast({ title: t('joinPot.joined', { name: result.potName ?? '' }) });
           navigate(`/pots/${result.potId}`, { replace: true });
         } else {
           navigate('/', { replace: true });
@@ -102,7 +104,9 @@ export default function Login() {
       } catch (err: any) {
         const description = err?.message === timeoutMessage ? timeoutMessage : t('joinPot.errorDescription');
         setInviteError(description);
-        toast({ title: t('joinPot.error'), description, variant: 'destructive' });
+        setTimeout(() => {
+          toast({ title: t('joinPot.error'), description, variant: 'destructive' });
+        }, 0);
       } finally {
         setInviteProcessing(false);
         setLoading(false);
@@ -110,7 +114,7 @@ export default function Login() {
     };
 
     processSession();
-  }, [session, authLoading, navigate, toast, t]);
+  }, [session, authLoading, navigate, toast, dismiss, t]);
 
   useEffect(() => {
     if (isVerified) {
