@@ -139,7 +139,7 @@ export async function joinPotFromInviteToken(token: string, userId: string) {
   return {
     potId: data?.potId ?? data?.pot_id ?? potId,
     potName: data?.potName ?? data?.pot_name ?? null,
-    alreadyMember: Boolean(data?.already_member),
+    alreadyMember: Boolean(data?.alreadyMember ?? data?.already_member),
   };
 }
 
