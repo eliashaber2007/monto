@@ -252,6 +252,7 @@ export type Database = {
           has_logged_in_before: boolean
           has_seen_onboarding: boolean
           id: string
+          onboarding_completed: boolean
           stripe_account_id: string | null
           stripe_onboarding_complete: boolean
         }
@@ -266,6 +267,7 @@ export type Database = {
           has_logged_in_before?: boolean
           has_seen_onboarding?: boolean
           id: string
+          onboarding_completed?: boolean
           stripe_account_id?: string | null
           stripe_onboarding_complete?: boolean
         }
@@ -280,6 +282,7 @@ export type Database = {
           has_logged_in_before?: boolean
           has_seen_onboarding?: boolean
           id?: string
+          onboarding_completed?: boolean
           stripe_account_id?: string | null
           stripe_onboarding_complete?: boolean
         }
