@@ -56,14 +56,25 @@ export default function Onboarding() {
   const handleFinish = async () => {
     if (isTutorial) {
       navigate('/profile', { replace: true });
-    } else {
-      if (user?.id) {
-        await supabase.from('profiles').update({ has_seen_onboarding: true }).eq('id', user.id);
-        // Wait for profile cache to update before navigating, preventing stale data redirect loop
-        await queryClient.refetchQueries({ queryKey: ['profile'] });
-      }
-      navigate('/', { replace: true });
+      return;
     }
+    if (user?.id) {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ has_seen_onboarding: true })
+        .eq('id', user.id);
+      if (error) {
+        console.error('[onboarding] failed to persist has_seen_onboarding', error);
+        // Don't navigate — leave user on onboarding so the flag isn't lost.
+        return;
+      }
+      // Update cache immediately so ProtectedRoute doesn't redirect back here
+      queryClient.setQueryData(['profile', user.id], (old: any) =>
+        old ? { ...old, has_seen_onboarding: true } : old
+      );
+      await queryClient.refetchQueries({ queryKey: ['profile', user.id] });
+    }
+    navigate('/', { replace: true });
   };
 
   // Welcome screen (step 0)

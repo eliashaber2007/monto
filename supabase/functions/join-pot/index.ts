@@ -129,8 +129,15 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "Unable to check membership", stage: "membership_check", supabase_error: serializeError(existingError) }, 500);
     }
 
+    const { data: potRow } = await adminClient
+      .from("pots")
+      .select("name")
+      .eq("id", potId)
+      .maybeSingle();
+    const potName = potRow?.name ?? null;
+
     if (existingMembership) {
-      return jsonResponse({ pot_id: potId, already_member: true });
+      return jsonResponse({ pot_id: potId, pot_name: potName, already_member: true });
     }
 
     // Ensure a profile row exists for this user (handle_new_user trigger
@@ -172,14 +179,14 @@ Deno.serve(async (req) => {
       });
 
       if (insertError.code === "23505") {
-        return jsonResponse({ pot_id: potId, already_member: true });
+        return jsonResponse({ pot_id: potId, pot_name: potName, already_member: true });
       }
 
       return jsonResponse({ error: "Failed to join pot", stage: "insert_membership", supabase_error: serializeError(insertError) }, 500);
     }
 
     console.log("join-pot insert succeeded", { pot_id: potId, user_id: authenticatedUserId });
-    return jsonResponse({ pot_id: potId, already_member: false });
+    return jsonResponse({ pot_id: potId, pot_name: potName, already_member: false });
   } catch (error) {
     console.error("join-pot unexpected error", serializeError(error));
     return jsonResponse({ error: "Internal server error", stage: "unexpected", details: serializeError(error) }, 500);
