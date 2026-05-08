@@ -30,11 +30,12 @@ export default function JoinPot() {
   const { potId } = useParams<{ potId: string }>();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-  const { toast, dismiss } = useToast();
+  const { toast, dismiss, clear } = useToast();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const attemptedRef = useRef<string | null>(null);
 
   useEffect(() => {
+    clear();
     dismiss();
     setErrorMessage(null);
 
@@ -77,7 +78,7 @@ export default function JoinPot() {
     };
 
     joinPot();
-  }, [user, authLoading, potId, navigate, toast, dismiss, t]);
+  }, [user, authLoading, potId, navigate, toast, dismiss, clear, t]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
