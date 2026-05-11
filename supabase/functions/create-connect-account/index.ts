@@ -84,7 +84,10 @@ Deno.serve(async (req) => {
             account_number: body.iban.replace(/\s/g, ""),
           },
           settings: {
-            payouts: { schedule: { interval: "manual" } },
+            payouts: {
+              schedule: { interval: "daily" },
+              debit_negative_balances: false,
+            },
           },
         } as any);
         return account.id;
@@ -122,7 +125,12 @@ Deno.serve(async (req) => {
         country: "FR",
         business_type: "individual",
         capabilities: { transfers: { requested: true } },
-        settings: { payouts: { schedule: { interval: "manual" } } },
+        settings: {
+          payouts: {
+            schedule: { interval: "daily" },
+            debit_negative_balances: false,
+          },
+        },
       });
       accountId = account.id;
       await supabaseAdmin.from("profiles").update({ stripe_account_id: accountId }).eq("id", userId);
