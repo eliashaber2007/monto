@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -66,18 +66,22 @@ function LanguageSelector() {
 }
 
 export default function Login() {
+  const { toast, dismiss, clear } = useToast();
+
+  useLayoutEffect(() => {
+    clear();
+    dismiss();
+  }, [clear, dismiss]);
+
   const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [inviteProcessing, setInviteProcessing] = useState(false);
-  const [inviteError, setInviteError] = useState<string | null>(null);
   const [resending, setResending] = useState(false);
   const [showUnverified, setShowUnverified] = useState(false);
   const hasProcessedPendingInvite = useRef(false);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { toast, dismiss, clear } = useToast();
   const { session, loading: authLoading } = useAuth();
 
   const isVerified = searchParams.get('verified') === 'true';
@@ -88,7 +92,6 @@ export default function Login() {
     hasProcessedPendingInvite.current = true;
     clear();
     dismiss();
-    setInviteError(null);
 
     // If there is a pending invite token, hand off to /invite/:token so that
     // JoinPot.tsx is the single place that attempts the join and shows any
@@ -131,7 +134,6 @@ export default function Login() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setInviteError(null);
     setShowUnverified(false);
 
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -191,12 +193,6 @@ export default function Login() {
           </div>
         )}
 
-        {inviteError && (
-          <div className="bg-destructive/10 border border-destructive/30 text-destructive rounded-xl px-4 py-3 mb-5 text-sm">
-            {inviteError}
-          </div>
-        )}
-
         <div className="bg-card rounded-2xl shadow-card p-7 border border-border space-y-5">
           <SocialLoginButtons />
 
@@ -213,7 +209,7 @@ export default function Login() {
               <Link to="/forgot-password" className="text-xs text-primary hover:underline">{t('auth.forgotPassword')}</Link>
             </div>
             <Button type="submit" className="w-full h-12 rounded-xl mt-1" disabled={loading}>
-              {loading || inviteProcessing ? t('auth.signingIn') : t('auth.signIn')}
+              {loading ? t('auth.signingIn') : t('auth.signIn')}
             </Button>
           </form>
         </div>
