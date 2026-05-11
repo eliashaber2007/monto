@@ -21,6 +21,13 @@ export function extractInviteToken(value: string | null | undefined): string | n
 }
 
 export function getPendingInviteToken(): string | null {
+  const timestamp = localStorage.getItem('pending_invite_timestamp');
+  if (!timestamp || Date.now() - parseInt(timestamp) > 600000) {
+    clearPendingInvite();
+    localStorage.removeItem('pending_invite_timestamp');
+    return null;
+  }
+
   return (
     localStorage.getItem(PENDING_INVITE_TOKEN_KEY) ||
     extractInviteToken(localStorage.getItem(PENDING_INVITE_URL_KEY)) ||
@@ -32,12 +39,14 @@ export function savePendingInviteToken(token: string) {
   localStorage.setItem(PENDING_INVITE_TOKEN_KEY, token);
   localStorage.setItem(PENDING_JOIN_KEY, token);
   localStorage.setItem(PENDING_INVITE_URL_KEY, `/invite/${encodeURIComponent(token)}`);
+  localStorage.setItem('pending_invite_timestamp', Date.now().toString());
 }
 
 export function clearPendingInvite() {
   localStorage.removeItem(PENDING_INVITE_TOKEN_KEY);
   localStorage.removeItem(PENDING_JOIN_KEY);
   localStorage.removeItem(PENDING_INVITE_URL_KEY);
+  localStorage.removeItem('pending_invite_timestamp');
 }
 
 export function withTimeout<T>(promise: Promise<T>, timeoutMs: number, timeoutMessage: string): Promise<T> {
@@ -102,45 +111,50 @@ async function logJoinPotResponseError(response: Response, responseBodyText: str
 }
 
 export async function joinPotFromInviteToken(token: string, userId: string) {
-  const potId = cleanInvitePotId(token);
-  if (!UUID_RE.test(potId)) {
-    throw new Error('This invite link is invalid or expired.');
-  }
-
-  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-  if (sessionError || !sessionData.session?.access_token) {
-    logFunctionJoinError('get-session', sessionError ?? new Error('Missing active session'));
-    throw normalizeJoinError(sessionError ?? new Error('Missing active session'));
-  }
-
-  const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/join-pot`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${sessionData.session.access_token}`,
-      apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ pot_id: potId, user_id: userId }),
-  });
-
-  const responseBodyText = await response.text();
-  let data: any = null;
   try {
-    data = responseBodyText ? JSON.parse(responseBodyText) : null;
-  } catch {
-    data = { error: responseBodyText || response.statusText };
-  }
+    const potId = cleanInvitePotId(token);
+    if (!UUID_RE.test(potId)) {
+      throw new Error('This invite link is invalid or expired.');
+    }
 
-  if (!response.ok) {
-    await logJoinPotResponseError(response, responseBodyText);
-    throw normalizeJoinError(data ?? new Error(response.statusText));
-  }
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError || !sessionData.session?.access_token) {
+      logFunctionJoinError('get-session', sessionError ?? new Error('Missing active session'));
+      throw normalizeJoinError(sessionError ?? new Error('Missing active session'));
+    }
 
-  return {
-    potId: data?.potId ?? data?.pot_id ?? potId,
-    potName: data?.potName ?? data?.pot_name ?? null,
-    alreadyMember: Boolean(data?.alreadyMember ?? data?.already_member),
-  };
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/join-pot`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${sessionData.session.access_token}`,
+        apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ pot_id: potId, user_id: userId }),
+    });
+
+    const responseBodyText = await response.text();
+    let data: any = null;
+    try {
+      data = responseBodyText ? JSON.parse(responseBodyText) : null;
+    } catch {
+      data = { error: responseBodyText || response.statusText };
+    }
+
+    if (!response.ok) {
+      await logJoinPotResponseError(response, responseBodyText);
+      throw normalizeJoinError(data ?? new Error(response.statusText));
+    }
+
+    return {
+      potId: data?.potId ?? data?.pot_id ?? potId,
+      potName: data?.potName ?? data?.pot_name ?? null,
+      alreadyMember: Boolean(data?.alreadyMember ?? data?.already_member),
+    };
+  } catch (err) {
+    clearPendingInvite();
+    throw err;
+  }
 }
 
 export async function joinPendingInviteForUser(userId: string, timeoutMs: number, timeoutMessage: string) {

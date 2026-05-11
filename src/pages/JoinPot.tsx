@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { joinPotFromInviteToken, savePendingInviteToken, withTimeout } from '@/lib/inviteJoin';
+import { joinPotFromInviteToken, savePendingInviteToken, withTimeout, clearPendingInvite } from '@/lib/inviteJoin';
 
 const PENDING_JOIN_KEY = 'pending_join_pot_id';
 const PENDING_INVITE_URL_KEY = 'pendingInviteUrl';
@@ -79,6 +79,8 @@ export default function JoinPot() {
         setTimeout(() => {
           toast({ title: t('joinPot.error'), description, variant: 'destructive' });
         }, 0);
+      } finally {
+        clearPendingInvite();
       }
     };
 
