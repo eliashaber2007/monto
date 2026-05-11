@@ -84,7 +84,8 @@ export default function JoinPot() {
       }
     };
 
-    joinPot();
+    const timer = setTimeout(() => { joinPot(); }, 500);
+    return () => clearTimeout(timer);
   }, [user, authLoading, potId, navigate, toast, dismiss, clear, t]);
 
   return (
