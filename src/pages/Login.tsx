@@ -85,37 +85,22 @@ export default function Login() {
   useEffect(() => {
     if (authLoading || !session || hasProcessedPendingInvite.current) return;
 
-    const processSession = async () => {
-      hasProcessedPendingInvite.current = true;
-      clear();
-      dismiss();
-      setInviteError(null);
-      const timeoutMessage = t('joinPot.timeout');
+    hasProcessedPendingInvite.current = true;
+    clear();
+    dismiss();
+    setInviteError(null);
 
-      try {
-        setInviteProcessing(true);
-        const result = await joinPendingInviteForUser(session.user.id, 5000, timeoutMessage);
-        if (result) {
-          console.log('[Login] pending invite join result', result, 'potName:', result.potName);
-          toast({ title: t('joinPot.joined', { name: result.potName ?? '' }) });
-          navigate(`/pots/${result.potId}`, { replace: true });
-        } else {
-          navigate('/', { replace: true });
-        }
-      } catch (err: any) {
-        const description = err?.message === timeoutMessage ? timeoutMessage : t('joinPot.errorDescription');
-        setInviteError(description);
-        setTimeout(() => {
-          toast({ title: t('joinPot.error'), description, variant: 'destructive' });
-        }, 0);
-      } finally {
-        setInviteProcessing(false);
-        setLoading(false);
-      }
-    };
-
-    processSession();
-  }, [session, authLoading, navigate, toast, dismiss, clear, t]);
+    // If there is a pending invite token, hand off to /invite/:token so that
+    // JoinPot.tsx is the single place that attempts the join and shows any
+    // error toast. The login page must never display a join error toast.
+    const pendingToken = getPendingInviteToken();
+    if (pendingToken) {
+      navigate(`/invite/${encodeURIComponent(pendingToken)}`, { replace: true });
+    } else {
+      navigate('/', { replace: true });
+    }
+    setLoading(false);
+  }, [session, authLoading, navigate, dismiss, clear]);
 
   useEffect(() => {
     if (isVerified) {
