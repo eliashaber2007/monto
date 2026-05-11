@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import SocialLoginButtons from '@/components/SocialLoginButtons';
 import { CheckCircle2, AlertCircle, ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { joinPendingInviteForUser } from '@/lib/inviteJoin';
+import { getPendingInviteToken } from '@/lib/inviteJoin';
 
 const LANGUAGES = [
   { code: 'en', emoji: '🇬🇧', label: 'EN' },
