@@ -111,6 +111,20 @@ Deno.serve(async (req) => {
         metadata: { pot_id, recipient_user_id },
       });
       transferId = transfer.id;
+
+      // Immediately trigger payout from connected account to user's bank
+      try {
+        await stripe.payouts.create(
+          {
+            amount: amountCents,
+            currency: "eur",
+            method: "standard",
+          },
+          { stripeAccount: recipientProfile.stripe_account_id },
+        );
+      } catch (payoutErr: any) {
+        console.error("Immediate payout creation failed (transfer succeeded):", payoutErr?.message || payoutErr);
+      }
     } catch (transferErr: any) {
       if (isTestMode && transferErr.message?.toLowerCase().includes("nsufficient")) {
         transferId = `simulated_${crypto.randomUUID()}`;
