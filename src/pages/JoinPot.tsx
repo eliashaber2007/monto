@@ -79,6 +79,8 @@ export default function JoinPot() {
         setTimeout(() => {
           toast({ title: t('joinPot.error'), description, variant: 'destructive' });
         }, 0);
+      } finally {
+        clearPendingInvite();
       }
     };
 
