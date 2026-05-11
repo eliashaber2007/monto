@@ -21,6 +21,13 @@ export function extractInviteToken(value: string | null | undefined): string | n
 }
 
 export function getPendingInviteToken(): string | null {
+  const timestamp = localStorage.getItem('pending_invite_timestamp');
+  if (!timestamp || Date.now() - parseInt(timestamp) > 600000) {
+    clearPendingInvite();
+    localStorage.removeItem('pending_invite_timestamp');
+    return null;
+  }
+
   return (
     localStorage.getItem(PENDING_INVITE_TOKEN_KEY) ||
     extractInviteToken(localStorage.getItem(PENDING_INVITE_URL_KEY)) ||
@@ -32,12 +39,14 @@ export function savePendingInviteToken(token: string) {
   localStorage.setItem(PENDING_INVITE_TOKEN_KEY, token);
   localStorage.setItem(PENDING_JOIN_KEY, token);
   localStorage.setItem(PENDING_INVITE_URL_KEY, `/invite/${encodeURIComponent(token)}`);
+  localStorage.setItem('pending_invite_timestamp', Date.now().toString());
 }
 
 export function clearPendingInvite() {
   localStorage.removeItem(PENDING_INVITE_TOKEN_KEY);
   localStorage.removeItem(PENDING_JOIN_KEY);
   localStorage.removeItem(PENDING_INVITE_URL_KEY);
+  localStorage.removeItem('pending_invite_timestamp');
 }
 
 export function withTimeout<T>(promise: Promise<T>, timeoutMs: number, timeoutMessage: string): Promise<T> {
