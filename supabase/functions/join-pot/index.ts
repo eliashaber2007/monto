@@ -186,6 +186,50 @@ Deno.serve(async (req) => {
     }
 
     console.log("join-pot insert succeeded", { pot_id: potId, user_id: authenticatedUserId });
+
+    try {
+      const { data: pot } = await adminClient
+        .from("pots")
+        .select("id, name, created_by")
+        .eq("id", potId)
+        .maybeSingle();
+
+      if (pot?.created_by) {
+        const { data: creatorProfile } = await adminClient
+          .from("profiles")
+          .select("email, full_name")
+          .eq("id", pot.created_by)
+          .maybeSingle();
+
+        const { data: joinerProfile } = await adminClient
+          .from("profiles")
+          .select("full_name")
+          .eq("id", authenticatedUserId)
+          .maybeSingle();
+
+        const creatorEmail = (creatorProfile as any)?.email ?? null;
+        const joiningUserFullName = (joinerProfile as any)?.full_name ?? null;
+
+        if (creatorEmail) {
+          await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-email-notification`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              type: "member_joined",
+              to: creatorEmail,
+              potName: pot.name,
+              memberName: joiningUserFullName,
+            }),
+          });
+        }
+      }
+    } catch (notifyError) {
+      console.error("join-pot member_joined email notification failed", serializeError(notifyError));
+    }
+
     return jsonResponse({ potId, potName, alreadyMember: false });
   } catch (error) {
     console.error("join-pot unexpected error", serializeError(error));
