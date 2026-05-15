@@ -72,11 +72,11 @@ async function sendEmail(to: string, subject: string, body: string) {
       to: [to],
       subject,
       html: `
-        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px;">
-          <h2 style="color: #1a1a1a; margin-bottom: 16px;">${subject}</h2>
-          <p style="color: #333; font-size: 15px; line-height: 1.6;">${body}</p>
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; color: #111;">
+          <h2 style="margin: 0 0 16px;">${subject}</h2>
+          <p style="font-size: 15px; line-height: 1.5; margin: 0 0 24px;">${body}</p>
           <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
-          <p style="color: #999; font-size: 12px;">Sent by Monto</p>
+          <p style="font-size: 12px; color: #888; margin: 0;">Sent by Monto</p>
         </div>
       `,
     });
@@ -120,11 +120,10 @@ async function handleNotification(payload: EmailPayload) {
       if (!creatorEmail) break;
       const memberCount = await getPotMemberCount(payload.pot_id);
       const subject = `${name} joined your pot ${pot.name}`;
-      await sendEmailIfNoPush(
-        pot.created_by,
+      await sendEmail(
         creatorEmail,
         subject,
-        `${name} has just joined your pot <strong>${pot.name}</strong>. You now have <strong>${memberCount}</strong> members.`,
+        `${name} has just joined your pot ${pot.name}. You now have ${memberCount} members.`,
       );
       await sendPush(pot.created_by, pot.name, `${name} joined your pot`, potUrl);
       break;
@@ -136,7 +135,7 @@ async function handleNotification(payload: EmailPayload) {
 
       const creatorEmail = await getUserEmail(pot.created_by);
       if (creatorEmail) {
-        await sendEmailIfNoPush(pot.created_by, creatorEmail, `Withdrawal request in ${pot.name}`, `${name} has requested a withdrawal of <strong>${formatCurrency(payload.amount ?? 0, currency)}</strong> from <strong>${pot.name}</strong>. Log in to approve or reject it.`);
+        await sendEmailIfNoPush(pot.created_by, creatorEmail, `Withdrawal request in ${pot.name}`, `${name} has requested a withdrawal of ${formatCurrency(payload.amount ?? 0, currency)} from ${pot.name}. Log in to approve or reject it.`);
         await sendPush(pot.created_by, pot.name, `${name} requested a withdrawal of ${formatCurrency(payload.amount ?? 0, currency)}`, potUrl);
       }
 
@@ -145,7 +144,7 @@ async function handleNotification(payload: EmailPayload) {
         if (leader.user_id === payload.user_id) continue;
         const leaderEmail = await getUserEmail(leader.user_id);
         if (leaderEmail) {
-          await sendEmailIfNoPush(leader.user_id, leaderEmail, `Withdrawal request in ${pot.name}`, `${name} has requested a withdrawal of <strong>${formatCurrency(payload.amount ?? 0, currency)}</strong> from <strong>${pot.name}</strong>. Log in to approve or reject it.`);
+          await sendEmailIfNoPush(leader.user_id, leaderEmail, `Withdrawal request in ${pot.name}`, `${name} has requested a withdrawal of ${formatCurrency(payload.amount ?? 0, currency)} from ${pot.name}. Log in to approve or reject it.`);
         }
         await sendPush(leader.user_id, pot.name, `${name} requested a withdrawal of ${formatCurrency(payload.amount ?? 0, currency)}`, potUrl);
       }
@@ -160,7 +159,7 @@ async function handleNotification(payload: EmailPayload) {
         payload.user_id,
         recipientEmail,
         'Your withdrawal has been approved',
-        `Your withdrawal of <strong>${formatCurrency(payload.amount ?? 0, currency)}</strong> from <strong>${pot.name}</strong> has been approved. Funds will arrive within 1-3 business days.`,
+        `Your withdrawal of ${formatCurrency(payload.amount ?? 0, currency)} from ${pot.name} has been approved. Funds will arrive within 1-3 business days.`,
       );
       await sendPush(payload.user_id, pot.name, `Your withdrawal of ${formatCurrency(payload.amount ?? 0, currency)} has been approved ✅`, potUrl);
       break;
@@ -175,7 +174,7 @@ async function handleNotification(payload: EmailPayload) {
         pot.created_by,
         creatorEmail,
         `${name} added ${formatCurrency(payload.amount ?? 0, currency)} to ${pot.name}`,
-        `${name} added <strong>${formatCurrency(payload.amount ?? 0, currency)}</strong> to your pot <strong>${pot.name}</strong>. The new balance is <strong>${formatCurrency(pot.balance, currency)}</strong>.`,
+        `${name} added ${formatCurrency(payload.amount ?? 0, currency)} to your pot ${pot.name}. The new balance is ${formatCurrency(pot.balance, currency)}.`,
       );
       await sendPush(pot.created_by, pot.name, `${name} added ${formatCurrency(payload.amount ?? 0, currency)}`, potUrl);
       break;
@@ -190,7 +189,7 @@ async function handleNotification(payload: EmailPayload) {
           memberId,
           email,
           `${pot.name} has been closed`,
-          `The pot <strong>${pot.name}</strong> has been closed by the creator. Your share of the funds will be processed shortly.`,
+          `The pot ${pot.name} has been closed by the creator. Your share of the funds will be processed shortly.`,
         );
         await sendPush(memberId, pot.name, `${pot.name} has been closed`, '/');
       }
@@ -216,7 +215,7 @@ async function handleNotification(payload: EmailPayload) {
           payload.user_id,
           recipientEmail,
           `Justify your withdrawal in ${pot.name}`,
-          `${creatorName} is requesting you to justify your withdrawal of <strong>${formatCurrency(payload.amount ?? 0, currency)}</strong> from <strong>${pot.name}</strong>. Please add your expenses and receipts.`,
+          `${creatorName} is requesting you to justify your withdrawal of ${formatCurrency(payload.amount ?? 0, currency)} from ${pot.name}. Please add your expenses and receipts.`,
         );
       }
       await sendPush(payload.user_id, pot.name, reminderMessage, potUrl);
@@ -246,7 +245,7 @@ async function handleNotification(payload: EmailPayload) {
 
       const recipientEmail = await getUserEmail(payload.user_id);
       if (recipientEmail) {
-        await sendEmailIfNoPush(payload.user_id, recipientEmail, `You're now a leader of ${pot.name}`, `${creatorName} has made you a leader of <strong>${pot.name}</strong>. You can now approve withdrawals and manage the pot.`);
+        await sendEmailIfNoPush(payload.user_id, recipientEmail, `You're now a leader of ${pot.name}`, `${creatorName} has made you a leader of ${pot.name}. You can now approve withdrawals and manage the pot.`);
       }
       await sendPush(payload.user_id, pot.name, message, potUrl);
       break;
@@ -266,7 +265,7 @@ async function handleNotification(payload: EmailPayload) {
 
       const removedEmail = await getUserEmail(payload.user_id);
       if (removedEmail) {
-        await sendEmailIfNoPush(payload.user_id, removedEmail, `Leader role removed in ${pot.name}`, `You are no longer a leader of <strong>${pot.name}</strong>.`);
+        await sendEmailIfNoPush(payload.user_id, removedEmail, `Leader role removed in ${pot.name}`, `You are no longer a leader of ${pot.name}.`);
       }
       await sendPush(payload.user_id, pot.name, removedMessage, potUrl);
       break;
