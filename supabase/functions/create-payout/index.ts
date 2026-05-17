@@ -70,6 +70,13 @@ Deno.serve(async (req) => {
       });
     }
 
+    if (requestingUserId === recipient_user_id) {
+      return new Response(JSON.stringify({ error: "You cannot approve your own withdrawal request" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const feeCheck = parseFloat(((amount * 0.0025) + 0.25).toFixed(2));
     const totalCheck = parseFloat((amount + feeCheck).toFixed(2));
     if (totalCheck > pot.balance) {
@@ -109,7 +116,7 @@ Deno.serve(async (req) => {
         currency: currency.toLowerCase(),
         destination: recipientProfile.stripe_account_id,
         metadata: { pot_id, recipient_user_id },
-      });
+      }, { idempotencyKey: `transfer-${withdrawal_id}` });
       transferId = transfer.id;
 
       // Immediately trigger payout from connected account to user's bank
@@ -117,10 +124,10 @@ Deno.serve(async (req) => {
         await stripe.payouts.create(
           {
             amount: amountCents,
-            currency: "eur",
+            currency: currency.toLowerCase(),
             method: "standard",
           },
-          { stripeAccount: recipientProfile.stripe_account_id },
+          { stripeAccount: recipientProfile.stripe_account_id, idempotencyKey: `payout-${withdrawal_id}` },
         );
       } catch (payoutErr: any) {
         console.error("Immediate payout creation failed (transfer succeeded):", payoutErr?.message || payoutErr);

@@ -138,8 +138,16 @@ export default function WithdrawalModal({
         if (wErr) console.error('Failed to record withdrawal after successful payout:', wErr);
         toast({ title: t('withdrawalModal.withdrawalApproved') });
       } else {
-        const { error: wErr } = await supabase.from('withdrawals').insert({ pot_id: potId, user_id: user.id, amount: numAmount, note: note.trim(), status: 'pending' });
-        if (wErr) throw wErr;
+        const wRes = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-withdrawal`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+            body: JSON.stringify({ pot_id: potId, amount: numAmount, note: note.trim(), status: 'pending' }),
+          }
+        );
+        const wResult = await wRes.json();
+        if (!wRes.ok) throw new Error(wResult.error || 'Failed to submit withdrawal');
         try {
           await fetch(
             `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email-notification`,

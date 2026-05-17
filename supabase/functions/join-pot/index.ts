@@ -201,14 +201,7 @@ Deno.serve(async (req) => {
           .eq("id", pot.created_by)
           .maybeSingle();
 
-        const { data: joinerProfile } = await adminClient
-          .from("profiles")
-          .select("full_name")
-          .eq("id", authenticatedUserId)
-          .maybeSingle();
-
         const creatorEmail = (creatorProfile as any)?.email ?? null;
-        const joiningUserFullName = (joinerProfile as any)?.full_name ?? null;
 
         if (creatorEmail) {
           await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-email-notification`, {
@@ -219,9 +212,8 @@ Deno.serve(async (req) => {
             },
             body: JSON.stringify({
               type: "member_joined",
-              to: creatorEmail,
-              potName: pot.name,
-              memberName: joiningUserFullName,
+              pot_id: potId,
+              user_id: authenticatedUserId,
             }),
           });
         }
