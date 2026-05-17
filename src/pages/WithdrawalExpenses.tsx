@@ -275,9 +275,9 @@ export default function WithdrawalExpenses() {
                       href={exp.receipt_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[10px] inline-flex items-center gap-1 text-primary font-semibold bg-accent border border-primary/20 px-2 py-0.5 rounded-full hover:bg-primary/10 transition-colors"
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary bg-accent border border-primary/20 px-3 py-1 rounded-full hover:bg-primary/10 transition-colors"
                     >
-                      <Receipt size={9} />
+                      <Receipt size={12} />
                       View receipt
                     </a>
                   </div>
