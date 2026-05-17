@@ -245,7 +245,7 @@ export default function WithdrawalExpenses() {
             {expenses.map((exp) => (
               <div key={exp.id} className="bg-card rounded-xl border border-border p-4 space-y-2">
                 <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-full bg-accent flex items-center justify-center flex-shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
                     <Receipt size={16} className="text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
