@@ -17,7 +17,6 @@ interface WithdrawalModalProps {
   potBalance: number;
   currency: string;
   withdrawalRule: string;
-  withdrawalPassword?: string | null;
   potName: string;
   createdBy: string;
   maxWithdrawalAmount?: number | null;
@@ -26,7 +25,7 @@ interface WithdrawalModalProps {
 }
 
 export default function WithdrawalModal({
-  open, onOpenChange, potId, potBalance, currency, withdrawalRule, withdrawalPassword, potName, createdBy, maxWithdrawalAmount, maxWithdrawalsPerDay, myRole,
+  open, onOpenChange, potId, potBalance, currency, withdrawalRule, potName, createdBy, maxWithdrawalAmount, maxWithdrawalsPerDay, myRole,
 }: WithdrawalModalProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -96,7 +95,10 @@ export default function WithdrawalModal({
     }
 
     if (withdrawalRule === 'requires_password') {
-      if (password !== withdrawalPassword) {
+      const verifyRes = await supabase.functions.invoke('verify-withdrawal-password', {
+        body: { pot_id: potId, password },
+      });
+      if (verifyRes.error || !verifyRes.data?.valid) {
         setPasswordError(t('withdrawalModal.incorrectPassword'));
         return;
       }

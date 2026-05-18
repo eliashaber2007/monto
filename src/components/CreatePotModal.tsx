@@ -177,9 +177,12 @@ export default function CreatePotModal({ open, onOpenChange, initialState }: Pro
     const userId2 = sessionData2?.session?.user?.id;
     if (!userId2) { setCreating(false); toast({ title: t('createPot.notSignedIn'), variant: "destructive" }); return; }
     const { error: potError } = await supabase.from("pots").insert({
-      id: potConfig.id, name: potConfig.name, created_by: userId2, visual_style: "progress_ring", currency: potConfig.currency, goal_amount: potConfig.goal_amount, withdrawal_rule: potConfig.withdrawal_rule, withdrawal_password: potConfig.withdrawal_password, require_receipt: potConfig.require_receipt, max_withdrawal_amount: potConfig.max_withdrawal_amount, max_withdrawals_per_day: potConfig.max_withdrawals_per_day, emoji: potConfig.emoji,
+      id: potConfig.id, name: potConfig.name, created_by: userId2, visual_style: "progress_ring", currency: potConfig.currency, goal_amount: potConfig.goal_amount, withdrawal_rule: potConfig.withdrawal_rule, require_receipt: potConfig.require_receipt, max_withdrawal_amount: potConfig.max_withdrawal_amount, max_withdrawals_per_day: potConfig.max_withdrawals_per_day, emoji: potConfig.emoji,
     } as any);
     if (potError) { setCreating(false); toast({ title: t('common.error'), description: potError.message, variant: "destructive" }); return; }
+    if (potConfig.withdrawal_password) {
+      await supabase.functions.invoke('set-withdrawal-password', { body: { pot_id: potConfig.id, password: potConfig.withdrawal_password } });
+    }
     await supabase.from("pot_members").insert({ pot_id: potConfig.id, user_id: userId2, role: "creator" });
     localStorage.removeItem('pendingPotData');
     queryClient.invalidateQueries({ queryKey: ["pots"] });
@@ -201,11 +204,14 @@ export default function CreatePotModal({ open, onOpenChange, initialState }: Pro
     if (!userId) { setCreating(false); toast({ title: t('createPot.notSignedIn'), variant: "destructive" }); return; }
 
     const { error: potError } = await supabase.from("pots").insert({
-      id: potConfig.id, name: potConfig.name, created_by: userId, visual_style: "progress_ring", currency: potConfig.currency, goal_amount: potConfig.goal_amount, withdrawal_rule: potConfig.withdrawal_rule, withdrawal_password: potConfig.withdrawal_password, require_receipt: potConfig.require_receipt, max_withdrawal_amount: potConfig.max_withdrawal_amount, max_withdrawals_per_day: potConfig.max_withdrawals_per_day, emoji: potConfig.emoji,
+      id: potConfig.id, name: potConfig.name, created_by: userId, visual_style: "progress_ring", currency: potConfig.currency, goal_amount: potConfig.goal_amount, withdrawal_rule: potConfig.withdrawal_rule, require_receipt: potConfig.require_receipt, max_withdrawal_amount: potConfig.max_withdrawal_amount, max_withdrawals_per_day: potConfig.max_withdrawals_per_day, emoji: potConfig.emoji,
     } as any);
 
     if (potError) { setCreating(false); toast({ title: t('common.error'), description: potError.message, variant: "destructive" }); return; }
 
+    if (potConfig.withdrawal_password) {
+      await supabase.functions.invoke('set-withdrawal-password', { body: { pot_id: potConfig.id, password: potConfig.withdrawal_password } });
+    }
     await supabase.from("pot_members").insert({ pot_id: potConfig.id, user_id: userId, role: "creator" });
     localStorage.removeItem('pendingPotData');
     queryClient.invalidateQueries({ queryKey: ["pots"] });

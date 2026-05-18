@@ -17,11 +17,11 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   potId: string;
-  currentPassword: string | null;
+  hasPassword: boolean;
   onChanged: () => void;
 }
 
-export default function ChangePasswordModal({ open, onOpenChange, potId, currentPassword, onChanged }: Props) {
+export default function ChangePasswordModal({ open, onOpenChange, potId, hasPassword, onChanged }: Props) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const [currentPw, setCurrentPw] = useState("");
@@ -33,10 +33,6 @@ export default function ChangePasswordModal({ open, onOpenChange, potId, current
   const handleClose = (val: boolean) => { if (!val) reset(); onOpenChange(val); };
 
   const handleSave = async () => {
-    if (currentPassword && currentPw !== currentPassword) {
-      toast({ title: t('changePasswordModal.incorrectCurrent'), variant: "destructive" });
-      return;
-    }
     if (!newPw.trim()) {
       toast({ title: t('changePasswordModal.empty'), variant: "destructive" });
       return;
@@ -47,11 +43,25 @@ export default function ChangePasswordModal({ open, onOpenChange, potId, current
     }
 
     setSaving(true);
-    const { error } = await supabase.from("pots").update({ withdrawal_password: newPw } as any).eq("id", potId);
+
+    if (hasPassword) {
+      const verifyRes = await supabase.functions.invoke('verify-withdrawal-password', {
+        body: { pot_id: potId, password: currentPw },
+      });
+      if (verifyRes.error || !verifyRes.data?.valid) {
+        setSaving(false);
+        toast({ title: t('changePasswordModal.incorrectCurrent'), variant: "destructive" });
+        return;
+      }
+    }
+
+    const setRes = await supabase.functions.invoke('set-withdrawal-password', {
+      body: { pot_id: potId, password: newPw },
+    });
     setSaving(false);
 
-    if (error) {
-      toast({ title: t('changePasswordModal.error'), description: error.message, variant: "destructive" });
+    if (setRes.error) {
+      toast({ title: t('changePasswordModal.error'), description: setRes.error.message, variant: "destructive" });
       return;
     }
 
@@ -72,7 +82,7 @@ export default function ChangePasswordModal({ open, onOpenChange, potId, current
         </DialogHeader>
 
         <div className="space-y-4">
-          {currentPassword && (
+          {hasPassword && (
             <div className="space-y-1.5">
               <Label htmlFor="currentPw">{t('changePasswordModal.currentPassword')}</Label>
               <Input id="currentPw" type="password" placeholder={t('changePasswordModal.currentPasswordPlaceholder')} value={currentPw} onChange={(e) => setCurrentPw(e.target.value)} className="h-11" autoFocus />
@@ -86,7 +96,7 @@ export default function ChangePasswordModal({ open, onOpenChange, potId, current
             <Label htmlFor="confirmPw">{t('changePasswordModal.confirmPassword')}</Label>
             <Input id="confirmPw" type="password" placeholder={t('changePasswordModal.confirmPasswordPlaceholder')} value={confirmPw} onChange={(e) => setConfirmPw(e.target.value)} className="h-11" />
           </div>
-          <Button className="w-full h-11 rounded-xl" disabled={saving || !newPw.trim() || !confirmPw.trim() || (!!currentPassword && !currentPw.trim())} onClick={handleSave}>
+          <Button className="w-full h-11 rounded-xl" disabled={saving || !newPw.trim() || !confirmPw.trim() || (hasPassword && !currentPw.trim())} onClick={handleSave}>
             {saving ? t('changePasswordModal.saving') : t('changePasswordModal.save')}
           </Button>
         </div>

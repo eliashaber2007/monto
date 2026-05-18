@@ -1433,7 +1433,6 @@ export default function PotDetail() {
         potBalance={pot.balance ?? 0}
         currency={currency}
         withdrawalRule={pot.withdrawal_rule ?? 'auto_approve'}
-        withdrawalPassword={pot.withdrawal_password}
         potName={pot.name}
         createdBy={pot.created_by}
         maxWithdrawalAmount={(pot as any).max_withdrawal_amount}
@@ -1495,7 +1494,7 @@ export default function PotDetail() {
         open={showChangePassword}
         onOpenChange={setShowChangePassword}
         potId={id!}
-        currentPassword={pot.withdrawal_password ?? null}
+        hasPassword={!!pot.withdrawal_password}
         onChanged={() => refetch()}
       />
 

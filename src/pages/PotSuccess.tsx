@@ -60,7 +60,6 @@ export default function PotSuccess() {
           currency: potConfig.currency || 'EUR',
           goal_amount: potConfig.goal_amount,
           withdrawal_rule: potConfig.withdrawal_rule || 'auto_approve',
-          withdrawal_password: potConfig.withdrawal_password,
           require_receipt: potConfig.require_receipt ?? false,
           max_withdrawal_amount: potConfig.max_withdrawal_amount,
           max_withdrawals_per_day: potConfig.max_withdrawals_per_day,
@@ -69,6 +68,10 @@ export default function PotSuccess() {
 
         if (potError) {
           console.error('Error creating pot on success page:', potError);
+        }
+
+        if (!potError && potConfig.withdrawal_password) {
+          await supabase.functions.invoke('set-withdrawal-password', { body: { pot_id: potId, password: potConfig.withdrawal_password } });
         }
 
         await supabase.from('pot_members').insert({

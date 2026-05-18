@@ -47,7 +47,7 @@ export default function PotSettings({ open, onOpenChange, pot, members, isCreato
   const [requireReceipt, setRequireReceipt] = useState(pot.require_receipt);
   const [maxWithdrawalAmount, setMaxWithdrawalAmount] = useState(pot.max_withdrawal_amount?.toString() || '');
   const [withdrawalRule, setWithdrawalRule] = useState<WithdrawalRule>(pot.withdrawal_rule || 'auto_approve');
-  const [withdrawalPassword, setWithdrawalPassword] = useState(pot.withdrawal_password || '');
+  const [withdrawalPassword, setWithdrawalPassword] = useState('');
   const [saving, setSaving] = useState(false);
   const [showReceiptWarning, setShowReceiptWarning] = useState(false);
   const [pendingReceiptValue, setPendingReceiptValue] = useState(false);
@@ -59,7 +59,7 @@ export default function PotSettings({ open, onOpenChange, pot, members, isCreato
     setRequireReceipt(pot.require_receipt);
     setMaxWithdrawalAmount(pot.max_withdrawal_amount?.toString() || '');
     setWithdrawalRule(pot.withdrawal_rule || 'auto_approve');
-    setWithdrawalPassword(pot.withdrawal_password || '');
+    setWithdrawalPassword('');
   }, [pot]);
 
   const leaders = members.filter(m => m.role === 'leader');
@@ -89,7 +89,6 @@ export default function PotSettings({ open, onOpenChange, pot, members, isCreato
         require_receipt: requireReceipt,
         max_withdrawal_amount: maxWithdrawalAmount ? parseFloat(maxWithdrawalAmount) : null,
         withdrawal_rule: withdrawalRule,
-        withdrawal_password: withdrawalRule === 'requires_password' ? withdrawalPassword : null,
       };
 
       const { error } = await supabase
@@ -98,6 +97,17 @@ export default function PotSettings({ open, onOpenChange, pot, members, isCreato
         .eq('id', pot.id);
 
       if (error) throw error;
+
+      if (withdrawalRule === 'requires_password' && withdrawalPassword.trim()) {
+        const setRes = await supabase.functions.invoke('set-withdrawal-password', {
+          body: { pot_id: pot.id, password: withdrawalPassword },
+        });
+        if (setRes.error) throw setRes.error;
+      } else if (withdrawalRule !== 'requires_password') {
+        await supabase.functions.invoke('set-withdrawal-password', {
+          body: { pot_id: pot.id, password: null },
+        });
+      }
 
       toast({ title: t('potSettings.updated') });
       queryClient.invalidateQueries({ queryKey: ['pot-detail', pot.id] });
@@ -326,7 +336,7 @@ export default function PotSettings({ open, onOpenChange, pot, members, isCreato
             <Button
               className="w-full h-11 rounded-xl font-semibold"
               onClick={handleSave}
-              disabled={saving || !name.trim() || (withdrawalRule === 'requires_password' && !withdrawalPassword.trim())}
+              disabled={saving || !name.trim() || (withdrawalRule === 'requires_password' && !pot.withdrawal_password && !withdrawalPassword.trim())}
             >
               {saving ? t('potSettings.saving') : t('potSettings.saveChanges')}
             </Button>
