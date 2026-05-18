@@ -70,15 +70,15 @@ export default function PotSuccess() {
           console.error('Error creating pot on success page:', potError);
         }
 
-        if (!potError && potConfig.withdrawal_password) {
-          await supabase.functions.invoke('set-withdrawal-password', { body: { pot_id: potId, password: potConfig.withdrawal_password } });
-        }
-
         await supabase.from('pot_members').insert({
           pot_id: potId,
           user_id: user.id,
           role: 'creator',
         });
+      }
+
+      if (potConfig.withdrawal_password) {
+        await supabase.functions.invoke('set-withdrawal-password', { body: { pot_id: potId, password: potConfig.withdrawal_password } });
       }
 
       localStorage.removeItem('pendingPotData');
