@@ -61,6 +61,11 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "Server configuration error" }, 500);
     }
 
+    // Service role required for:
+    //   - pots.select(withdrawal_password): the bcrypt hash must never be returned to the client;
+    //     a RLS policy exposing this column to members would allow offline cracking attempts.
+    //     SR keeps the hash server-side and the compare happens here, never in the browser.
+    // Could use anon client for: auth.getUser
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
     const token = authHeader.replace(/^Bearer\s+/i, "").trim();

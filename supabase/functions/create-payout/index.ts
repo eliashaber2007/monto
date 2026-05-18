@@ -48,6 +48,12 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Service role required for:
+    //   - profiles.select(recipient): reading another user's Stripe account data
+    //   - withdrawals.update: approver updating the recipient's withdrawal record
+    //   - notifications.insert: inserting a notification for a different user
+    //   - rpc("increment_pot_balance"): balance mutation must run unconditionally, bypassing RLS
+    // Could use anon client for: pots.select, own pot_members role check
     const supabaseAdmin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
     // Verify pot exists

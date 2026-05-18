@@ -8,6 +8,11 @@ const corsHeaders = {
 
 const resend = new Resend(Deno.env.get('RESEND_API_KEY')!);
 
+// Service role required throughout — this function is called server-to-server with no user JWT.
+// Specific operations that need it regardless:
+//   - auth.admin.getUserById: admin-only API, no anon equivalent
+//   - profiles/pot_members/push_subscriptions reads: arbitrary users' data, not the caller's
+//   - notifications.insert: writing records owned by other users
 const supabaseAdmin = createClient(
   Deno.env.get('SUPABASE_URL')!,
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,

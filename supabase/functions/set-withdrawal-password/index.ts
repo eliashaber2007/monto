@@ -61,6 +61,10 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "Server configuration error" }, 500);
     }
 
+    // Service role used for simplicity; all operations here could use the anon client + RLS:
+    //   - auth.getUser: works with any client when a user token is passed
+    //   - pots.select(created_by): creator can read their own pot via RLS
+    //   - pots.update(withdrawal_password): creator updating their own pot, RLS allows it
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
     const token = authHeader.replace(/^Bearer\s+/i, "").trim();

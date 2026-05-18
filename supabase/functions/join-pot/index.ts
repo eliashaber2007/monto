@@ -70,6 +70,10 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "Server configuration error", stage: "environment" }, 500);
     }
 
+    // Service role required for:
+    //   - profiles.upsert: RLS INSERT policy may not fire for OAuth users with no existing row
+    //   - profiles.select(creator): reading another user's profile for the join notification
+    // Could use anon client for: auth.getUser, own pot_members reads/insert, pots.select (post-join)
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
     const token = authHeader.replace(/^Bearer\s+/i, "").trim();
