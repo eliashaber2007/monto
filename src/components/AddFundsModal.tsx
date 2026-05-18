@@ -59,14 +59,7 @@ export default function AddFundsModal({
   }, [open]);
 
   const amount = selected ?? (custom ? parseFloat(custom) : null);
-  const showSepa = amount != null && amount >= 200;
-
-  // If SEPA was selected but amount dropped below 200, clear it
-  useEffect(() => {
-    if (paymentMethod === 'sepa' && !showSepa) {
-      setPaymentMethod(null);
-    }
-  }, [showSepa, paymentMethod]);
+  const showSepa = amount != null && amount > 0;
 
   const handleConfirm = async () => {
     if (!amount || amount <= 0 || !paymentMethod) {

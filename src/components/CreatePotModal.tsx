@@ -358,9 +358,8 @@ export default function CreatePotModal({ open, onOpenChange, initialState }: Pro
           {/* Step 4: Payment Options */}
           {step === 4 && (() => {
             const baseAmount = goalAmount ? parseFloat(goalAmount) : 0;
-            const showSepa = baseAmount >= 200;
-            const effectiveMethod: PaymentMethodOrNull =
-              depositPaymentMethod === 'sepa' && !showSepa ? null : depositPaymentMethod;
+            const showSepa = baseAmount > 0;
+            const effectiveMethod: PaymentMethodOrNull = depositPaymentMethod;
 
             const methodLabel = (m: PaymentMethod) =>
               m === 'card' ? t('addFunds.card') : m === 'revolut_pay' ? t('addFunds.revolut') : t('addFunds.sepa');
