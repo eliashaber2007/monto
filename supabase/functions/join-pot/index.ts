@@ -167,6 +167,17 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "Failed to ensure profile", stage: "ensure_profile", supabase_error: serializeError(profileError) }, 500);
     }
 
+    const { data: membershipGuard } = await adminClient
+      .from("pot_members")
+      .select("id")
+      .eq("pot_id", potId)
+      .eq("user_id", authenticatedUserId)
+      .maybeSingle();
+
+    if (membershipGuard) {
+      return jsonResponse({ error: "You are already a member of this pot" }, 409);
+    }
+
     const { error: insertError } = await adminClient
       .from("pot_members")
       .insert({ pot_id: potId, user_id: authenticatedUserId, role: "member" });
