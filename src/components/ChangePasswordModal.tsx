@@ -90,7 +90,7 @@ export default function ChangePasswordModal({ open, onOpenChange, potId, hasPass
           )}
           <div className="space-y-1.5">
             <Label htmlFor="newPw">{t('changePasswordModal.newPassword')}</Label>
-            <Input id="newPw" type="password" placeholder={t('changePasswordModal.newPasswordPlaceholder')} value={newPw} onChange={(e) => setNewPw(e.target.value)} className="h-11" autoFocus={!currentPassword} />
+            <Input id="newPw" type="password" placeholder={t('changePasswordModal.newPasswordPlaceholder')} value={newPw} onChange={(e) => setNewPw(e.target.value)} className="h-11" autoFocus={!currentPw} />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="confirmPw">{t('changePasswordModal.confirmPassword')}</Label>
