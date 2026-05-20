@@ -670,6 +670,15 @@ export default function PotDetail() {
   const isCreator = myRole === 'creator';
   const isLeader = myRole === 'leader';
   const isCreatorOrLeader = isCreator || isLeader;
+
+  if (!pot) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-muted-foreground">Loading pot...</p>
+      </div>
+    );
+  }
+
   const currency = pot.currency ?? 'EUR';
 
   const receiptByTx: Record<string, any> = {};
@@ -815,8 +824,8 @@ export default function PotDetail() {
 
           <TabsContent value="activity" className="mt-5 space-y-3">
             {(() => {
-              const deposits = transactions.filter((tx) => Number(tx.amount) > 0);
-              const withdrawalTxs = transactions.filter((tx) => Number(tx.amount) < 0);
+              const deposits = (transactions ?? []).filter((tx) => Number(tx.amount) > 0);
+              const withdrawalTxs = (transactions ?? []).filter((tx) => Number(tx.amount) < 0);
               const totalDeposits = deposits.reduce((s, tx) => s + Number(tx.amount), 0);
               const totalWithdrawals = withdrawals.reduce((s, w) => s + Number((w as any).total_deducted || w.amount), 0);
 
@@ -1042,7 +1051,7 @@ export default function PotDetail() {
           </TabsContent>
 
           <TabsContent value="members" className="mt-5 space-y-3 max-w-sm mx-auto">
-            {members.map((m) => {
+            {(members ?? []).map((m) => {
               const memberProfile = (m as any).profiles;
               const memberName = memberProfile?.first_name || 'Member';
               const memberAvatar = memberProfile?.avatar_url;
