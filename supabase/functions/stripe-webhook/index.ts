@@ -24,6 +24,19 @@ Deno.serve(async (req) => {
     });
   }
 
+  // Validate event age to prevent replay attacks (5 minute window)
+  const eventAgeSeconds = Date.now() / 1000 - event.created;
+  if (eventAgeSeconds > 300) {
+    console.error(`Webhook event too old: created=${event.created}, age=${Math.round(eventAgeSeconds)}s`);
+    return new Response(
+      JSON.stringify({ error: 'Webhook event too old, possible replay attack' }),
+      {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+  }
+
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session;
     const metadata = session.metadata ?? {};
