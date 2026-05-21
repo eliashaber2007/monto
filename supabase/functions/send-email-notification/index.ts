@@ -202,13 +202,18 @@ async function handleNotification(payload: EmailPayload) {
       const creatorName = payload.creator_name || 'The pot creator';
       const reminderMessage = `${pot.name}: ${creatorName} is requesting you to justify your withdrawal of ${formatCurrency(payload.amount ?? 0, currency)}. Please add your expenses and receipts.`;
 
-      await supabaseAdmin.from('notifications').insert({
+      const { error: notifErr } = await supabaseAdmin.from('notifications').insert({
         user_id: payload.user_id,
         pot_id: payload.pot_id,
         type: 'expense_reminder',
         message: reminderMessage,
         variables: { name: creatorName, amount: String(payload.amount ?? 0), pot: pot.name },
       });
+
+      if (notifErr) {
+        console.error('Failed to insert expense_reminder notification:', notifErr);
+        throw new Error(`Notification insert failed: ${notifErr.message}`);
+      }
 
       const recipientEmail = await getUserEmail(payload.user_id);
       if (recipientEmail) {
@@ -236,13 +241,18 @@ async function handleNotification(payload: EmailPayload) {
       const creatorName = payload.creator_name || 'The creator';
       const message = `You've been made a leader of ${pot.name} by ${creatorName}.`;
 
-      await supabaseAdmin.from('notifications').insert({
+      const { error: notifErr } = await supabaseAdmin.from('notifications').insert({
         user_id: payload.user_id,
         pot_id: payload.pot_id,
         type: 'leader_assigned',
         message,
         variables: { name: creatorName, pot: pot.name },
       });
+
+      if (notifErr) {
+        console.error('Failed to insert leader_assigned notification:', notifErr);
+        throw new Error(`Notification insert failed: ${notifErr.message}`);
+      }
 
       const recipientEmail = await getUserEmail(payload.user_id);
       if (recipientEmail) {
@@ -256,13 +266,18 @@ async function handleNotification(payload: EmailPayload) {
       if (!payload.user_id) break;
       const removedMessage = `You are no longer a leader of ${pot.name}.`;
 
-      await supabaseAdmin.from('notifications').insert({
+      const { error: notifErr } = await supabaseAdmin.from('notifications').insert({
         user_id: payload.user_id,
         pot_id: payload.pot_id,
         type: 'leader_removed',
         message: removedMessage,
         variables: { pot: pot.name },
       });
+
+      if (notifErr) {
+        console.error('Failed to insert leader_removed notification:', notifErr);
+        throw new Error(`Notification insert failed: ${notifErr.message}`);
+      }
 
       const removedEmail = await getUserEmail(payload.user_id);
       if (removedEmail) {
@@ -282,12 +297,38 @@ Deno.serve(async (req) => {
 
   try {
     const payload: EmailPayload = await req.json();
-    handleNotification(payload).catch((err) => console.error('Notification handler error:', err));
 
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    // Validate required fields
+    if (!payload.type || !payload.pot_id) {
+      return new Response(
+        JSON.stringify({ error: 'Missing required fields: type, pot_id' }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    // Await notification handling to catch errors
+    try {
+      await handleNotification(payload);
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    } catch (notificationErr: any) {
+      console.error('Notification handler error:', notificationErr);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: notificationErr.message || 'Notification failed'
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
   } catch (err: any) {
     console.error('send-email-notification error:', err);
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
