@@ -48,6 +48,11 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "Invalid amount" }, 400);
     }
 
+    // Validate status can only be 'pending' (prevent status injection)
+    if (status !== "pending") {
+      return jsonResponse({ error: "Invalid status" }, 400);
+    }
+
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return jsonResponse({ error: "Unauthorized" }, 401);
@@ -77,29 +82,30 @@ Deno.serve(async (req) => {
 
     const authenticatedUserId = userData.user.id;
 
-    const { data: pot, error: potError } = await adminClient
-      .from("pots")
-      .select("balance")
-      .eq("id", pot_id)
-      .maybeSingle();
-
-    if (potError || !pot) {
-      return jsonResponse({ error: "Pot not found" }, 404);
-    }
-
-    if (amount > pot.balance) {
-      return jsonResponse({ error: "Withdrawal amount exceeds pot balance" }, 400);
-    }
-
-    const { data: withdrawal, error: insertError } = await adminClient
-      .from("withdrawals")
-      .insert({ pot_id, user_id: authenticatedUserId, amount, note, status })
-      .select()
+    // Call atomic RPC function that checks balance and inserts withdrawal in a single transaction
+    const { data: withdrawal, error: rpcError } = await adminClient
+      .rpc("create_withdrawal_atomic", {
+        p_pot_id: pot_id,
+        p_user_id: authenticatedUserId,
+        p_amount: amount,
+        p_note: note,
+        p_status: status,
+      })
       .single();
 
-    if (insertError) {
-      console.error("create-withdrawal insert failed", serializeError(insertError));
-      return jsonResponse({ error: "Failed to create withdrawal", supabase_error: serializeError(insertError) }, 500);
+    if (rpcError) {
+      console.error("create-withdrawal RPC failed", serializeError(rpcError));
+
+      // Map database exceptions to user-friendly errors
+      if (rpcError.message?.includes("Pot not found")) {
+        return jsonResponse({ error: "Pot not found" }, 404);
+      }
+
+      if (rpcError.message?.includes("Insufficient pot balance")) {
+        return jsonResponse({ error: "Withdrawal amount exceeds pot balance" }, 400);
+      }
+
+      return jsonResponse({ error: "Failed to create withdrawal", supabase_error: serializeError(rpcError) }, 500);
     }
 
     return jsonResponse({ withdrawal });
