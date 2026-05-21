@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
     const requestingUserId = user.id;
 
     const { pot_id, amount, currency, recipient_user_id, withdrawal_id } = await req.json();
-    if (!pot_id || !amount || !currency || !recipient_user_id) {
+    if (!pot_id || !amount || !currency || !recipient_user_id || !withdrawal_id) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -102,6 +102,37 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Check if withdrawal already has a payout_id (prevents duplicate payout on retry)
+    const { data: existingWithdrawal } = await supabaseAdmin
+      .from("withdrawals")
+      .select("id, payout_id, status")
+      .eq("id", withdrawal_id)
+      .single();
+
+    if (!existingWithdrawal) {
+      return new Response(JSON.stringify({ error: "Withdrawal not found" }), {
+        status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // If already fully processed (payout_id exists AND status is approved), return success immediately
+    if (existingWithdrawal.payout_id && existingWithdrawal.status === "approved") {
+      console.log(`Withdrawal ${withdrawal_id} already fully processed, returning success`);
+      return new Response(
+        JSON.stringify({
+          success: true,
+          transfer_id: existingWithdrawal.payout_id,
+          recipient_name: recipientProfile.first_name,
+          already_processed: true,
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
+
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, { apiVersion: "2024-06-20" as any });
     const fee = parseFloat(((amount * 0.0025) + 0.25).toFixed(2));
     const totalDeducted = parseFloat((amount + fee).toFixed(2));
@@ -110,78 +141,119 @@ Deno.serve(async (req) => {
 
     let transferId = "";
     let simulated = false;
+    let skipTransfer = false;
+
+    // Check if payout already executed (idempotency for retries)
+    if (existingWithdrawal.payout_id) {
+      console.log(`Withdrawal ${withdrawal_id} already has payout_id ${existingWithdrawal.payout_id}, skipping Stripe transfer`);
+      transferId = existingWithdrawal.payout_id;
+      skipTransfer = true;
+    }
 
     // 1. Execute Stripe transfer FIRST — if this fails, nothing else happens
-    try {
-      const transfer = await stripe.transfers.create({
-        amount: amountCents,
-        currency: currency.toLowerCase(),
-        destination: recipientProfile.stripe_account_id,
-        metadata: { pot_id, recipient_user_id },
-      }, { idempotencyKey: `transfer-${withdrawal_id}` });
-      transferId = transfer.id;
-
-      // Immediately trigger payout from connected account to user's bank
+    if (!skipTransfer) {
       try {
-        await stripe.payouts.create(
-          {
-            amount: amountCents,
-            currency: currency.toLowerCase(),
-            method: "standard",
-          },
-          { stripeAccount: recipientProfile.stripe_account_id, idempotencyKey: `payout-${withdrawal_id}` },
-        );
-      } catch (payoutErr: any) {
-        console.error("Immediate payout creation failed (transfer succeeded):", payoutErr?.message || payoutErr);
+        const transfer = await stripe.transfers.create({
+          amount: amountCents,
+          currency: currency.toLowerCase(),
+          destination: recipientProfile.stripe_account_id,
+          metadata: { pot_id, recipient_user_id },
+        }, { idempotencyKey: `transfer-${withdrawal_id}` });
+        transferId = transfer.id;
+
+        // Immediately save payout_id to prevent duplicate payout on retry
+        const { error: payoutIdErr } = await supabaseAdmin
+          .from("withdrawals")
+          .update({ payout_id: transferId })
+          .eq("id", withdrawal_id);
+
+        if (payoutIdErr) {
+          console.error("Failed to save payout_id after successful transfer:", payoutIdErr);
+          // Continue anyway — transfer already executed, this is for idempotency tracking
+        }
+
+        // Immediately trigger payout from connected account to user's bank
+        try {
+          await stripe.payouts.create(
+            {
+              amount: amountCents,
+              currency: currency.toLowerCase(),
+              method: "standard",
+            },
+            { stripeAccount: recipientProfile.stripe_account_id, idempotencyKey: `payout-${withdrawal_id}` },
+          );
+        } catch (payoutErr: any) {
+          console.error("Immediate payout creation failed (transfer succeeded):", payoutErr?.message || payoutErr);
+        }
+      } catch (transferErr: any) {
+        if (isTestMode && transferErr.message?.toLowerCase().includes("nsufficient")) {
+          transferId = `simulated_${crypto.randomUUID()}`;
+          simulated = true;
+          console.log("TEST MODE: Simulating successful payout due to insufficient Stripe balance");
+
+          // Save simulated payout_id
+          await supabaseAdmin
+            .from("withdrawals")
+            .update({ payout_id: transferId })
+            .eq("id", withdrawal_id);
+        } else {
+          throw transferErr;
+        }
       }
-    } catch (transferErr: any) {
-      if (isTestMode && transferErr.message?.toLowerCase().includes("nsufficient")) {
-        transferId = `simulated_${crypto.randomUUID()}`;
-        simulated = true;
-        console.log("TEST MODE: Simulating successful payout due to insufficient Stripe balance");
-      } else {
-        throw transferErr;
+    }
+
+    // 2. Transfer succeeded — deduct balance with error checking (skip if already done on previous attempt)
+    let balanceAlreadyDeducted = false;
+    if (skipTransfer) {
+      // Check if transaction already exists (means balance was already deducted)
+      const { data: existingTx } = await supabaseAdmin
+        .from("transactions")
+        .select("id")
+        .eq("stripe_session_id", transferId)
+        .maybeSingle();
+
+      if (existingTx) {
+        console.log(`Balance already deducted for withdrawal ${withdrawal_id}, skipping deduction`);
+        balanceAlreadyDeducted = true;
       }
     }
 
-    // 2. Transfer succeeded — deduct balance with error checking
-    const { error: balanceErr } = await supabaseAdmin.rpc("increment_pot_balance", {
-      p_pot_id: pot_id,
-      p_amount: -totalDeducted,
-    });
-    if (balanceErr) {
-      console.error("Balance deduction failed after successful transfer:", balanceErr);
-      return new Response(JSON.stringify({ error: "Payout sent but balance update failed. Contact support.", transfer_id: transferId }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+    if (!balanceAlreadyDeducted) {
+      const { error: balanceErr } = await supabaseAdmin.rpc("increment_pot_balance", {
+        p_pot_id: pot_id,
+        p_amount: -totalDeducted,
       });
+      if (balanceErr) {
+        console.error("Balance deduction failed after successful transfer:", balanceErr);
+        return new Response(JSON.stringify({ error: "Payout sent but balance update failed. Contact support.", transfer_id: transferId }), {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // 3. Record transaction — roll back balance if this fails
+      const { error: txErr } = await supabaseAdmin.from("transactions").insert({
+        pot_id,
+        user_id: recipient_user_id,
+        amount: -totalDeducted,
+        status: "completed",
+        stripe_session_id: transferId,
+      });
+      if (txErr) {
+        console.error("Transaction insert failed, rolling back balance:", txErr);
+        await supabaseAdmin.rpc("increment_pot_balance", { p_pot_id: pot_id, p_amount: totalDeducted });
+        return new Response(JSON.stringify({ error: "Failed to record transaction", transfer_id: transferId }), {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
-    // 3. Record transaction — roll back balance if this fails
-    const { error: txErr } = await supabaseAdmin.from("transactions").insert({
-      pot_id,
-      user_id: recipient_user_id,
-      amount: -totalDeducted,
-      status: "completed",
-      stripe_session_id: transferId,
-    });
-    if (txErr) {
-      console.error("Transaction insert failed, rolling back balance:", txErr);
-      await supabaseAdmin.rpc("increment_pot_balance", { p_pot_id: pot_id, p_amount: totalDeducted });
-      return new Response(JSON.stringify({ error: "Failed to record transaction", transfer_id: transferId }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // 4. Mark withdrawal approved (legacy path — only if withdrawal_id provided).
-    // New client flow inserts the withdrawal record AFTER this function succeeds.
-    if (withdrawal_id) {
-      await supabaseAdmin
-        .from("withdrawals")
-        .update({ status: "approved", processed_at: new Date().toISOString(), total_deducted: totalDeducted })
-        .eq("id", withdrawal_id);
-    }
+    // 4. Mark withdrawal approved (idempotent — safe to call multiple times)
+    await supabaseAdmin
+      .from("withdrawals")
+      .update({ status: "approved", processed_at: new Date().toISOString(), total_deducted: totalDeducted })
+      .eq("id", withdrawal_id);
 
     // 5. In-app notification
     await supabaseAdmin.from("notifications").insert({
