@@ -81,6 +81,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
   const [showUnverified, setShowUnverified] = useState(false);
+  const [lockoutUntil, setLockoutUntil] = useState<number | null>(null);
   const hasProcessedPendingInvite = useRef(false);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -114,6 +115,23 @@ export default function Login() {
     }
   }, [isVerified, setSearchParams]);
 
+  // Check for existing lockout on mount
+  useEffect(() => {
+    const lockoutData = localStorage.getItem('login_lockout');
+    if (lockoutData) {
+      try {
+        const { lockedUntil } = JSON.parse(lockoutData);
+        if (Date.now() < lockedUntil) {
+          setLockoutUntil(lockedUntil);
+        } else {
+          localStorage.removeItem('login_lockout');
+        }
+      } catch {
+        localStorage.removeItem('login_lockout');
+      }
+    }
+  }, []);
+
   const handleResendVerification = async () => {
     if (!email) {
       toast({ title: t('auth.enterEmail'), description: t('auth.enterEmailDesc'), variant: 'destructive' });
@@ -135,6 +153,29 @@ export default function Login() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Check lockout before attempting login
+    const lockoutData = localStorage.getItem('login_lockout');
+    if (lockoutData) {
+      try {
+        const { lockedUntil, attempts } = JSON.parse(lockoutData);
+        if (Date.now() < lockedUntil && attempts >= 5) {
+          const minutesRemaining = Math.ceil((lockedUntil - Date.now()) / 60000);
+          toast({
+            title: t('auth.tooManyAttempts', 'Too many login attempts'),
+            description: t('auth.tryAgainIn', `Please wait ${minutesRemaining} minute(s) before trying again.`),
+            variant: 'destructive',
+          });
+          return;
+        } else if (Date.now() >= lockedUntil) {
+          localStorage.removeItem('login_lockout');
+          setLockoutUntil(null);
+        }
+      } catch {
+        localStorage.removeItem('login_lockout');
+      }
+    }
+
     setLoading(true);
     setShowUnverified(false);
 
@@ -148,9 +189,42 @@ export default function Login() {
         return;
       }
 
-      toast({ title: t('auth.loginFailed'), description: error.message, variant: 'destructive' });
+      // Track failed login attempts
+      let attempts = 1;
+      const existingLockout = localStorage.getItem('login_lockout');
+      if (existingLockout) {
+        try {
+          const parsed = JSON.parse(existingLockout);
+          attempts = (parsed.attempts || 0) + 1;
+        } catch {
+          // Invalid data, start fresh
+        }
+      }
+
+      const lockedUntil = Date.now() + 15 * 60 * 1000; // 15 minutes from now
+
+      if (attempts >= 5) {
+        localStorage.setItem('login_lockout', JSON.stringify({ attempts, lockedUntil }));
+        setLockoutUntil(lockedUntil);
+        toast({
+          title: t('auth.accountLocked', 'Account temporarily locked'),
+          description: t('auth.tooManyFailedAttempts', 'Too many failed login attempts. Please wait 15 minutes before trying again.'),
+          variant: 'destructive',
+        });
+      } else {
+        localStorage.setItem('login_lockout', JSON.stringify({ attempts, lockedUntil }));
+        toast({
+          title: t('auth.loginFailed'),
+          description: `${error.message} (${5 - attempts} attempt(s) remaining)`,
+          variant: 'destructive',
+        });
+      }
       return;
     }
+
+    // Success — clear lockout
+    localStorage.removeItem('login_lockout');
+    setLockoutUntil(null);
 
     if (data.session && !session) {
       hasProcessedPendingInvite.current = false;
@@ -174,6 +248,18 @@ export default function Login() {
           <div className="flex items-center gap-2 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 rounded-xl px-4 py-3 mb-5 text-sm">
             <CheckCircle2 size={18} className="flex-shrink-0" />
             <span>{t('auth.emailVerified')}</span>
+          </div>
+        )}
+
+        {lockoutUntil && Date.now() < lockoutUntil && (
+          <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 rounded-xl px-4 py-3 mb-5 text-sm">
+            <div className="flex items-center gap-2">
+              <AlertCircle size={18} className="flex-shrink-0" />
+              <span>
+                {t('auth.accountLocked', 'Account temporarily locked')}.{' '}
+                {t('auth.tryAgainIn', `Please wait ${Math.ceil((lockoutUntil - Date.now()) / 60000)} minute(s) before trying again.`)}
+              </span>
+            </div>
           </div>
         )}
 
@@ -210,7 +296,11 @@ export default function Login() {
             <div className="flex justify-end">
               <Link to="/forgot-password" className="text-xs text-primary hover:underline">{t('auth.forgotPassword')}</Link>
             </div>
-            <Button type="submit" className="w-full h-12 rounded-xl mt-1" disabled={loading}>
+            <Button
+              type="submit"
+              className="w-full h-12 rounded-xl mt-1"
+              disabled={loading || (lockoutUntil !== null && Date.now() < lockoutUntil)}
+            >
               {loading ? t('auth.signingIn') : t('auth.signIn')}
             </Button>
           </form>

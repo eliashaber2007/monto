@@ -14,6 +14,46 @@ function serializeError(error: any) {
   };
 }
 
+// In-memory rate limiter: 5 attempts per pot_id per 15 minutes
+const rateLimitMap = new Map<string, { attempts: number; resetAt: number }>();
+
+function checkRateLimit(pot_id: string): { allowed: boolean; attemptsRemaining?: number } {
+  const now = Date.now();
+  const limitEntry = rateLimitMap.get(pot_id);
+
+  if (limitEntry) {
+    if (now >= limitEntry.resetAt) {
+      // Reset window expired, start fresh
+      rateLimitMap.set(pot_id, { attempts: 1, resetAt: now + 15 * 60 * 1000 });
+      return { allowed: true, attemptsRemaining: 4 };
+    }
+
+    if (limitEntry.attempts >= 5) {
+      // Rate limit exceeded
+      const secondsRemaining = Math.ceil((limitEntry.resetAt - now) / 1000);
+      return { allowed: false };
+    }
+
+    // Increment attempt count
+    limitEntry.attempts++;
+    return { allowed: true, attemptsRemaining: 5 - limitEntry.attempts };
+  }
+
+  // First attempt in this window
+  rateLimitMap.set(pot_id, { attempts: 1, resetAt: now + 15 * 60 * 1000 });
+  return { allowed: true, attemptsRemaining: 4 };
+}
+
+// Cleanup old entries periodically (every hour)
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, value] of rateLimitMap.entries()) {
+    if (now >= value.resetAt) {
+      rateLimitMap.delete(key);
+    }
+  }
+}, 60 * 60 * 1000);
+
 Deno.serve(async (req) => {
   const corsHeaders = { ...getCorsHeaders(req), "Access-Control-Allow-Methods": "POST, OPTIONS" };
   const jsonResponse = (body: Record<string, unknown>, status = 200) =>
@@ -83,6 +123,16 @@ Deno.serve(async (req) => {
 
     if (!pot.withdrawal_password) {
       return jsonResponse({ valid: false });
+    }
+
+    // Check rate limit before password verification
+    const rateCheck = checkRateLimit(pot_id);
+    if (!rateCheck.allowed) {
+      console.warn(`Rate limit exceeded for pot ${pot_id}`);
+      return jsonResponse(
+        { error: "Too many attempts. Please wait 15 minutes before trying again." },
+        429
+      );
     }
 
     const valid = await bcrypt.compare(password, pot.withdrawal_password);
