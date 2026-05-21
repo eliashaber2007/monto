@@ -149,7 +149,12 @@ export default function WithdrawalModal({
           }
         );
         const wResult = await wRes.json();
-        if (!wRes.ok) throw new Error(wResult.error || 'Failed to submit withdrawal');
+
+        // Check both HTTP status and response error field
+        if (!wRes.ok || wResult.error) {
+          throw new Error(wResult.error || 'Failed to submit withdrawal');
+        }
+
         try {
           await fetch(
             `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email-notification`,

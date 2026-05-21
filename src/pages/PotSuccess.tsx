@@ -42,7 +42,22 @@ export default function PotSuccess() {
         return;
       }
 
-      const potConfig = JSON.parse(pendingRaw);
+      let potConfig;
+      try {
+        potConfig = JSON.parse(pendingRaw);
+      } catch (parseErr) {
+        console.error('Failed to parse pendingPotData from localStorage:', parseErr);
+        localStorage.removeItem('pendingPotData');
+        localStorage.removeItem('potCreationState');
+        toast({
+          title: t('common.error'),
+          description: t('potSuccess.invalidData', 'Unable to complete pot creation. Please try again.'),
+          variant: 'destructive',
+        });
+        navigate('/', { replace: true });
+        return;
+      }
+
       const potId = potConfig.id;
 
       const { data: existingPot } = await supabase
