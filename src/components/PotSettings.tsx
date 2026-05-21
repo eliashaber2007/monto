@@ -82,6 +82,8 @@ export default function PotSettings({ open, onOpenChange, pot, members, isCreato
 
   const handleSave = async () => {
     setSaving(true);
+    let potUpdateSucceeded = false;
+
     try {
       const updates: any = {
         name: name.trim(),
@@ -98,23 +100,54 @@ export default function PotSettings({ open, onOpenChange, pot, members, isCreato
 
       if (error) throw error;
 
+      potUpdateSucceeded = true;
+
+      // Handle withdrawal password update/clear separately to detect partial failures
+      let passwordUpdateFailed = false;
+      let passwordError = '';
+
       if (withdrawalRule === 'requires_password' && withdrawalPassword.trim()) {
         const setRes = await supabase.functions.invoke('set-withdrawal-password', {
           body: { pot_id: pot.id, password: withdrawalPassword },
         });
-        if (setRes.error) throw setRes.error;
+        if (setRes.error) {
+          passwordUpdateFailed = true;
+          passwordError = setRes.error.message || 'Failed to set withdrawal password';
+          console.error('Password update failed after pot update succeeded:', setRes.error);
+        }
       } else if (withdrawalRule !== 'requires_password') {
-        await supabase.functions.invoke('set-withdrawal-password', {
+        const clearRes = await supabase.functions.invoke('set-withdrawal-password', {
           body: { pot_id: pot.id, password: null },
         });
+        if (clearRes.error) {
+          passwordUpdateFailed = true;
+          passwordError = clearRes.error.message || 'Failed to clear withdrawal password';
+          console.error('Password clear failed after pot update succeeded:', clearRes.error);
+        }
       }
 
-      toast({ title: t('potSettings.updated') });
+      // Invalidate queries even on partial failure (pot settings were saved)
       queryClient.invalidateQueries({ queryKey: ['pot-detail', pot.id] });
       onUpdated();
       onOpenChange(false);
+
+      if (passwordUpdateFailed) {
+        toast({
+          title: t('potSettings.partialFailure', 'Settings saved with warning'),
+          description: t('potSettings.passwordUpdateFailed', `Settings were saved, but password update failed: ${passwordError}. Please try updating the password again.`),
+          variant: 'destructive',
+        });
+      } else {
+        toast({ title: t('potSettings.updated') });
+      }
     } catch (err: any) {
-      toast({ title: t('common.error'), description: err.message, variant: 'destructive' });
+      // Only pot update can throw — password errors are handled above
+      if (potUpdateSucceeded) {
+        // Shouldn't reach here, but handle it anyway
+        toast({ title: t('common.error'), description: err.message, variant: 'destructive' });
+      } else {
+        toast({ title: t('common.error'), description: err.message, variant: 'destructive' });
+      }
     } finally {
       setSaving(false);
     }
