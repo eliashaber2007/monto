@@ -26,6 +26,14 @@ export default function Onboarding() {
       setButtonsReady(true);
       return;
     }
+
+    // No delay on the last instruction screen - make "Get started" immediately clickable
+    const isLastScreen = step === instructionScreens.length;
+    if (isLastScreen) {
+      setButtonsReady(true);
+      return;
+    }
+
     setButtonsReady(false);
     const timer = setTimeout(() => setButtonsReady(true), 4000);
     return () => clearTimeout(timer);
