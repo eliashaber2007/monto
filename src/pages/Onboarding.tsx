@@ -67,15 +67,18 @@ export default function Onboarding() {
       return;
     }
     if (user?.id) {
-      const { error } = await supabase
+      const { error, data } = await supabase
         .from('profiles')
         .update({ onboarding_completed: true, has_seen_onboarding: true })
-        .eq('id', user.id);
+        .eq('id', user.id)
+        .select();
       if (error) {
         console.error('[onboarding] failed to persist onboarding_completed', error);
         // Don't navigate — leave user on onboarding so the flag isn't lost.
         return;
       }
+
+      console.log('[onboarding] successfully updated profile:', data);
 
       // Manually update cache to avoid stale data race condition
       queryClient.setQueryData(['profile', user.id], (old: any) => ({

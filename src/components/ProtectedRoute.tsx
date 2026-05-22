@@ -21,11 +21,13 @@ export default function ProtectedRoute({ children }: { children: ReactNode }) {
     return <Navigate to="/login" replace />;
   }
 
-  // Check onboarding flag from profile DB column
+  // Check onboarding flags from profile DB column
+  const hasSeenOnboarding = (profile as any)?.has_seen_onboarding ?? false;
   const onboardingCompleted = (profile as any)?.onboarding_completed ?? false;
   const isOnboardingRoute = location.pathname === '/onboarding';
 
-  if (!onboardingCompleted && !isOnboardingRoute) {
+  // Skip onboarding if user has seen it before, regardless of completion status
+  if (!hasSeenOnboarding && !onboardingCompleted && !isOnboardingRoute) {
     return <Navigate to="/onboarding" replace />;
   }
 
