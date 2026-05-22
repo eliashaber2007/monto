@@ -69,7 +69,8 @@ export default function Onboarding() {
     if (user?.id) {
       const { error } = await supabase
         .from('profiles')
-        .upsert({ id: user.id, onboarding_completed: true, has_seen_onboarding: true } as any);
+        .update({ onboarding_completed: true, has_seen_onboarding: true })
+        .eq('id', user.id);
       if (error) {
         console.error('[onboarding] failed to persist onboarding_completed', error);
         // Don't navigate — leave user on onboarding so the flag isn't lost.
