@@ -61,17 +61,15 @@ export default function Onboarding() {
     if (user?.id) {
       const { error } = await supabase
         .from('profiles')
-        .update({ onboarding_completed: true, has_seen_onboarding: true } as any)
-        .eq('id', user.id);
+        .upsert({ id: user.id, onboarding_completed: true, has_seen_onboarding: true } as any);
       if (error) {
         console.error('[onboarding] failed to persist onboarding_completed', error);
         // Don't navigate — leave user on onboarding so the flag isn't lost.
         return;
       }
-      // Update cache immediately so ProtectedRoute doesn't redirect back here
-      queryClient.setQueryData(['profile', user.id], (old: any) =>
-        old ? { ...old, onboarding_completed: true, has_seen_onboarding: true } : old
-      );
+
+      // Invalidate and refetch to ensure fresh data before navigation
+      await queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
       await queryClient.refetchQueries({ queryKey: ['profile', user.id] });
     }
     navigate('/', { replace: true });
