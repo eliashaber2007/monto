@@ -77,9 +77,12 @@ export default function Onboarding() {
         return;
       }
 
-      // Invalidate and refetch to ensure fresh data before navigation
-      await queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
-      await queryClient.refetchQueries({ queryKey: ['profile', user.id] });
+      // Manually update cache to avoid stale data race condition
+      queryClient.setQueryData(['profile', user.id], (old: any) => ({
+        ...old,
+        onboarding_completed: true,
+        has_seen_onboarding: true,
+      }));
     }
     navigate('/', { replace: true });
   };
