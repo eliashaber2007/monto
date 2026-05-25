@@ -127,7 +127,10 @@ export default function WithdrawalModal({
           throw new Error(wResult.error || 'Failed to create withdrawal');
         }
 
-        const withdrawalId = wResult.id;
+        const withdrawalId = wResult.withdrawal?.id;
+        if (!withdrawalId) {
+          throw new Error('Failed to get withdrawal ID');
+        }
 
         // Now call payout with withdrawal_id
         const payoutRes = await fetch(
