@@ -1,0 +1,12 @@
+DELETE FROM public.transactions;
+DELETE FROM public.withdrawal_expenses;
+DELETE FROM public.withdrawals;
+DELETE FROM public.pot_members;
+DELETE FROM public.notifications;
+DELETE FROM public.receipts;
+DELETE FROM public.pot_messages;
+DELETE FROM public.pot_chat_reads;
+DELETE FROM public.push_subscriptions;
+DELETE FROM public.pots;
+DELETE FROM public.profiles;
+DELETE FROM auth.users;
