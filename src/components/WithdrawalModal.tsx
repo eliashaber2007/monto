@@ -113,31 +113,40 @@ export default function WithdrawalModal({
       const shouldAutoPayout = withdrawalRule === 'auto_approve' || withdrawalRule === 'requires_password' || (withdrawalRule === 'requires_approval' && isCreator);
 
       if (shouldAutoPayout) {
-        // Call payout FIRST — only insert withdrawal record if it succeeds
-        const response = await fetch(
+        // Create withdrawal record first to get ID
+        const wRes = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-withdrawal`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+            body: JSON.stringify({ pot_id: potId, amount: numAmount, note: note.trim(), status: 'pending' }),
+          }
+        );
+        const wResult = await wRes.json();
+        if (!wRes.ok || wResult.error) {
+          throw new Error(wResult.error || 'Failed to create withdrawal');
+        }
+
+        const withdrawalId = wResult.id;
+
+        // Now call payout with withdrawal_id
+        const payoutRes = await fetch(
           `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-payout`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
-            body: JSON.stringify({ pot_id: potId, amount: numAmount, currency: currency.toLowerCase(), recipient_user_id: user.id }),
+            body: JSON.stringify({
+              pot_id: potId,
+              amount: numAmount,
+              currency: currency.toLowerCase(),
+              recipient_user_id: user.id,
+              withdrawal_id: withdrawalId
+            }),
           }
         );
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.error || 'Payout failed');
+        const payoutResult = await payoutRes.json();
+        if (!payoutRes.ok) throw new Error(payoutResult.error || 'Payout failed');
 
-        // Payout succeeded — now record the withdrawal as approved
-        const fee = parseFloat(((numAmount * 0.0025) + 0.25).toFixed(2));
-        const totalDeducted = parseFloat((numAmount + fee).toFixed(2));
-        const { error: wErr } = await supabase.from('withdrawals').insert({
-          pot_id: potId,
-          user_id: user.id,
-          amount: numAmount,
-          note: note.trim(),
-          status: 'approved',
-          processed_at: new Date().toISOString(),
-          total_deducted: totalDeducted,
-        });
-        if (wErr) console.error('Failed to record withdrawal after successful payout:', wErr);
         toast({ title: t('withdrawalModal.withdrawalApproved') });
       } else {
         const wRes = await fetch(
