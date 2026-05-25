@@ -1,0 +1,1 @@
+UPDATE profiles SET has_seen_onboarding = true, onboarding_completed = true WHERE id = (SELECT id FROM auth.users WHERE email = 'antoinehabr@yahoo.com');
