@@ -83,15 +83,16 @@ Deno.serve(async (req) => {
     const authenticatedUserId = userData.user.id;
 
     // Call atomic RPC function that checks balance and inserts withdrawal in a single transaction
-    const { data: withdrawal, error: rpcError } = await adminClient
+    const { data, error: rpcError } = await adminClient
       .rpc("create_withdrawal_atomic", {
         p_pot_id: pot_id,
         p_user_id: authenticatedUserId,
         p_amount: amount,
         p_note: note,
         p_status: status,
-      })
-      .single();
+      });
+
+    console.log('[create-withdrawal] RPC response:', { data, error: rpcError });
 
     if (rpcError) {
       console.error("create-withdrawal RPC failed", serializeError(rpcError));
@@ -106,6 +107,14 @@ Deno.serve(async (req) => {
       }
 
       return jsonResponse({ error: "Failed to create withdrawal", supabase_error: serializeError(rpcError) }, 500);
+    }
+
+    // RETURNS TABLE functions return an array
+    const withdrawal = Array.isArray(data) ? data[0] : data;
+
+    if (!withdrawal) {
+      console.error('[create-withdrawal] No withdrawal returned from RPC');
+      return jsonResponse({ error: "Failed to create withdrawal record" }, 500);
     }
 
     return jsonResponse({ withdrawal });
