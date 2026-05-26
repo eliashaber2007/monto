@@ -112,5 +112,7 @@ export function usePotDetail(potId: string | undefined) {
       };
     },
     enabled: !!potId && !!user,
+    refetchOnMount: true,
+    staleTime: 0,
   });
 }
