@@ -62,21 +62,45 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Auth check: only creator or leader can approve withdrawals — never the recipient themselves
-    const { data: requesterMember } = await supabaseAdmin.from("pot_members").select("role").eq("pot_id", pot_id).eq("user_id", requestingUserId).single();
-    const isCreatorOrLeader = pot.created_by === requestingUserId || requesterMember?.role === 'leader';
-    if (!isCreatorOrLeader) {
-      return new Response(JSON.stringify({ error: "Not authorized" }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    // Auth check: for auto_approve pots, allow any pot member to process their own withdrawal
+    // For manual approval pots, only creator or leader can approve (and not their own withdrawal)
+    const isAutoApprove = pot.withdrawal_rule === 'auto_approve';
 
-    if (requestingUserId === recipient_user_id) {
-      return new Response(JSON.stringify({ error: "You cannot approve your own withdrawal request" }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    if (!isAutoApprove) {
+      // Manual approval: check if requester is creator or leader
+      const { data: requesterMember } = await supabaseAdmin.from("pot_members").select("role").eq("pot_id", pot_id).eq("user_id", requestingUserId).single();
+      const isCreatorOrLeader = pot.created_by === requestingUserId || requesterMember?.role === 'leader';
+      if (!isCreatorOrLeader) {
+        return new Response(JSON.stringify({ error: "Not authorized" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Manual approval: cannot approve your own withdrawal
+      if (requestingUserId === recipient_user_id) {
+        return new Response(JSON.stringify({ error: "You cannot approve your own withdrawal request" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    } else {
+      // Auto-approve: verify requester is processing their own withdrawal
+      if (requestingUserId !== recipient_user_id) {
+        return new Response(JSON.stringify({ error: "You can only process your own auto-approved withdrawals" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Auto-approve: verify requester is a pot member
+      const { data: requesterMember } = await supabaseAdmin.from("pot_members").select("user_id").eq("pot_id", pot_id).eq("user_id", requestingUserId).single();
+      if (!requesterMember) {
+        return new Response(JSON.stringify({ error: "Not a member of this pot" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     const feeCheck = parseFloat(((amount * 0.0025) + 0.25).toFixed(2));
