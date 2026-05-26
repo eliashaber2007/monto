@@ -93,6 +93,8 @@ Deno.serve(async (req) => {
       });
 
     console.log('[create-withdrawal] RPC response:', { data, error: rpcError });
+    console.log('[create-withdrawal] Raw RPC data type:', Array.isArray(data) ? 'array' : typeof data);
+    console.log('[create-withdrawal] Raw RPC data:', JSON.stringify(data, null, 2));
 
     if (rpcError) {
       console.error("create-withdrawal RPC failed", serializeError(rpcError));
@@ -116,6 +118,9 @@ Deno.serve(async (req) => {
       console.error('[create-withdrawal] No withdrawal returned from RPC');
       return jsonResponse({ error: "Failed to create withdrawal record" }, 500);
     }
+
+    console.log('[create-withdrawal] Extracted withdrawal object:', JSON.stringify(withdrawal, null, 2));
+    console.log('[create-withdrawal] Withdrawal ID:', withdrawal?.id);
 
     return jsonResponse({ withdrawal });
   } catch (error) {
