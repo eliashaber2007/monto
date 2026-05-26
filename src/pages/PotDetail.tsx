@@ -945,7 +945,7 @@ export default function PotDetail() {
                                   <span className={`text-[10px] px-2 py-0.5 rounded-full border font-semibold ${statusColor}`}>
                                     {statusLabel}
                                   </span>
-                                  {isMyRequest ? (
+                                  {w.status === 'approved' && isMyRequest ? (
                                     <button
                                       onClick={() => navigate(`/expenses/${w.id}`)}
                                       className="text-xs flex items-center gap-1.5 text-primary-foreground font-semibold bg-primary px-3 py-1.5 rounded-lg hover:bg-primary/90 transition-colors mt-0.5"
@@ -953,7 +953,7 @@ export default function PotDetail() {
                                       <Receipt size={12} />
                                        {t('potDetail.justifyExpenses')}
                                     </button>
-                                  ) : isCreatorOrLeader ? (
+                                  ) : w.status === 'approved' && isCreatorOrLeader ? (
                                     <button
                                       onClick={() => navigate(`/expenses/${w.id}`)}
                                       className="text-xs flex items-center gap-1.5 text-primary-foreground font-semibold bg-primary px-3 py-1.5 rounded-lg hover:bg-primary/90 transition-colors mt-0.5"
