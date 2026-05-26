@@ -102,12 +102,13 @@ export function usePotDetail(potId: string | undefined) {
       if (potRes.error) throw potRes.error;
 
       const myMember = (membersRes.data ?? []).find((m) => m.user_id === user.id);
+      const isCreator = potRes.data.created_by === user.id;
 
       return {
         pot: potRes.data,
         members: membersRes.data ?? [],
         transactions: txRes.data ?? [],
-        myRole: myMember?.role ?? 'member',
+        myRole: isCreator ? 'creator' : (myMember?.role ?? 'member'),
       };
     },
     enabled: !!potId && !!user,
