@@ -475,6 +475,7 @@ export type Database = {
           processed_at: string | null
           status: string
           total_deducted: number | null
+          updated_at: string
           user_id: string
         }
         Insert: {
@@ -486,6 +487,7 @@ export type Database = {
           processed_at?: string | null
           status?: string
           total_deducted?: number | null
+          updated_at?: string
           user_id: string
         }
         Update: {
@@ -497,6 +499,7 @@ export type Database = {
           processed_at?: string | null
           status?: string
           total_deducted?: number | null
+          updated_at?: string
           user_id?: string
         }
         Relationships: [
@@ -514,6 +517,25 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_withdrawal_atomic: {
+        Args: {
+          p_amount: number
+          p_note: string
+          p_pot_id: string
+          p_status: string
+          p_user_id: string
+        }
+        Returns: {
+          amount: number
+          created_at: string
+          id: string
+          note: string
+          pot_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }[]
+      }
       increment_pot_balance: {
         Args: { p_amount: number; p_pot_id: string }
         Returns: undefined
