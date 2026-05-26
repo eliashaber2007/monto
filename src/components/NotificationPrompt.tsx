@@ -39,7 +39,9 @@ export default function NotificationPrompt({ open, onClose }: NotificationPrompt
       if (permission === 'granted' && user) {
         // Register service worker and subscribe to push
         try {
-          const registration = await navigator.serviceWorker.register('/sw.js');
+          const registration = await navigator.serviceWorker.register('/sw.js', {
+            updateViaCache: 'none'
+          });
           await navigator.serviceWorker.ready;
 
           const vapidPublicKey = VAPID_PUBLIC_KEY;

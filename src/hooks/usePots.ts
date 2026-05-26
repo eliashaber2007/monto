@@ -74,6 +74,8 @@ export function usePots() {
       }));
     },
     enabled: !!user,
+    refetchOnMount: true,
+    staleTime: 0,
   });
 }
 

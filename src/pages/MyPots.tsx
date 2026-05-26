@@ -59,13 +59,17 @@ export default function MyPots() {
   const { t } = useTranslation();
   const { signOut, user } = useAuth();
   const { data: profile } = useProfile();
-  const { data: pots, isPending } = usePots();
+  const { data: pots, isPending, refetch } = usePots();
   const [showCreate, setShowCreate] = useState(false);
   const [showNotificationPrompt, setShowNotificationPrompt] = useState(false);
   const [restoredState, setRestoredState] = useState<PotCreationState | null>(null);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
 
   useEffect(() => {
     if (searchParams.get('pot_cancelled') === 'true') {
