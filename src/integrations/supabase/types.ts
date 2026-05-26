@@ -471,6 +471,7 @@ export type Database = {
           created_at: string
           id: string
           note: string | null
+          payout_id: string | null
           pot_id: string
           processed_at: string | null
           status: string
@@ -483,6 +484,7 @@ export type Database = {
           created_at?: string
           id?: string
           note?: string | null
+          payout_id?: string | null
           pot_id: string
           processed_at?: string | null
           status?: string
@@ -495,6 +497,7 @@ export type Database = {
           created_at?: string
           id?: string
           note?: string | null
+          payout_id?: string | null
           pot_id?: string
           processed_at?: string | null
           status?: string
