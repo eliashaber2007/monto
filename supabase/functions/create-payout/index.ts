@@ -28,8 +28,8 @@ Deno.serve(async (req) => {
     if (!pot) {
       return new Response(JSON.stringify({ error: "Pot not found" }), { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
-    const isAutoApprove = pot.withdrawal_rule === 'auto_approve';
-    if (!isAutoApprove) {
+    const isSelfApprove = pot.withdrawal_rule === 'auto_approve' || pot.withdrawal_rule === 'requires_password';
+    if (!isSelfApprove) {
       const { data: requesterMember } = await supabaseAdmin.from("pot_members").select("role").eq("pot_id", pot_id).eq("user_id", requestingUserId).single();
       const isCreatorOrLeader = pot.created_by === requestingUserId || requesterMember?.role === 'leader';
       if (!isCreatorOrLeader) {
@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
       }
     } else {
       if (requestingUserId !== recipient_user_id) {
-        return new Response(JSON.stringify({ error: "You can only process your own auto-approved withdrawals" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        return new Response(JSON.stringify({ error: "You can only process your own withdrawals" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
       const { data: requesterMember } = await supabaseAdmin.from("pot_members").select("user_id").eq("pot_id", pot_id).eq("user_id", requestingUserId).single();
       if (!requesterMember) {
