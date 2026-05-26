@@ -123,11 +123,14 @@ export default function WithdrawalModal({
           }
         );
         const wResult = await wRes.json();
+        console.log('[WithdrawalModal] create-withdrawal response:', wResult);
         if (!wRes.ok || wResult.error) {
           throw new Error(wResult.error || 'Failed to create withdrawal');
         }
 
         const withdrawalId = wResult.withdrawal?.id;
+        console.log('[WithdrawalModal] Extracted withdrawal ID:', withdrawalId);
+        console.log('[WithdrawalModal] Full withdrawal object:', wResult.withdrawal);
         if (!withdrawalId) {
           throw new Error('Failed to get withdrawal ID');
         }
