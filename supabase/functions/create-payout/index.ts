@@ -1,4 +1,4 @@
-// deployed May 26 2026
+// deployed May 26 2026 v2
 import Stripe from "npm:stripe@14.21.0";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { getCorsHeaders } from "../_shared/cors.ts";
@@ -65,12 +65,17 @@ Deno.serve(async (req) => {
 
     // Auth check: for auto_approve pots, allow any pot member to process their own withdrawal
     // For manual approval pots, only creator or leader can approve (and not their own withdrawal)
-    const isAutoApprove = pot.withdrawal_rule === 'auto_approve';
+    const isAutoApprove = pot.withdrawal_rule === "auto_approve";
 
     if (!isAutoApprove) {
       // Manual approval: check if requester is creator or leader
-      const { data: requesterMember } = await supabaseAdmin.from("pot_members").select("role").eq("pot_id", pot_id).eq("user_id", requestingUserId).single();
-      const isCreatorOrLeader = pot.created_by === requestingUserId || requesterMember?.role === 'leader';
+      const { data: requesterMember } = await supabaseAdmin
+        .from("pot_members")
+        .select("role")
+        .eq("pot_id", pot_id)
+        .eq("user_id", requestingUserId)
+        .single();
+      const isCreatorOrLeader = pot.created_by === requestingUserId || requesterMember?.role === "leader";
       if (!isCreatorOrLeader) {
         return new Response(JSON.stringify({ error: "Not authorized" }), {
           status: 403,
@@ -95,7 +100,12 @@ Deno.serve(async (req) => {
       }
 
       // Auto-approve: verify requester is a pot member
-      const { data: requesterMember } = await supabaseAdmin.from("pot_members").select("user_id").eq("pot_id", pot_id).eq("user_id", requestingUserId).single();
+      const { data: requesterMember } = await supabaseAdmin
+        .from("pot_members")
+        .select("user_id")
+        .eq("pot_id", pot_id)
+        .eq("user_id", requestingUserId)
+        .single();
       if (!requesterMember) {
         return new Response(JSON.stringify({ error: "Not a member of this pot" }), {
           status: 403,
@@ -104,7 +114,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    const feeCheck = parseFloat(((amount * 0.0025) + 0.25).toFixed(2));
+    const feeCheck = parseFloat((amount * 0.0025 + 0.25).toFixed(2));
     const totalCheck = parseFloat((amount + feeCheck).toFixed(2));
     if (totalCheck > pot.balance) {
       return new Response(JSON.stringify({ error: "Insufficient balance" }), {
@@ -159,7 +169,7 @@ Deno.serve(async (req) => {
     }
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, { apiVersion: "2024-06-20" as any });
-    const fee = parseFloat(((amount * 0.0025) + 0.25).toFixed(2));
+    const fee = parseFloat((amount * 0.0025 + 0.25).toFixed(2));
     const totalDeducted = parseFloat((amount + fee).toFixed(2));
     const amountCents = Math.round(amount * 100);
     const isTestMode = Deno.env.get("STRIPE_SECRET_KEY")!.startsWith("sk_test_");
@@ -170,7 +180,9 @@ Deno.serve(async (req) => {
 
     // Check if payout already executed (idempotency for retries)
     if (existingWithdrawal.payout_id) {
-      console.log(`Withdrawal ${withdrawal_id} already has payout_id ${existingWithdrawal.payout_id}, skipping Stripe transfer`);
+      console.log(
+        `Withdrawal ${withdrawal_id} already has payout_id ${existingWithdrawal.payout_id}, skipping Stripe transfer`,
+      );
       transferId = existingWithdrawal.payout_id;
       skipTransfer = true;
     }
@@ -178,12 +190,15 @@ Deno.serve(async (req) => {
     // 1. Execute Stripe transfer FIRST — if this fails, nothing else happens
     if (!skipTransfer) {
       try {
-        const transfer = await stripe.transfers.create({
-          amount: amountCents,
-          currency: currency.toLowerCase(),
-          destination: recipientProfile.stripe_account_id,
-          metadata: { pot_id, recipient_user_id },
-        }, { idempotencyKey: `transfer-${withdrawal_id}` });
+        const transfer = await stripe.transfers.create(
+          {
+            amount: amountCents,
+            currency: currency.toLowerCase(),
+            destination: recipientProfile.stripe_account_id,
+            metadata: { pot_id, recipient_user_id },
+          },
+          { idempotencyKey: `transfer-${withdrawal_id}` },
+        );
         transferId = transfer.id;
 
         // Immediately save payout_id to prevent duplicate payout on retry
@@ -217,10 +232,7 @@ Deno.serve(async (req) => {
           console.log("TEST MODE: Simulating successful payout due to insufficient Stripe balance");
 
           // Save simulated payout_id
-          await supabaseAdmin
-            .from("withdrawals")
-            .update({ payout_id: transferId })
-            .eq("id", withdrawal_id);
+          await supabaseAdmin.from("withdrawals").update({ payout_id: transferId }).eq("id", withdrawal_id);
         } else {
           throw transferErr;
         }
@@ -250,10 +262,13 @@ Deno.serve(async (req) => {
       });
       if (balanceErr) {
         console.error("Balance deduction failed after successful transfer:", balanceErr);
-        return new Response(JSON.stringify({ error: "Payout sent but balance update failed. Contact support.", transfer_id: transferId }), {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        return new Response(
+          JSON.stringify({ error: "Payout sent but balance update failed. Contact support.", transfer_id: transferId }),
+          {
+            status: 500,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
       }
 
       // 3. Record transaction — roll back balance if this fails
