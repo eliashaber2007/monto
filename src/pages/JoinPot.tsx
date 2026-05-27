@@ -138,7 +138,7 @@ export default function JoinPot() {
 
               {/* Monto monogram */}
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-4xl font-bold text-primary">M</span>
+                <span className="text-4xl font-bold text-white">M</span>
               </div>
             </div>
 

@@ -27,7 +27,7 @@ export default function SocialLoginButtons() {
         : window.location.origin;
 
       const result = await lovable.auth.signInWithOAuth('google', {
-        redirect_uri: origin,
+        redirect_uri: `${origin}/login`,
       });
 
       if (result?.error) {
@@ -60,7 +60,7 @@ export default function SocialLoginButtons() {
         : window.location.origin;
 
       const result = await lovable.auth.signInWithOAuth('apple', {
-        redirect_uri: origin,
+        redirect_uri: `${origin}/login`,
       });
 
       if (result?.error) {
