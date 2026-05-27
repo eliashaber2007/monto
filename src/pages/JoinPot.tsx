@@ -29,7 +29,7 @@ export default function JoinPot() {
   const { t } = useTranslation();
   const { potId } = useParams<{ potId: string }>();
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { session, user, loading: authLoading } = useAuth();
   const { toast, dismiss, clear } = useToast();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const attemptedRef = useRef<string | null>(null);
@@ -45,9 +45,11 @@ export default function JoinPot() {
     dismiss();
     setErrorMessage(null);
 
+    // Wait for auth to fully load before making any decisions
     if (authLoading) return;
 
-    if (!user) {
+    // Check session instead of just user to ensure auth is fully confirmed
+    if (!session || !user) {
       if (potId) {
         savePendingInviteToken(potId);
       }
@@ -86,7 +88,7 @@ export default function JoinPot() {
 
     const timer = setTimeout(() => { joinPot(); }, 500);
     return () => clearTimeout(timer);
-  }, [user, authLoading, potId, navigate, toast, dismiss, clear, t]);
+  }, [session, user, authLoading, potId, navigate, toast, dismiss, clear, t]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
