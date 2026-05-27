@@ -2,7 +2,7 @@ import { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { Users } from 'lucide-react';
+import { Users, Droplets } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { joinPotFromInviteToken, savePendingInviteToken, withTimeout, clearPendingInvite } from '@/lib/inviteJoin';
 
@@ -70,7 +70,7 @@ export default function JoinPot() {
       try {
         const result = await withTimeout(
           joinPotFromInviteToken(potId, user.id),
-          5000,
+          15000,
           timeoutMessage
         );
         console.log('[JoinPot] join result', result, 'potName:', result.potName);
@@ -90,25 +90,51 @@ export default function JoinPot() {
     return () => clearTimeout(timer);
   }, [session, user, authLoading, potId, navigate, toast, dismiss, clear, t]);
 
+  const handleRetry = () => {
+    setErrorMessage(null);
+    attemptedRef.current = null;
+    window.location.reload();
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="bg-card rounded-2xl border border-border p-10 text-center max-w-sm w-full shadow-sm">
-        <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center mx-auto mb-5">
-          <Users size={28} className="text-primary" />
-        </div>
-        <h1 className="text-xl font-bold text-foreground mb-2">{errorMessage ? t('joinPot.error') : t('joinPot.joining')}</h1>
+      <div className="bg-card rounded-2xl border border-border p-10 text-center max-w-sm w-full shadow-lg">
         {errorMessage ? (
           <>
-            <p className="text-sm text-muted-foreground">{errorMessage}</p>
-            <button
-              onClick={() => navigate('/', { replace: true })}
-              className="mt-5 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 transition-colors"
-            >
-              {t('common.returnHome')}
-            </button>
+            <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-5">
+              <Users size={28} className="text-destructive" />
+            </div>
+            <h1 className="text-xl font-bold text-foreground mb-2">{t('joinPot.error')}</h1>
+            <p className="text-sm text-muted-foreground mb-6">{errorMessage}</p>
+            <div className="space-y-2">
+              <button
+                onClick={handleRetry}
+                className="w-full px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 transition-colors"
+              >
+                {t('common.retry') || 'Retry'}
+              </button>
+              <button
+                onClick={() => navigate('/', { replace: true })}
+                className="w-full px-4 py-2.5 rounded-xl bg-secondary text-secondary-foreground font-semibold text-sm hover:bg-secondary/80 transition-colors"
+              >
+                {t('common.returnHome')}
+              </button>
+            </div>
           </>
         ) : (
-          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mt-4" />
+          <>
+            <div className="relative w-20 h-20 mx-auto mb-6">
+              <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
+              <div className="absolute inset-0 rounded-full bg-primary/30 animate-pulse" />
+              <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg">
+                <Droplets size={36} className="text-primary-foreground" />
+              </div>
+            </div>
+            <h1 className="text-2xl font-bold text-foreground mb-2">{t('joinPot.joining')}</h1>
+            <p className="text-sm text-muted-foreground">
+              {t('common.pleaseWait') || 'Please wait...'}
+            </p>
+          </>
         )}
       </div>
     </div>
