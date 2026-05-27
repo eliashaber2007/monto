@@ -86,7 +86,17 @@ export default function JoinPot() {
         console.log('[JoinPot] join result', result, 'potName:', result.potName);
         navigate(`/pots/${result.potId}`, { replace: true });
       } catch (err: any) {
-        const description = err?.message === timeoutMessage ? timeoutMessage : t('joinPot.errorDescription');
+        console.error('[JoinPot] Join failed with error:', {
+          message: err?.message,
+          name: err?.name,
+          stack: err?.stack,
+          status: err?.status,
+          details: err?.details,
+          fullError: err,
+        });
+
+        // Show the actual error message to the user instead of generic text
+        const description = err?.message || timeoutMessage;
         setErrorMessage(description);
         setTimeout(() => {
           toast({ title: t('joinPot.error'), description, variant: 'destructive' });
