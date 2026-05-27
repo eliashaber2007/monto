@@ -35,19 +35,41 @@ export default function JoinPot() {
   const attemptedRef = useRef<string | null>(null);
   const previousSessionRef = useRef<typeof session>(null);
 
+  console.log('[JoinPot] Component render:', {
+    potId,
+    hasSession: !!session,
+    hasUser: !!user,
+    authLoading,
+    attemptedRef: attemptedRef.current,
+    errorMessage,
+    pathname: window.location.pathname,
+  });
+
   useLayoutEffect(() => {
+    console.log('[JoinPot] Component mounted on', window.location.pathname);
     clear();
     dismiss();
     setErrorMessage(null);
   }, [clear, dismiss]);
 
   useEffect(() => {
+    console.log('[JoinPot] useEffect triggered:', {
+      authLoading,
+      hasSession: !!session,
+      hasUser: !!user,
+      potId,
+      previousSession: !!previousSessionRef.current,
+    });
+
     clear();
     dismiss();
     setErrorMessage(null);
 
     // Wait for auth to fully load before making any decisions
-    if (authLoading) return;
+    if (authLoading) {
+      console.log('[JoinPot] Auth still loading, waiting...');
+      return;
+    }
 
     // Detect OAuth callback: session changed from null to non-null (user just logged in)
     const isOAuthCallback = !previousSessionRef.current && session;
@@ -59,34 +81,48 @@ export default function JoinPot() {
 
     // Check session instead of just user to ensure auth is fully confirmed
     if (!session || !user) {
+      console.log('[JoinPot] No session/user, redirecting to login. Saving pending invite:', potId);
       if (potId) {
         savePendingInviteToken(potId);
+        console.log('[JoinPot] Saved pending invite token:', potId);
       }
       navigate('/login', { replace: true });
       return;
     }
 
-    if (!potId) return;
+    if (!potId) {
+      console.log('[JoinPot] No potId in URL params, cannot join');
+      return;
+    }
+
+    console.log('[JoinPot] Auth confirmed. Session and user present.');
 
     // Guard against duplicate runs (StrictMode / re-renders) which previously
     // caused a stale "Error joining pot" toast to flash before success.
     // Skip this check if we just detected an OAuth callback
-    if (!isOAuthCallback && attemptedRef.current === potId) return;
+    if (!isOAuthCallback && attemptedRef.current === potId) {
+      console.log('[JoinPot] Already attempted this potId, skipping duplicate join');
+      return;
+    }
     attemptedRef.current = potId;
+    console.log('[JoinPot] Setting attemptedRef to:', potId);
 
     const joinPot = async () => {
+      console.log('[JoinPot] Starting join process for potId:', potId, 'userId:', user.id);
       const timeoutMessage = t('joinPot.timeout');
 
       try {
+        console.log('[JoinPot] Calling joinPotFromInviteToken...');
         const result = await withTimeout(
           joinPotFromInviteToken(potId, user.id),
           15000,
           timeoutMessage
         );
-        console.log('[JoinPot] join result', result, 'potName:', result.potName);
+        console.log('[JoinPot] ✅ Join succeeded! Result:', result);
+        console.log('[JoinPot] Navigating to pot detail page:', `/pots/${result.potId}`);
         navigate(`/pots/${result.potId}`, { replace: true });
       } catch (err: any) {
-        console.error('[JoinPot] Join failed with error:', {
+        console.error('[JoinPot] ❌ Join failed with error:', {
           message: err?.message,
           name: err?.name,
           stack: err?.stack,
@@ -97,16 +133,19 @@ export default function JoinPot() {
 
         // Show the actual error message to the user instead of generic text
         const description = err?.message || timeoutMessage;
+        console.log('[JoinPot] Setting error message for user:', description);
         setErrorMessage(description);
         setTimeout(() => {
           toast({ title: t('joinPot.error'), description, variant: 'destructive' });
         }, 0);
       } finally {
+        console.log('[JoinPot] Clearing pending invite from localStorage');
         clearPendingInvite();
       }
     };
 
     // Execute join immediately - no delay needed
+    console.log('[JoinPot] Executing joinPot() now...');
     joinPot();
   }, [session, user, authLoading, potId, navigate, toast, dismiss, clear, t]);
 
