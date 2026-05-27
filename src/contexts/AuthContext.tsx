@@ -27,8 +27,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const stuckTimeout = setTimeout(() => {
       setLoading((prev) => {
         if (prev) {
-          console.warn('Auth session restoration timed out — forcing reload.');
-          window.location.href = '/';
+          console.warn('[AuthContext] ⚠️ Auth session restoration timed out after 3s');
+          console.warn('[AuthContext] Current path:', window.location.pathname);
+          console.warn('[AuthContext] Has pending invite:', !!localStorage.getItem('pending_invite_token'));
+
+          // Don't redirect away from /invite if there's a pending invite
+          const isOnInvitePage = window.location.pathname.startsWith('/invite/');
+          const hasPendingInvite = !!localStorage.getItem('pending_invite_token');
+
+          if (isOnInvitePage && hasPendingInvite) {
+            console.warn('[AuthContext] Staying on invite page despite timeout');
+            setLoading(false);
+          } else {
+            console.warn('[AuthContext] Redirecting to home');
+            window.location.href = '/';
+          }
         }
         return prev;
       });

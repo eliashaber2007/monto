@@ -92,20 +92,34 @@ export default function Login() {
   // Listen for SIGNED_IN event from OAuth callback
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('[Login] Auth state change:', event);
+      console.log('[Login] Auth state change event:', event, 'hasSession:', !!session);
 
       if (event === 'SIGNED_IN' && session && !hasProcessedPendingInvite.current) {
+        console.log('[Login] ✅ SIGNED_IN event fired!', {
+          sessionId: session.user.id,
+          hasProcessedBefore: hasProcessedPendingInvite.current,
+          currentPath: window.location.pathname,
+        });
+
         hasProcessedPendingInvite.current = true;
         clear();
         dismiss();
 
         // Check for pending invite after OAuth redirect
         const pendingToken = getPendingInviteToken();
-        console.log('[Login] SIGNED_IN event, pending token:', pendingToken);
+        console.log('[Login] getPendingInviteToken() returned:', pendingToken);
+        console.log('[Login] localStorage check:', {
+          pending_invite_token: localStorage.getItem('pending_invite_token'),
+          pending_join_pot_id: localStorage.getItem('pending_join_pot_id'),
+          pendingInviteUrl: localStorage.getItem('pendingInviteUrl'),
+        });
 
         if (pendingToken) {
-          navigate(`/invite/${encodeURIComponent(pendingToken)}`, { replace: true });
+          const targetPath = `/invite/${encodeURIComponent(pendingToken)}`;
+          console.log('[Login] 🔄 Navigating to invite page:', targetPath);
+          navigate(targetPath, { replace: true });
         } else {
+          console.log('[Login] 🔄 No pending invite, navigating to home');
           navigate('/', { replace: true });
         }
         setLoading(false);
