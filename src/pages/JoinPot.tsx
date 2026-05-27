@@ -50,8 +50,9 @@ export default function JoinPot() {
     if (authLoading) return;
 
     // Detect OAuth callback: session changed from null to non-null (user just logged in)
-    if (!previousSessionRef.current && session) {
-      console.log('[JoinPot] OAuth callback detected, resetting attempt ref');
+    const isOAuthCallback = !previousSessionRef.current && session;
+    if (isOAuthCallback) {
+      console.log('[JoinPot] OAuth callback detected, resetting attempt ref and allowing immediate join');
       attemptedRef.current = null;
     }
     previousSessionRef.current = session;
@@ -69,7 +70,8 @@ export default function JoinPot() {
 
     // Guard against duplicate runs (StrictMode / re-renders) which previously
     // caused a stale "Error joining pot" toast to flash before success.
-    if (attemptedRef.current === potId) return;
+    // Skip this check if we just detected an OAuth callback
+    if (!isOAuthCallback && attemptedRef.current === potId) return;
     attemptedRef.current = potId;
 
     const joinPot = async () => {
@@ -94,8 +96,8 @@ export default function JoinPot() {
       }
     };
 
-    const timer = setTimeout(() => { joinPot(); }, 500);
-    return () => clearTimeout(timer);
+    // Execute join immediately - no delay needed
+    joinPot();
   }, [session, user, authLoading, potId, navigate, toast, dismiss, clear, t]);
 
   const handleRetry = () => {
