@@ -97,10 +97,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Detect OAuth redirect using Supabase session check rather than URL string matching
     supabase.auth.getSession().then(({ data: { session } }) => {
+      const hasPendingInvite =
+        !!localStorage.getItem('pending_invite_token') ||
+        !!localStorage.getItem('pendingInviteUrl') ||
+        !!localStorage.getItem('pending_join_pot_id');
       const hasSessionFromOAuth = !!session && (
         initialHash.includes('access_token') ||
         initialSearch.includes('code=') ||
-        initialPath.includes('~oauth')
+        initialPath.includes('~oauth') ||
+        hasPendingInvite
       );
 
       if (!wasExplicitlyLoggedIn && !hasSessionFromOAuth && !isRecoveryFlow) {
