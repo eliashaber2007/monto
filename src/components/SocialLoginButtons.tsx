@@ -26,6 +26,10 @@ export default function SocialLoginButtons() {
         ? (window.top.location.origin as string)
         : window.location.origin;
 
+      // Mark this tab as intentionally authenticating so AuthContext's
+      // session-clearing logic doesn't sign the user out when OAuth returns.
+      sessionStorage.setItem('auth_active', 'true');
+
       const result = await lovable.auth.signInWithOAuth('google', {
         redirect_uri: `${origin}/login`,
       });
@@ -58,6 +62,8 @@ export default function SocialLoginButtons() {
       const origin = isInIframe() && window.top
         ? (window.top.location.origin as string)
         : window.location.origin;
+
+      sessionStorage.setItem('auth_active', 'true');
 
       const result = await lovable.auth.signInWithOAuth('apple', {
         redirect_uri: `${origin}/login`,
