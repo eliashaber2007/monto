@@ -85,6 +85,8 @@ Deno.serve(async (req) => {
           transferId = `simulated_${crypto.randomUUID()}`;
           simulated = true;
           await supabaseAdmin.from("withdrawals").update({ payout_id: transferId }).eq("id", withdrawal_id);
+        } else if (transferErr.message?.toLowerCase().includes("nsufficient")) {
+          return new Response(JSON.stringify({ error: "Funds not yet arrived to Stripe, please try again later" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
         } else {
           throw transferErr;
         }
