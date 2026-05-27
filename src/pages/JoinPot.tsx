@@ -33,6 +33,7 @@ export default function JoinPot() {
   const { toast, dismiss, clear } = useToast();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const attemptedRef = useRef<string | null>(null);
+  const previousSessionRef = useRef<typeof session>(null);
 
   useLayoutEffect(() => {
     clear();
@@ -47,6 +48,13 @@ export default function JoinPot() {
 
     // Wait for auth to fully load before making any decisions
     if (authLoading) return;
+
+    // Detect OAuth callback: session changed from null to non-null (user just logged in)
+    if (!previousSessionRef.current && session) {
+      console.log('[JoinPot] OAuth callback detected, resetting attempt ref');
+      attemptedRef.current = null;
+    }
+    previousSessionRef.current = session;
 
     // Check session instead of just user to ensure auth is fully confirmed
     if (!session || !user) {
@@ -132,7 +140,7 @@ export default function JoinPot() {
             </div>
             <h1 className="text-2xl font-bold text-foreground mb-2">{t('joinPot.joining')}</h1>
             <p className="text-sm text-muted-foreground">
-              {t('common.pleaseWait') || 'Please wait...'}
+              Veuillez patienter...
             </p>
           </>
         )}
