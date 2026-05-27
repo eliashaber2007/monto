@@ -95,6 +95,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       initialHash.includes('type=recovery') ||
       initialSearch.includes('type=recovery');
 
+    // Check for pending invite as a signal that OAuth is in progress
+    const hasPendingInvite =
+      !!localStorage.getItem('pending_invite_token') ||
+      !!localStorage.getItem('pending_join_pot_id') ||
+      !!localStorage.getItem('pendingInviteUrl');
+
     // Detect OAuth redirect using Supabase session check rather than URL string matching
     supabase.auth.getSession().then(({ data: { session } }) => {
       const hasPendingInvite =
@@ -108,13 +114,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         hasPendingInvite
       );
 
-      if (!wasExplicitlyLoggedIn && !hasSessionFromOAuth && !isRecoveryFlow) {
+      // Don't clear session if there's a pending invite (OAuth in progress)
+      if (!wasExplicitlyLoggedIn && !hasSessionFromOAuth && !isRecoveryFlow && !hasPendingInvite) {
+        console.log('[AuthContext] Clearing session: no auth_active, no OAuth, no recovery, no pending invite');
         supabase.auth.signOut().then(() => {
           setSession(null);
           setLoading(false);
           clearTimeout(stuckTimeout);
         });
       } else {
+        console.log('[AuthContext] Keeping session:', {
+          wasExplicitlyLoggedIn: !!wasExplicitlyLoggedIn,
+          hasSessionFromOAuth,
+          isRecoveryFlow,
+          hasPendingInvite,
+        });
         setSession(session);
         setLoading(false);
         clearTimeout(stuckTimeout);

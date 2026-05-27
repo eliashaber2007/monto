@@ -22,6 +22,10 @@ export default function SocialLoginButtons() {
   const handleGoogle = async () => {
     setLoadingGoogle(true);
     try {
+      // Mark OAuth as active before redirect to prevent session clearing
+      sessionStorage.setItem('auth_active', 'true');
+      console.log('[SocialLogin] Set auth_active before Google OAuth');
+
       const origin = isInIframe() && window.top
         ? (window.top.location.origin as string)
         : window.location.origin;
@@ -59,6 +63,10 @@ export default function SocialLoginButtons() {
   const handleApple = async () => {
     setLoadingApple(true);
     try {
+      // Mark OAuth as active before redirect to prevent session clearing
+      sessionStorage.setItem('auth_active', 'true');
+      console.log('[SocialLogin] Set auth_active before Apple OAuth');
+
       const origin = isInIframe() && window.top
         ? (window.top.location.origin as string)
         : window.location.origin;
