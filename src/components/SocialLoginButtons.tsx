@@ -63,6 +63,8 @@ export default function SocialLoginButtons() {
         ? (window.top.location.origin as string)
         : window.location.origin;
 
+      sessionStorage.setItem('auth_active', 'true');
+
       const result = await lovable.auth.signInWithOAuth('apple', {
         redirect_uri: `${origin}/login`,
       });
