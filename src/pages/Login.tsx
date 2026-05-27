@@ -124,6 +124,9 @@ export default function Login() {
           pendingInviteUrl: localStorage.getItem('pendingInviteUrl'),
         });
 
+        // Clean up auth_active flag after successful OAuth
+        localStorage.removeItem('auth_active');
+
         if (pendingToken) {
           const targetPath = `/invite/${encodeURIComponent(pendingToken)}`;
           console.log('[Login] 🔄 Navigating to invite page:', targetPath);
@@ -146,6 +149,9 @@ export default function Login() {
     hasProcessedPendingInvite.current = true;
     clear();
     dismiss();
+
+    // Clean up auth_active flag after successful login
+    localStorage.removeItem('auth_active');
 
     // If there is a pending invite token, hand off to /invite/:token so that
     // JoinPot.tsx is the single place that attempts the join and shows any

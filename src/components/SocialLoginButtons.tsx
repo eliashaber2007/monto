@@ -24,7 +24,7 @@ export default function SocialLoginButtons() {
     setLoadingGoogle(true);
     try {
       // Mark OAuth as active before redirect to prevent session clearing
-      sessionStorage.setItem('auth_active', 'true');
+      localStorage.setItem('auth_active', 'true');
       console.log('[SocialLogin] Set auth_active before Google OAuth');
 
       const origin = isInIframe() && window.top
@@ -33,7 +33,7 @@ export default function SocialLoginButtons() {
 
       // Mark this tab as intentionally authenticating so AuthContext's
       // session-clearing logic doesn't sign the user out when OAuth returns.
-      sessionStorage.setItem('auth_active', 'true');
+      localStorage.setItem('auth_active', 'true');
 
       // Check for pending invite and encode in redirect URL so it survives OAuth
       const pendingInvite = getPendingInviteToken();
@@ -72,14 +72,14 @@ export default function SocialLoginButtons() {
     setLoadingApple(true);
     try {
       // Mark OAuth as active before redirect to prevent session clearing
-      sessionStorage.setItem('auth_active', 'true');
+      localStorage.setItem('auth_active', 'true');
       console.log('[SocialLogin] Set auth_active before Apple OAuth');
 
       const origin = isInIframe() && window.top
         ? (window.top.location.origin as string)
         : window.location.origin;
 
-      sessionStorage.setItem('auth_active', 'true');
+      localStorage.setItem('auth_active', 'true');
 
       // Check for pending invite and encode in redirect URL so it survives OAuth
       const pendingInvite = getPendingInviteToken();

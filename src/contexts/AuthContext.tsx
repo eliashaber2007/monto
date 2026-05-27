@@ -54,10 +54,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         clearTimeout(stuckTimeout);
 
         if (event === 'SIGNED_IN') {
-          sessionStorage.setItem('auth_active', 'true');
+          localStorage.setItem('auth_active', 'true');
         }
         if (event === 'SIGNED_OUT') {
-          sessionStorage.removeItem('auth_active');
+          localStorage.removeItem('auth_active');
         }
 
         // For OAuth redirects, send the user back to Login so it can process
@@ -84,7 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    const wasExplicitlyLoggedIn = sessionStorage.getItem('auth_active');
+    const wasExplicitlyLoggedIn = localStorage.getItem('auth_active');
 
     // Capture URL signals BEFORE Supabase strips them via detectSessionInUrl
     const initialHash = window.location.hash;
