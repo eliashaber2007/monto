@@ -131,15 +131,19 @@ export default function JoinPot() {
           </>
         ) : (
           <>
-            <div className="relative w-20 h-20 mx-auto mb-6">
-              <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
-              <div className="absolute inset-0 rounded-full bg-primary/30 animate-pulse" />
-              <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg">
-                <Droplets size={36} className="text-primary-foreground" />
+            <div className="relative w-24 h-24 mx-auto mb-8">
+              {/* Animated ring spinner */}
+              <div className="absolute inset-0 rounded-full border-4 border-primary/10" />
+              <div className="absolute inset-0 rounded-full border-4 border-primary border-t-transparent animate-spin" />
+
+              {/* Monto monogram */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-4xl font-bold text-primary">M</span>
               </div>
             </div>
-            <h1 className="text-2xl font-bold text-foreground mb-2">{t('joinPot.joining')}</h1>
-            <p className="text-sm text-muted-foreground">
+
+            <h1 className="text-2xl font-bold text-foreground mb-3 tracking-tight">{t('joinPot.joining')}</h1>
+            <p className="text-sm text-muted-foreground/80 font-medium">
               Veuillez patienter...
             </p>
           </>
