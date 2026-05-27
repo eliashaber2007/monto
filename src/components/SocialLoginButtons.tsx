@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { lovable } from '@/integrations/lovable/index';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
+import { getPendingInviteToken } from '@/lib/inviteJoin';
 
 export default function SocialLoginButtons() {
   const { t } = useTranslation();
@@ -34,8 +35,15 @@ export default function SocialLoginButtons() {
       // session-clearing logic doesn't sign the user out when OAuth returns.
       sessionStorage.setItem('auth_active', 'true');
 
+      // Check for pending invite and encode in redirect URL so it survives OAuth
+      const pendingInvite = getPendingInviteToken();
+      const redirectUri = pendingInvite
+        ? `${origin}/login?invite=${encodeURIComponent(pendingInvite)}`
+        : `${origin}/login`;
+      console.log('[SocialLogin] Google OAuth redirect_uri:', redirectUri);
+
       const result = await lovable.auth.signInWithOAuth('google', {
-        redirect_uri: `${origin}/login`,
+        redirect_uri: redirectUri,
       });
 
       if (result?.error) {
@@ -73,8 +81,15 @@ export default function SocialLoginButtons() {
 
       sessionStorage.setItem('auth_active', 'true');
 
+      // Check for pending invite and encode in redirect URL so it survives OAuth
+      const pendingInvite = getPendingInviteToken();
+      const redirectUri = pendingInvite
+        ? `${origin}/login?invite=${encodeURIComponent(pendingInvite)}`
+        : `${origin}/login`;
+      console.log('[SocialLogin] Apple OAuth redirect_uri:', redirectUri);
+
       const result = await lovable.auth.signInWithOAuth('apple', {
-        redirect_uri: `${origin}/login`,
+        redirect_uri: redirectUri,
       });
 
       if (result?.error) {

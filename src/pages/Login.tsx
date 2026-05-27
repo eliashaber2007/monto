@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import SocialLoginButtons from '@/components/SocialLoginButtons';
 import { CheckCircle2, AlertCircle, ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { getPendingInviteToken } from '@/lib/inviteJoin';
+import { getPendingInviteToken, savePendingInviteToken } from '@/lib/inviteJoin';
 
 const LANGUAGES = [
   { code: 'en', emoji: '🇬🇧', label: 'EN' },
@@ -88,6 +88,16 @@ export default function Login() {
   const { session, loading: authLoading } = useAuth();
 
   const isVerified = searchParams.get('verified') === 'true';
+
+  // Check for invite param in URL and save to localStorage (survives OAuth redirect)
+  useEffect(() => {
+    const inviteParam = searchParams.get('invite');
+    if (inviteParam) {
+      console.log('[Login] Found invite param in URL:', inviteParam);
+      savePendingInviteToken(inviteParam);
+      console.log('[Login] Saved invite to localStorage');
+    }
+  }, [searchParams]);
 
   // Listen for SIGNED_IN event from OAuth callback
   useEffect(() => {

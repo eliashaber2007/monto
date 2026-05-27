@@ -81,12 +81,13 @@ export default function JoinPot() {
 
     // Check session instead of just user to ensure auth is fully confirmed
     if (!session || !user) {
-      console.log('[JoinPot] No session/user, redirecting to login. Saving pending invite:', potId);
+      console.log('[JoinPot] No session/user, redirecting to login with invite in URL:', potId);
       if (potId) {
-        savePendingInviteToken(potId);
-        console.log('[JoinPot] Saved pending invite token:', potId);
+        // Encode invite ID in URL so it survives OAuth redirect
+        navigate(`/login?invite=${encodeURIComponent(potId)}`, { replace: true });
+      } else {
+        navigate('/login', { replace: true });
       }
-      navigate('/login', { replace: true });
       return;
     }
 
