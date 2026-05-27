@@ -89,6 +89,33 @@ export default function Login() {
 
   const isVerified = searchParams.get('verified') === 'true';
 
+  // Listen for SIGNED_IN event from OAuth callback
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('[Login] Auth state change:', event);
+
+      if (event === 'SIGNED_IN' && session && !hasProcessedPendingInvite.current) {
+        hasProcessedPendingInvite.current = true;
+        clear();
+        dismiss();
+
+        // Check for pending invite after OAuth redirect
+        const pendingToken = getPendingInviteToken();
+        console.log('[Login] SIGNED_IN event, pending token:', pendingToken);
+
+        if (pendingToken) {
+          navigate(`/invite/${encodeURIComponent(pendingToken)}`, { replace: true });
+        } else {
+          navigate('/', { replace: true });
+        }
+        setLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate, dismiss, clear]);
+
+  // Fallback check for normal login flow (non-OAuth)
   useEffect(() => {
     if (authLoading || !session || hasProcessedPendingInvite.current) return;
 
