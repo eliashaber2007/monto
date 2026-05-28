@@ -85,10 +85,8 @@ export default function JoinPot() {
     if (!session || !user) {
       console.log('[JoinPot] No session/user, redirecting to login with invite in URL:', potId);
       if (potId) {
-        // Save to localStorage BEFORE redirect so it's available when OAuth starts
-        savePendingInviteToken(potId);
-        console.log('[JoinPot] Saved pending invite token to localStorage:', potId);
-        // Also encode in URL as backup
+        // Pass invite ID in URL so SocialLoginButtons can use it in OAuth redirectTo
+        // No localStorage needed - OAuth will return directly to /invite/[potId]
         navigate(`/login?invite=${encodeURIComponent(potId)}`, { replace: true });
       } else {
         navigate('/login', { replace: true });
@@ -145,8 +143,8 @@ export default function JoinPot() {
           toast({ title: t('joinPot.error'), description, variant: 'destructive' });
         }, 0);
       } finally {
-        console.log('[JoinPot] Clearing pending invite from localStorage');
-        clearPendingInvite();
+        console.log('[JoinPot] Join attempt completed');
+        // Note: clearPendingInvite() called inside joinPotFromInviteToken on error
       }
     };
 

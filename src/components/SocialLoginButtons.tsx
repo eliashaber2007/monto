@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { lovable } from '@/integrations/lovable/index';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 
@@ -13,55 +13,39 @@ export default function SocialLoginButtons({ inviteId }: SocialLoginButtonsProps
   const [loadingApple, setLoadingApple] = useState(false);
   const { toast } = useToast();
 
-  // If running inside an iframe (e.g. Lovable preview), break out so OAuth
-  // redirect can navigate the top-level window properly.
-  const isInIframe = () => {
-    try {
-      return window.self !== window.top;
-    } catch {
-      return true;
-    }
-  };
-
   const handleGoogle = async () => {
     setLoadingGoogle(true);
     try {
-      // Mark OAuth as active before redirect to prevent session clearing
-      localStorage.setItem('auth_active', 'true');
-      console.log('[SocialLogin] Set auth_active before Google OAuth');
+      const origin = window.location.origin;
 
-      const origin = isInIframe() && window.top
-        ? (window.top.location.origin as string)
-        : window.location.origin;
-
-      // Mark this tab as intentionally authenticating so AuthContext's
-      // session-clearing logic doesn't sign the user out when OAuth returns.
-      localStorage.setItem('auth_active', 'true');
-
-      // If inviteId is provided, redirect OAuth directly to /invite page
-      // This bypasses /login and matches the working scenario where user lands on /invite after OAuth
-      const redirectUri = inviteId
+      // Redirect directly to /invite/[potId] after OAuth if inviteId provided
+      // This ensures the invite context survives the redirect (in URL, not localStorage)
+      const redirectTo = inviteId
         ? `${origin}/invite/${encodeURIComponent(inviteId)}`
         : `${origin}/login`;
-      console.log('[SocialLogin] Google OAuth redirect_uri:', redirectUri, { inviteId });
 
-      const result = await lovable.auth.signInWithOAuth('google', {
-        redirect_uri: redirectUri,
+      console.log('[SocialLogin] Starting Google OAuth with redirectTo:', redirectTo, { inviteId });
+
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo,
+        },
       });
 
-      if (result?.error) {
-        console.error('Google OAuth error:', result.error);
+      if (error) {
+        console.error('[SocialLogin] Google OAuth error:', error);
         toast({
           title: t('auth.googleSignInFailed'),
-          description: String((result.error as any)?.message ?? result.error),
+          description: error.message,
           variant: 'destructive',
         });
         setLoadingGoogle(false);
         return;
       }
-      // If redirected, browser is navigating away — keep loading state.
+      // If no error, browser is redirecting to Google — keep loading state
     } catch (err: any) {
-      console.error('Google OAuth exception:', err);
+      console.error('[SocialLogin] Google OAuth exception:', err);
       toast({
         title: t('auth.googleSignInFailed'),
         description: err?.message ?? String(err),
@@ -74,39 +58,36 @@ export default function SocialLoginButtons({ inviteId }: SocialLoginButtonsProps
   const handleApple = async () => {
     setLoadingApple(true);
     try {
-      // Mark OAuth as active before redirect to prevent session clearing
-      localStorage.setItem('auth_active', 'true');
-      console.log('[SocialLogin] Set auth_active before Apple OAuth');
+      const origin = window.location.origin;
 
-      const origin = isInIframe() && window.top
-        ? (window.top.location.origin as string)
-        : window.location.origin;
-
-      localStorage.setItem('auth_active', 'true');
-
-      // If inviteId is provided, redirect OAuth directly to /invite page
-      // This bypasses /login and matches the working scenario where user lands on /invite after OAuth
-      const redirectUri = inviteId
+      // Redirect directly to /invite/[potId] after OAuth if inviteId provided
+      // This ensures the invite context survives the redirect (in URL, not localStorage)
+      const redirectTo = inviteId
         ? `${origin}/invite/${encodeURIComponent(inviteId)}`
         : `${origin}/login`;
-      console.log('[SocialLogin] Apple OAuth redirect_uri:', redirectUri, { inviteId });
 
-      const result = await lovable.auth.signInWithOAuth('apple', {
-        redirect_uri: redirectUri,
+      console.log('[SocialLogin] Starting Apple OAuth with redirectTo:', redirectTo, { inviteId });
+
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'apple',
+        options: {
+          redirectTo,
+        },
       });
 
-      if (result?.error) {
-        console.error('Apple OAuth error:', result.error);
+      if (error) {
+        console.error('[SocialLogin] Apple OAuth error:', error);
         toast({
           title: t('auth.appleSignInFailed'),
-          description: String((result.error as any)?.message ?? result.error),
+          description: error.message,
           variant: 'destructive',
         });
         setLoadingApple(false);
         return;
       }
+      // If no error, browser is redirecting to Apple — keep loading state
     } catch (err: any) {
-      console.error('Apple OAuth exception:', err);
+      console.error('[SocialLogin] Apple OAuth exception:', err);
       toast({
         title: t('auth.appleSignInFailed'),
         description: err?.message ?? String(err),

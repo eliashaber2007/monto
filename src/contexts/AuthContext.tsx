@@ -29,13 +29,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (prev) {
           console.warn('[AuthContext] ⚠️ Auth session restoration timed out after 3s');
           console.warn('[AuthContext] Current path:', window.location.pathname);
-          console.warn('[AuthContext] Has pending invite:', !!localStorage.getItem('pending_invite_token'));
 
-          // Don't redirect away from /invite if there's a pending invite
+          // Don't redirect away from /invite page (user may be mid-OAuth flow)
           const isOnInvitePage = window.location.pathname.startsWith('/invite/');
-          const hasPendingInvite = !!localStorage.getItem('pending_invite_token');
 
-          if (isOnInvitePage && hasPendingInvite) {
+          if (isOnInvitePage) {
             console.warn('[AuthContext] Staying on invite page despite timeout');
             setLoading(false);
           } else {
@@ -49,40 +47,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('[AuthContext] Auth state change:', event, 'hasSession:', !!session, 'path:', window.location.pathname);
         setSession(session);
         setLoading(false);
         clearTimeout(stuckTimeout);
 
         if (event === 'SIGNED_IN') {
+          // Mark session as explicitly created (email/password login)
           localStorage.setItem('auth_active', 'true');
         }
         if (event === 'SIGNED_OUT') {
           localStorage.removeItem('auth_active');
         }
-
-        // For OAuth redirects, send the user back to Login so it can process
-        // the pending invite with timeout/error handling before navigating.
-        if (event === 'SIGNED_IN' && session && !hasHandledOAuthRedirect.current) {
-          hasHandledOAuthRedirect.current = true;
-          const hasPendingInvite =
-            !!localStorage.getItem('pending_invite_token') ||
-            !!localStorage.getItem('pendingInviteUrl') ||
-            !!localStorage.getItem('pending_join_pot_id');
-          if (hasPendingInvite && window.location.pathname !== '/login') {
-            setTimeout(() => {
-              window.location.href = '/login';
-            }, 0);
-          }
-        }
       }
     );
-
-    // Use Supabase's built-in session detection instead of fragile string matching
-    supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_IN') {
-        hasHandledOAuthRedirect.current = false;
-      }
-    });
 
     const wasExplicitlyLoggedIn = localStorage.getItem('auth_active');
 
@@ -90,45 +68,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const initialHash = window.location.hash;
     const initialSearch = window.location.search;
     const initialPath = window.location.pathname;
+
+    // Check if this is a recovery flow (password reset)
     const isRecoveryFlow =
       initialPath === '/reset-password' ||
       initialHash.includes('type=recovery') ||
       initialSearch.includes('type=recovery');
 
-    // Check for pending invite as a signal that OAuth is in progress
-    const hasPendingInvite =
-      !!localStorage.getItem('pending_invite_token') ||
-      !!localStorage.getItem('pending_join_pot_id') ||
-      !!localStorage.getItem('pendingInviteUrl');
+    // Check if on invite page (OAuth redirect lands here with potId in URL)
+    const isOnInvitePage = initialPath.startsWith('/invite/');
 
-    // Detect OAuth redirect using Supabase session check rather than URL string matching
+    // Detect OAuth redirect using Supabase session check
     supabase.auth.getSession().then(({ data: { session } }) => {
-      const hasPendingInvite =
-        !!localStorage.getItem('pending_invite_token') ||
-        !!localStorage.getItem('pendingInviteUrl') ||
-        !!localStorage.getItem('pending_join_pot_id');
       const hasSessionFromOAuth = !!session && (
         initialHash.includes('access_token') ||
-        initialSearch.includes('code=') ||
-        initialPath.includes('~oauth') ||
-        hasPendingInvite
+        initialSearch.includes('code=')
       );
 
-      // Don't clear session if there's a pending invite or auth_active flag (OAuth in progress)
-      if (!wasExplicitlyLoggedIn && !hasSessionFromOAuth && !isRecoveryFlow && !localStorage.getItem('pending_invite_token') && !localStorage.getItem('auth_active')) {
-        console.log('[AuthContext] Clearing session: no auth_active, no OAuth, no recovery, no pending invite');
+      // Don't clear session if: explicitly logged in, OAuth callback, recovery flow, or on invite page
+      const shouldPreserveSession = wasExplicitlyLoggedIn || hasSessionFromOAuth || isRecoveryFlow || isOnInvitePage;
+
+      if (!shouldPreserveSession) {
+        console.log('[AuthContext] No active auth signal, clearing session');
         supabase.auth.signOut().then(() => {
           setSession(null);
           setLoading(false);
           clearTimeout(stuckTimeout);
         });
       } else {
-        console.log('[AuthContext] Keeping session:', {
+        console.log('[AuthContext] Preserving session:', {
           wasExplicitlyLoggedIn: !!wasExplicitlyLoggedIn,
           hasSessionFromOAuth,
           isRecoveryFlow,
-          hasPendingInvite: !!localStorage.getItem('pending_invite_token'),
-          hasAuthActive: !!localStorage.getItem('auth_active'),
+          isOnInvitePage,
         });
         setSession(session);
         setLoading(false);
