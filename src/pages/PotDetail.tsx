@@ -563,7 +563,7 @@ export default function PotDetail() {
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
-      
+
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-connect-account`,
         {
@@ -573,6 +573,10 @@ export default function PotDetail() {
             Authorization: `Bearer ${token}`,
             apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
           },
+          body: JSON.stringify({
+            return_url: 'https://montofinance.app/profile',
+            refresh_url: 'https://montofinance.app/profile',
+          }),
         }
       );
 

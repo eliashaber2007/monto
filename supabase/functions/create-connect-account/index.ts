@@ -132,15 +132,23 @@ Deno.serve(async (req) => {
       await supabaseAdmin.from("profiles").update({ stripe_account_id: accountId }).eq("id", userId);
     }
 
-    const origin =
+    // Use explicit URLs from request body if provided, otherwise derive from headers
+    const returnUrl = body.return_url || `${
       req.headers.get("origin") ||
       req.headers.get("referer")?.replace(/\/$/, "") ||
-      "https://montofinance.app";
+      "https://montofinance.app"
+    }/profile`;
+
+    const refreshUrl = body.refresh_url || `${
+      req.headers.get("origin") ||
+      req.headers.get("referer")?.replace(/\/$/, "") ||
+      "https://montofinance.app"
+    }/profile`;
 
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
-      return_url: `${origin}/profile?connect=success`,
-      refresh_url: `${origin}/profile?connect=refresh`,
+      return_url: returnUrl,
+      refresh_url: refreshUrl,
       type: "account_onboarding",
       collection_options: { fields: "eventually_due" },
     });
