@@ -21,17 +21,21 @@ export function extractInviteToken(value: string | null | undefined): string | n
 }
 
 export function getPendingInviteToken(): string | null {
+  // Check all possible storage locations for invite tokens
   const token = (
     localStorage.getItem(PENDING_INVITE_TOKEN_KEY) ||
     localStorage.getItem(PENDING_JOIN_KEY) ||
+    sessionStorage.getItem(PENDING_INVITE_TOKEN_KEY) ||
+    sessionStorage.getItem(PENDING_JOIN_KEY) ||
     null
   );
 
   console.log('[inviteJoin] getPendingInviteToken called:', {
     token,
-    fromKey: token === localStorage.getItem(PENDING_INVITE_TOKEN_KEY) ? PENDING_INVITE_TOKEN_KEY :
-             token === localStorage.getItem(PENDING_JOIN_KEY) ? PENDING_JOIN_KEY :
-             'none'
+    localStorage_pending_invite_token: localStorage.getItem(PENDING_INVITE_TOKEN_KEY),
+    localStorage_pending_join_pot_id: localStorage.getItem(PENDING_JOIN_KEY),
+    sessionStorage_pending_invite_token: sessionStorage.getItem(PENDING_INVITE_TOKEN_KEY),
+    sessionStorage_pending_join_pot_id: sessionStorage.getItem(PENDING_JOIN_KEY),
   });
 
   return token;
@@ -56,13 +60,35 @@ export function savePendingInviteToken(token: string) {
   });
 }
 
+/**
+ * Nuclear clear: removes every possible invite-related key from both localStorage and sessionStorage.
+ * This is the single source of truth for what keys need to be cleared.
+ */
+export function nukeAllInviteStorage() {
+  const keysToNuke = [
+    'pending_invite_token',
+    'pending_join_pot_id',
+    'pendingInviteUrl',
+    'pending_invite_timestamp',
+    'auth_active',
+  ];
+
+  console.log('[inviteJoin] 💣 NUCLEAR CLEAR: Removing all invite-related keys from localStorage and sessionStorage');
+
+  keysToNuke.forEach((key) => {
+    localStorage.removeItem(key);
+    sessionStorage.removeItem(key);
+  });
+
+  console.log('[inviteJoin] ✅ Nuclear clear complete - all invite tokens destroyed');
+}
+
+/**
+ * Clear all pending invite tokens from storage.
+ * Delegates to nukeAllInviteStorage() to ensure they stay in sync.
+ */
 export function clearPendingInvite() {
-  console.log('[inviteJoin] clearPendingInvite called, removing all invite tokens from localStorage');
-  localStorage.removeItem(PENDING_INVITE_TOKEN_KEY);
-  localStorage.removeItem(PENDING_JOIN_KEY);
-  localStorage.removeItem(PENDING_INVITE_URL_KEY);
-  localStorage.removeItem('pending_invite_timestamp');
-  localStorage.removeItem('auth_active');
+  nukeAllInviteStorage();
 }
 
 export function withTimeout<T>(promise: Promise<T>, timeoutMs: number, timeoutMessage: string): Promise<T> {

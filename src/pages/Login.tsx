@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import SocialLoginButtons from '@/components/SocialLoginButtons';
 import { CheckCircle2, AlertCircle, ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { getPendingInviteToken, savePendingInviteToken } from '@/lib/inviteJoin';
+import { getPendingInviteToken, savePendingInviteToken, clearPendingInvite } from '@/lib/inviteJoin';
 
 const LANGUAGES = [
   { code: 'en', emoji: '🇬🇧', label: 'EN' },
@@ -130,6 +130,7 @@ export default function Login() {
         localStorage.removeItem('auth_active');
 
         if (pendingToken) {
+          clearPendingInvite(); // Clear before navigating to prevent re-use
           const targetPath = `/invite/${encodeURIComponent(pendingToken)}`;
           console.log('[Login] 🔄 Navigating to invite page:', targetPath);
           navigate(targetPath, { replace: true });
@@ -160,6 +161,7 @@ export default function Login() {
     // error toast. The login page must never display a join error toast.
     const pendingToken = getPendingInviteToken();
     if (pendingToken) {
+      clearPendingInvite(); // Clear before navigating to prevent re-use
       navigate(`/invite/${encodeURIComponent(pendingToken)}`, { replace: true });
     } else {
       navigate('/', { replace: true });

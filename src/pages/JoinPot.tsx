@@ -113,6 +113,12 @@ export default function JoinPot() {
 
     const joinPot = async () => {
       console.log('[JoinPot] Starting join process for potId:', potId, 'userId:', user.id);
+
+      // Nuclear clear: destroy the invite token immediately at start of join flow
+      // Token is consumed once and never survives past this point
+      console.log('[JoinPot] Nuclear clearing invite token at start of join flow');
+      clearPendingInvite();
+
       const timeoutMessage = t('joinPot.timeout');
 
       try {

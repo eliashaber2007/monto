@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,6 +8,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { DarkModeProvider } from "@/contexts/DarkModeContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { clearPendingInvite } from "@/lib/inviteJoin";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -39,6 +42,21 @@ const queryClient = new QueryClient({
   },
 });
 
+function RootCleaner() {
+  const location = useLocation();
+
+  useEffect(() => {
+    // Nuclear clear: on every fresh page load to root URL, clear all invite tokens
+    // This prevents stale invite tokens from causing auto-join loops
+    if (location.pathname === '/') {
+      console.log('[App] Root URL detected - nuclear clearing all invite tokens');
+      clearPendingInvite();
+    }
+  }, [location.pathname]);
+
+  return null;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
@@ -47,6 +65,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <RootCleaner />
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
