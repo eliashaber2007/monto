@@ -2,9 +2,12 @@ import { useState } from 'react';
 import { lovable } from '@/integrations/lovable/index';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
-import { getPendingInviteToken } from '@/lib/inviteJoin';
 
-export default function SocialLoginButtons() {
+interface SocialLoginButtonsProps {
+  inviteId?: string | null;
+}
+
+export default function SocialLoginButtons({ inviteId }: SocialLoginButtonsProps = {}) {
   const { t } = useTranslation();
   const [loadingGoogle, setLoadingGoogle] = useState(false);
   const [loadingApple, setLoadingApple] = useState(false);
@@ -35,12 +38,12 @@ export default function SocialLoginButtons() {
       // session-clearing logic doesn't sign the user out when OAuth returns.
       localStorage.setItem('auth_active', 'true');
 
-      // Check for pending invite and encode in redirect URL so it survives OAuth
-      const pendingInvite = getPendingInviteToken();
-      const redirectUri = pendingInvite
-        ? `${origin}/login?invite=${encodeURIComponent(pendingInvite)}`
+      // If inviteId is provided, redirect OAuth directly to /invite page
+      // This bypasses /login and matches the working scenario where user lands on /invite after OAuth
+      const redirectUri = inviteId
+        ? `${origin}/invite/${encodeURIComponent(inviteId)}`
         : `${origin}/login`;
-      console.log('[SocialLogin] Google OAuth redirect_uri:', redirectUri);
+      console.log('[SocialLogin] Google OAuth redirect_uri:', redirectUri, { inviteId });
 
       const result = await lovable.auth.signInWithOAuth('google', {
         redirect_uri: redirectUri,
@@ -81,12 +84,12 @@ export default function SocialLoginButtons() {
 
       localStorage.setItem('auth_active', 'true');
 
-      // Check for pending invite and encode in redirect URL so it survives OAuth
-      const pendingInvite = getPendingInviteToken();
-      const redirectUri = pendingInvite
-        ? `${origin}/login?invite=${encodeURIComponent(pendingInvite)}`
+      // If inviteId is provided, redirect OAuth directly to /invite page
+      // This bypasses /login and matches the working scenario where user lands on /invite after OAuth
+      const redirectUri = inviteId
+        ? `${origin}/invite/${encodeURIComponent(inviteId)}`
         : `${origin}/login`;
-      console.log('[SocialLogin] Apple OAuth redirect_uri:', redirectUri);
+      console.log('[SocialLogin] Apple OAuth redirect_uri:', redirectUri, { inviteId });
 
       const result = await lovable.auth.signInWithOAuth('apple', {
         redirect_uri: redirectUri,

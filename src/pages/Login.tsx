@@ -339,7 +339,7 @@ export default function Login() {
         )}
 
         <div className="bg-card rounded-2xl shadow-card p-7 border border-border space-y-5">
-          <SocialLoginButtons />
+          <SocialLoginButtons inviteId={inviteParam} />
 
           <form onSubmit={handleLogin} className="space-y-5">
             <div className="space-y-2">
