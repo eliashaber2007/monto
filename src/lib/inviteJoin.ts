@@ -21,37 +21,17 @@ export function extractInviteToken(value: string | null | undefined): string | n
 }
 
 export function getPendingInviteToken(): string | null {
-  const timestamp = localStorage.getItem('pending_invite_timestamp');
-  const now = Date.now();
-  const age = timestamp ? now - parseInt(timestamp) : null;
-  const isExpired = !timestamp || age! > 600000;
-
-  console.log('[inviteJoin] getPendingInviteToken called:', {
-    timestamp,
-    now,
-    age,
-    isExpired,
-    maxAge: 600000
-  });
-
-  if (isExpired) {
-    console.log('[inviteJoin] Token expired or missing, clearing pending invite');
-    clearPendingInvite();
-    localStorage.removeItem('pending_invite_timestamp');
-    return null;
-  }
-
   const token = (
     localStorage.getItem(PENDING_INVITE_TOKEN_KEY) ||
-    extractInviteToken(localStorage.getItem(PENDING_INVITE_URL_KEY)) ||
-    localStorage.getItem(PENDING_JOIN_KEY)
+    localStorage.getItem(PENDING_JOIN_KEY) ||
+    null
   );
 
-  console.log('[inviteJoin] Returning token:', {
+  console.log('[inviteJoin] getPendingInviteToken called:', {
     token,
     fromKey: token === localStorage.getItem(PENDING_INVITE_TOKEN_KEY) ? PENDING_INVITE_TOKEN_KEY :
-             token === extractInviteToken(localStorage.getItem(PENDING_INVITE_URL_KEY)) ? PENDING_INVITE_URL_KEY :
-             PENDING_JOIN_KEY
+             token === localStorage.getItem(PENDING_JOIN_KEY) ? PENDING_JOIN_KEY :
+             'none'
   });
 
   return token;
@@ -77,10 +57,12 @@ export function savePendingInviteToken(token: string) {
 }
 
 export function clearPendingInvite() {
+  console.log('[inviteJoin] clearPendingInvite called, removing all invite tokens from localStorage');
   localStorage.removeItem(PENDING_INVITE_TOKEN_KEY);
   localStorage.removeItem(PENDING_JOIN_KEY);
   localStorage.removeItem(PENDING_INVITE_URL_KEY);
   localStorage.removeItem('pending_invite_timestamp');
+  localStorage.removeItem('auth_active');
 }
 
 export function withTimeout<T>(promise: Promise<T>, timeoutMs: number, timeoutMessage: string): Promise<T> {
