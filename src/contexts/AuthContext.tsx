@@ -114,8 +114,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         hasPendingInvite
       );
 
-      // Don't clear session if there's a pending invite (OAuth in progress)
-      if (!wasExplicitlyLoggedIn && !hasSessionFromOAuth && !isRecoveryFlow && !hasPendingInvite) {
+      // Don't clear session if there's a pending invite or auth_active flag (OAuth in progress)
+      if (!wasExplicitlyLoggedIn && !hasSessionFromOAuth && !isRecoveryFlow && !localStorage.getItem('pending_invite_token') && !localStorage.getItem('auth_active')) {
         console.log('[AuthContext] Clearing session: no auth_active, no OAuth, no recovery, no pending invite');
         supabase.auth.signOut().then(() => {
           setSession(null);
@@ -127,7 +127,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           wasExplicitlyLoggedIn: !!wasExplicitlyLoggedIn,
           hasSessionFromOAuth,
           isRecoveryFlow,
-          hasPendingInvite,
+          hasPendingInvite: !!localStorage.getItem('pending_invite_token'),
+          hasAuthActive: !!localStorage.getItem('auth_active'),
         });
         setSession(session);
         setLoading(false);
