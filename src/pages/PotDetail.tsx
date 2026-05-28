@@ -558,36 +558,8 @@ export default function PotDetail() {
     navigate('/');
   };
 
-  const handleConnectBank = async () => {
-    setConnectingBank(true);
-    try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData?.session?.access_token;
-
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-connect-account`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-          },
-          body: JSON.stringify({
-            return_url: 'https://montofinance.app/profile',
-            refresh_url: 'https://montofinance.app/profile',
-          }),
-        }
-      );
-
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || 'Failed to start onboarding');
-
-      window.location.href = result.url;
-    } catch (err: any) {
-      toast({ title: t('common.error'), description: err.message, variant: 'destructive' });
-      setConnectingBank(false);
-    }
+  const handleConnectBank = () => {
+    navigate('/profile');
   };
 
   const handleClosePot = async () => {
