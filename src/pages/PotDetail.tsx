@@ -1141,7 +1141,7 @@ export default function PotDetail() {
                                   </div>
                                   <p className="text-[10px] text-muted-foreground">{t('potDetail.justifiedPct', { pct, current: formatCurrency(expTotal, currency), total: formatCurrency(Number(w.amount), currency) })}</p>
                                 </div>
-                                {canJustify ? (
+                                {canJustify && w.status === 'approved' ? (
                                   <button
                                     onClick={() => navigate(`/expenses/${w.id}`)}
                                     className="text-xs flex items-center gap-1.5 text-primary-foreground font-semibold bg-primary px-3 py-1.5 rounded-lg hover:bg-primary/90 transition-colors"
@@ -1149,7 +1149,7 @@ export default function PotDetail() {
                                     <Receipt size={12} />
                                     {t('potDetail.justifyExpenses')}
                                   </button>
-                                ) : isCreatorOrLeader ? (
+                                ) : isCreatorOrLeader && w.status === 'approved' ? (
                                   <button
                                     onClick={() => navigate(`/expenses/${w.id}`)}
                                     className="text-xs flex items-center gap-1.5 text-muted-foreground font-semibold bg-muted px-3 py-1.5 rounded-lg hover:bg-muted/80 transition-colors"
