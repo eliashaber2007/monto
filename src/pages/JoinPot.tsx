@@ -83,7 +83,10 @@ export default function JoinPot() {
     if (!session || !user) {
       console.log('[JoinPot] No session/user, redirecting to login with invite in URL:', potId);
       if (potId) {
-        // Encode invite ID in URL so it survives OAuth redirect
+        // Save to localStorage BEFORE redirect so it's available when OAuth starts
+        savePendingInviteToken(potId);
+        console.log('[JoinPot] Saved pending invite token to localStorage:', potId);
+        // Also encode in URL as backup
         navigate(`/login?invite=${encodeURIComponent(potId)}`, { replace: true });
       } else {
         navigate('/login', { replace: true });
