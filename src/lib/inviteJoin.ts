@@ -22,24 +22,58 @@ export function extractInviteToken(value: string | null | undefined): string | n
 
 export function getPendingInviteToken(): string | null {
   const timestamp = localStorage.getItem('pending_invite_timestamp');
-  if (!timestamp || Date.now() - parseInt(timestamp) > 600000) {
+  const now = Date.now();
+  const age = timestamp ? now - parseInt(timestamp) : null;
+  const isExpired = !timestamp || age! > 600000;
+
+  console.log('[inviteJoin] getPendingInviteToken called:', {
+    timestamp,
+    now,
+    age,
+    isExpired,
+    maxAge: 600000
+  });
+
+  if (isExpired) {
+    console.log('[inviteJoin] Token expired or missing, clearing pending invite');
     clearPendingInvite();
     localStorage.removeItem('pending_invite_timestamp');
     return null;
   }
 
-  return (
+  const token = (
     localStorage.getItem(PENDING_INVITE_TOKEN_KEY) ||
     extractInviteToken(localStorage.getItem(PENDING_INVITE_URL_KEY)) ||
     localStorage.getItem(PENDING_JOIN_KEY)
   );
+
+  console.log('[inviteJoin] Returning token:', {
+    token,
+    fromKey: token === localStorage.getItem(PENDING_INVITE_TOKEN_KEY) ? PENDING_INVITE_TOKEN_KEY :
+             token === extractInviteToken(localStorage.getItem(PENDING_INVITE_URL_KEY)) ? PENDING_INVITE_URL_KEY :
+             PENDING_JOIN_KEY
+  });
+
+  return token;
 }
 
 export function savePendingInviteToken(token: string) {
+  const timestamp = Date.now().toString();
+  console.log('[inviteJoin] savePendingInviteToken called:', {
+    token,
+    timestamp,
+    url: `/invite/${encodeURIComponent(token)}`
+  });
   localStorage.setItem(PENDING_INVITE_TOKEN_KEY, token);
   localStorage.setItem(PENDING_JOIN_KEY, token);
   localStorage.setItem(PENDING_INVITE_URL_KEY, `/invite/${encodeURIComponent(token)}`);
-  localStorage.setItem('pending_invite_timestamp', Date.now().toString());
+  localStorage.setItem('pending_invite_timestamp', timestamp);
+  console.log('[inviteJoin] Saved to localStorage keys:', {
+    [PENDING_INVITE_TOKEN_KEY]: localStorage.getItem(PENDING_INVITE_TOKEN_KEY),
+    [PENDING_JOIN_KEY]: localStorage.getItem(PENDING_JOIN_KEY),
+    [PENDING_INVITE_URL_KEY]: localStorage.getItem(PENDING_INVITE_URL_KEY),
+    pending_invite_timestamp: localStorage.getItem('pending_invite_timestamp')
+  });
 }
 
 export function clearPendingInvite() {
