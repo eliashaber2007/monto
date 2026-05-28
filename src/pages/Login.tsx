@@ -89,15 +89,14 @@ export default function Login() {
 
   const isVerified = searchParams.get('verified') === 'true';
 
-  // Check for invite param in URL and save to localStorage (survives OAuth redirect)
-  useEffect(() => {
-    const inviteParam = searchParams.get('invite');
-    if (inviteParam) {
-      console.log('[Login] Found invite param in URL:', inviteParam);
-      savePendingInviteToken(inviteParam);
-      console.log('[Login] Saved invite to localStorage');
-    }
-  }, [searchParams]);
+  // Check for invite param in URL and save to localStorage synchronously before render
+  // This ensures SocialLoginButtons can read it immediately when constructing OAuth redirect_uri
+  const inviteParam = searchParams.get('invite');
+  if (inviteParam) {
+    console.log('[Login] Found invite param in URL:', inviteParam);
+    savePendingInviteToken(inviteParam);
+    console.log('[Login] Saved invite to localStorage');
+  }
 
   // Listen for SIGNED_IN event from OAuth callback
   useEffect(() => {
