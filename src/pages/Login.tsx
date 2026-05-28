@@ -98,13 +98,14 @@ export default function Login() {
     console.log('[Login] Saved invite to localStorage');
   }
 
-  // Listen for SIGNED_IN event from OAuth callback
+  // Listen for SIGNED_IN and INITIAL_SESSION events from OAuth callback
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('[Login] Auth state change event:', event, 'hasSession:', !!session);
 
-      if (event === 'SIGNED_IN' && session && !hasProcessedPendingInvite.current) {
-        console.log('[Login] ✅ SIGNED_IN event fired!', {
+      // SIGNED_IN fires for fresh logins, INITIAL_SESSION fires when session already exists (OAuth redirect)
+      if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session && !hasProcessedPendingInvite.current) {
+        console.log(`[Login] ✅ ${event} event fired!`, {
           sessionId: session.user.id,
           hasProcessedBefore: hasProcessedPendingInvite.current,
           currentPath: window.location.pathname,
