@@ -26,6 +26,8 @@ export function clearPendingInviteUrl() {
 }
 
 export default function JoinPot() {
+  console.log('[JoinPot] Page loaded at URL:', window.location.href);
+
   const { t } = useTranslation();
   const { potId } = useParams<{ potId: string }>();
   const navigate = useNavigate();

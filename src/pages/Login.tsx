@@ -66,6 +66,8 @@ function LanguageSelector() {
 }
 
 export default function Login() {
+  console.log('[Login] Page loaded at URL:', window.location.href);
+
   const { toast, dismiss, clear } = useToast();
 
   const hasClearedInitialToasts = useRef(false);
