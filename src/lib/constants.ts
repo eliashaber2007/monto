@@ -1,2 +1,2 @@
 // VAPID public key for Web Push notifications (publishable, safe to include in client code)
-export const VAPID_PUBLIC_KEY = 'BGCJ1GRQc704vvE-SPzkmFZbFMteGrbOlM52le46jz5eBg2wsnh5-2KGb9c06IFlHxZT05KMIjAu00FJoaZYJk8';
+export const VAPID_PUBLIC_KEY = 'BBXmXz5oArAlnow-QtTATOqHjeivk7uZgj2VxHHSuGTF61agghx_Slx7X3XoWeru8cNs420MbsuawoNPzt_7wss';
