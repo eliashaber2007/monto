@@ -67,13 +67,19 @@ export default function AddFundsModal({
       return;
     }
 
+    const base_amount_cents = Math.round(amount * 100);
+    if (base_amount_cents < 100) {
+      toast({ title: 'Montant minimum', description: 'Le montant minimum est de €1.00', variant: 'destructive' });
+      return;
+    }
+
     setLoading(true);
 
     try {
       const res = await supabase.functions.invoke('create-checkout-session', {
         body: {
           pot_id: potId,
-          base_amount_cents: Math.round(amount * 100),
+          base_amount_cents,
           payment_method: paymentMethod,
         },
       });
