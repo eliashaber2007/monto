@@ -21,7 +21,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log('[AuthContext] Initializing - no session persistence, login required every visit');
+    console.log('[AuthContext] Initializing with session persistence');
 
     // Listen for auth state changes (login/logout events)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -32,11 +32,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    // Check if there's a session from OAuth callback (access_token in URL)
-    // This is the ONLY way to get a session - no localStorage restoration
+    // Check if there's a session (from OAuth callback or persisted storage)
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        console.log('[AuthContext] Session detected from OAuth callback');
+        console.log('[AuthContext] Session restored');
         setSession(session);
       } else {
         console.log('[AuthContext] No session - user must login');
@@ -45,8 +44,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
 
+    // Sign out when user closes tab or navigates away
+    // This prevents session from persisting across browser restarts
+    const handleBeforeUnload = () => {
+      console.log('[AuthContext] Window closing - signing out');
+      supabase.auth.signOut();
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
     return () => {
       subscription.unsubscribe();
+      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, []);
 

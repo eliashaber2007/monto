@@ -10,8 +10,8 @@ const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
-    persistSession: false,  // No automatic session persistence - require login on every visit
-    autoRefreshToken: false,  // No auto-refresh since sessions aren't persisted
+    persistSession: true,  // Session persists for Stripe redirects (same tab)
+    storageKey: 'monto-auth',  // Custom storage key for Monto auth session
     detectSessionInUrl: true,  // Still detect OAuth callbacks in URL
   }
 });
