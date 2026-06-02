@@ -26,6 +26,7 @@ import Onboarding from "./pages/Onboarding";
 import Verified from "./pages/Verified";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
+import TermsConsent from "./pages/TermsConsent";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -148,6 +149,7 @@ const App = () => (
             <Route path="/verified" element={<Verified />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
+            <Route path="/terms-consent" element={<TermsConsent />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -102,7 +102,7 @@ export default function Login() {
 
   // Listen for SIGNED_IN and INITIAL_SESSION events from OAuth callback
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('[Login] Auth state change event:', event, 'hasSession:', !!session);
 
       // SIGNED_IN fires for fresh logins, INITIAL_SESSION fires when session already exists (OAuth redirect)
@@ -117,7 +117,30 @@ export default function Login() {
         clear();
         dismiss();
 
-        // Check for pending invite after OAuth redirect
+        // Clean up auth_active flag after successful OAuth
+        localStorage.removeItem('auth_active');
+
+        // Check if user has accepted terms
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('terms_accepted')
+          .eq('id', session.user.id)
+          .single();
+
+        console.log('[Login] Terms accepted:', profile?.terms_accepted);
+
+        if (!profile?.terms_accepted) {
+          // User hasn't accepted terms - redirect to terms consent screen
+          const pendingToken = getPendingInviteToken();
+          const intendedPath = pendingToken ? `/invite/${encodeURIComponent(pendingToken)}` : '/';
+
+          console.log('[Login] 🔄 Redirecting to terms consent, intended path:', intendedPath);
+          navigate('/terms-consent', { replace: true, state: { from: intendedPath } });
+          setLoading(false);
+          return;
+        }
+
+        // User has accepted terms - proceed with normal flow
         const pendingToken = getPendingInviteToken();
         console.log('[Login] getPendingInviteToken() returned:', pendingToken);
         console.log('[Login] localStorage check:', {
@@ -125,9 +148,6 @@ export default function Login() {
           pending_join_pot_id: localStorage.getItem('pending_join_pot_id'),
           pendingInviteUrl: localStorage.getItem('pendingInviteUrl'),
         });
-
-        // Clean up auth_active flag after successful OAuth
-        localStorage.removeItem('auth_active');
 
         if (pendingToken) {
           clearPendingInvite(); // Clear before navigating to prevent re-use
@@ -149,24 +169,46 @@ export default function Login() {
   useEffect(() => {
     if (authLoading || !session || hasProcessedPendingInvite.current) return;
 
-    hasProcessedPendingInvite.current = true;
-    clear();
-    dismiss();
+    const checkTermsAndNavigate = async () => {
+      hasProcessedPendingInvite.current = true;
+      clear();
+      dismiss();
 
-    // Clean up auth_active flag after successful login
-    localStorage.removeItem('auth_active');
+      // Clean up auth_active flag after successful login
+      localStorage.removeItem('auth_active');
 
-    // If there is a pending invite token, hand off to /invite/:token so that
-    // JoinPot.tsx is the single place that attempts the join and shows any
-    // error toast. The login page must never display a join error toast.
-    const pendingToken = getPendingInviteToken();
-    if (pendingToken) {
-      clearPendingInvite(); // Clear before navigating to prevent re-use
-      navigate(`/invite/${encodeURIComponent(pendingToken)}`, { replace: true });
-    } else {
-      navigate('/', { replace: true });
-    }
-    setLoading(false);
+      // Check if user has accepted terms
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('terms_accepted')
+        .eq('id', session.user.id)
+        .single();
+
+      if (!profile?.terms_accepted) {
+        // User hasn't accepted terms - redirect to terms consent screen
+        const pendingToken = getPendingInviteToken();
+        const intendedPath = pendingToken ? `/invite/${encodeURIComponent(pendingToken)}` : '/';
+
+        navigate('/terms-consent', { replace: true, state: { from: intendedPath } });
+        setLoading(false);
+        return;
+      }
+
+      // User has accepted terms - proceed with normal flow
+      // If there is a pending invite token, hand off to /invite/:token so that
+      // JoinPot.tsx is the single place that attempts the join and shows any
+      // error toast. The login page must never display a join error toast.
+      const pendingToken = getPendingInviteToken();
+      if (pendingToken) {
+        clearPendingInvite(); // Clear before navigating to prevent re-use
+        navigate(`/invite/${encodeURIComponent(pendingToken)}`, { replace: true });
+      } else {
+        navigate('/', { replace: true });
+      }
+      setLoading(false);
+    };
+
+    checkTermsAndNavigate();
   }, [session, authLoading, navigate, dismiss, clear]);
 
   useEffect(() => {
