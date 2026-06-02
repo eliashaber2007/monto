@@ -82,7 +82,8 @@ export default function Onboarding() {
         has_seen_onboarding: true,
       }));
     }
-    navigate('/', { replace: true });
+    // Navigate to terms consent screen for new users
+    navigate('/terms-consent', { replace: true });
   };
 
   // Welcome screen (step 0)
