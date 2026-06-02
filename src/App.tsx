@@ -140,11 +140,7 @@ const App = () => (
             />
             <Route
               path="/onboarding"
-              element={
-                <ProtectedRoute>
-                  <Onboarding />
-                </ProtectedRoute>
-              }
+              element={<Onboarding />}
             />
             <Route path="/verified" element={<Verified />} />
             <Route path="/privacy" element={<Privacy />} />
