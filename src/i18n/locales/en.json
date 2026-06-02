@@ -84,14 +84,14 @@
   },
   "onboarding": {
     "chooseLanguage": "Choose your language",
-    "welcome": "Welcome to Monto",
+    "welcome": "A pot with rules",
     "welcomeTitle": "Welcome to Monto 👋",
-    "welcomeSubtitle": "The simplest way to manage money with your group.",
-    "welcomeBody": "Monto gives your group one place to hold shared money. The pot owner stays in control. Members can request what they need, no awkward messages, no chasing anyone down 💸. Every transaction is logged and owners can request receipts to keep things clean ✅.",
-    "howItWorks": "How it works",
-    "howItWorksBody": "Create a pot and invite your group. Members add funds, request withdrawals, and you decide what gets approved.",
+    "welcomeSubtitle": "Group treasury, finally simple and transparent.",
+    "welcomeBody": "Create a pot, invite your members. Every withdrawal must be approved by the creator — no more unjustified expenses.",
+    "howItWorks": "Connect your bank account",
+    "howItWorksBody": "To receive withdrawals, connect your IBAN in 1 minute from your profile. Funds arrive directly to your account.",
     "connectBank": "Connect your bank account",
-    "connectBankBody": "To receive withdrawals you'll need to connect your bank account first 🏦. It only takes a minute and you can do it anytime from your Profile page.",
+    "connectBankBody": "To receive withdrawals, connect your IBAN in 1 minute from your profile. Funds arrive directly to your account.",
     "getStarted": "Get started"
   },
   "myPots": {

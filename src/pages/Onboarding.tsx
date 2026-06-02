@@ -35,7 +35,7 @@ export default function Onboarding() {
     }
 
     setButtonsReady(false);
-    const timer = setTimeout(() => setButtonsReady(true), 4000);
+    const timer = setTimeout(() => setButtonsReady(true), 1000);
     return () => clearTimeout(timer);
   }, [step, isWelcome]);
 
@@ -48,11 +48,6 @@ export default function Onboarding() {
     {
       title: t('onboarding.howItWorks'),
       body: t('onboarding.howItWorksBody'),
-      Animation: ProgressRingAnimation,
-    },
-    {
-      title: t('onboarding.connectBank'),
-      body: t('onboarding.connectBankBody'),
       Animation: BankConnectAnimation,
     },
   ];

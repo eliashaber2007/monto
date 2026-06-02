@@ -83,14 +83,14 @@
   },
   "onboarding": {
     "chooseLanguage": "Wählen Sie Ihre Sprache",
-    "welcome": "Willkommen bei Monto",
+    "welcome": "Ein Topf mit Regeln",
     "welcomeTitle": "Willkommen bei Monto 👋",
-    "welcomeSubtitle": "Der einfachste Weg, Geld gemeinsam zu verwalten.",
-    "welcomeBody": "Monto bietet Ihrer Gruppe einen Ort für gemeinsames Geld. Der Kassen-Besitzer behält die Kontrolle. Mitglieder können anfordern, was sie brauchen – ohne peinliche Nachrichten 💸. Jede Transaktion wird protokolliert und Besitzer können Belege anfordern ✅.",
-    "howItWorks": "So funktioniert's",
-    "howItWorksBody": "Erstellen Sie eine Kasse und laden Sie Ihre Gruppe ein. Mitglieder fügen Geld hinzu, beantragen Auszahlungen, und Sie entscheiden, was genehmigt wird.",
-    "connectBank": "Bankkonto verbinden",
-    "connectBankBody": "Um Auszahlungen zu erhalten, müssen Sie zuerst Ihr Bankkonto verbinden 🏦. Das dauert nur eine Minute und Sie können es jederzeit auf Ihrer Profilseite tun.",
+    "welcomeSubtitle": "Gruppenfinanzen, endlich einfach und transparent.",
+    "welcomeBody": "Erstelle einen Topf, lade deine Mitglieder ein. Jede Auszahlung muss vom Ersteller genehmigt werden — keine ungerechtfertigten Ausgaben mehr.",
+    "howItWorks": "Verbinde dein Bankkonto",
+    "howItWorksBody": "Um Auszahlungen zu erhalten, verbinde deine IBAN in 1 Minute über dein Profil. Gelder kommen direkt auf dein Konto.",
+    "connectBank": "Verbinde dein Bankkonto",
+    "connectBankBody": "Um Auszahlungen zu erhalten, verbinde deine IBAN in 1 Minute über dein Profil. Gelder kommen direkt auf dein Konto.",
     "getStarted": "Los geht's"
   },
   "myPots": {

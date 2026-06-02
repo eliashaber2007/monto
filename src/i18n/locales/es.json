@@ -84,14 +84,14 @@
   },
   "onboarding": {
     "chooseLanguage": "Elige tu idioma",
-    "welcome": "Bienvenido a Monto",
+    "welcome": "Un bote con reglas",
     "welcomeTitle": "Bienvenido a Monto 👋",
-    "welcomeSubtitle": "La forma más sencilla de gestionar dinero en grupo.",
-    "welcomeBody": "Monto le da a tu grupo un solo lugar para el dinero compartido. El dueño del bote mantiene el control. Los miembros pueden solicitar lo que necesiten, sin mensajes incómodos 💸. Cada transacción se registra y los dueños pueden pedir comprobantes ✅.",
-    "howItWorks": "Cómo funciona",
-    "howItWorksBody": "Crea un bote e invita a tu grupo. Los miembros añaden fondos, solicitan retiros y tú decides qué se aprueba.",
+    "welcomeSubtitle": "Tesorería de grupo, por fin simple y transparente.",
+    "welcomeBody": "Crea un bote, invita a tus miembros. Cada retiro debe ser aprobado por el creador — sin gastos injustificados.",
+    "howItWorks": "Conecta tu cuenta bancaria",
+    "howItWorksBody": "Para recibir retiros, conecta tu IBAN en 1 minuto desde tu perfil. Los fondos llegan directamente a tu cuenta.",
     "connectBank": "Conecta tu cuenta bancaria",
-    "connectBankBody": "Para recibir retiros necesitarás conectar tu cuenta bancaria primero 🏦. Solo toma un minuto y puedes hacerlo en cualquier momento desde tu página de Perfil.",
+    "connectBankBody": "Para recibir retiros, conecta tu IBAN en 1 minuto desde tu perfil. Los fondos llegan directamente a tu cuenta.",
     "getStarted": "Empezar"
   },
   "myPots": {
