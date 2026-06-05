@@ -667,9 +667,10 @@ export default function PotDetail() {
         <div className="max-w-lg mx-auto px-5 py-4 flex items-center gap-3">
           <button
             onClick={() => navigate('/')}
-            className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:bg-secondary transition-colors"
+            className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium text-foreground hover:bg-secondary transition-colors"
           >
-            <ArrowLeft size={20} />
+            <ArrowLeft size={18} />
+            <span>Mes cagnottes</span>
           </button>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
@@ -686,29 +687,32 @@ export default function PotDetail() {
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => setShowChat(true)}
-              className="relative flex items-center gap-1 text-xs text-primary font-semibold border border-primary/30 rounded-full px-2.5 py-1.5 hover:bg-accent transition-colors"
+              className="relative flex flex-col items-center gap-0.5 text-primary font-semibold border border-primary/30 rounded-xl px-2.5 py-1.5 hover:bg-accent transition-colors min-w-[50px]"
             >
-              <MessageCircle size={13} />
+              <MessageCircle size={16} />
+              <span className="text-[10px]">Chat</span>
               {unreadChatCount > 0 && (
-                <span className="min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1">
+                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1">
                   {unreadChatCount > 99 ? '99+' : unreadChatCount}
                 </span>
               )}
             </button>
             <button
               onClick={() => setShowInviteModal(true)}
-              className="flex items-center justify-center text-xs text-primary font-semibold border border-primary/30 rounded-full w-8 h-8 hover:bg-accent transition-colors"
+              className="flex flex-col items-center gap-0.5 text-primary font-semibold border border-primary/30 rounded-xl px-2.5 py-1.5 hover:bg-accent transition-colors min-w-[50px]"
             >
-              <Users size={13} />
+              <Users size={16} />
+              <span className="text-[10px]">Inviter</span>
             </button>
             <button
               onClick={() => setShowSettings(true)}
-              className="flex items-center justify-center text-xs text-primary font-semibold border border-primary/30 rounded-full w-8 h-8 hover:bg-accent transition-colors"
+              className="flex flex-col items-center gap-0.5 text-primary font-semibold border border-primary/30 rounded-xl px-2 py-1.5 hover:bg-accent transition-colors min-w-[58px]"
             >
-              <Settings size={14} />
+              <Settings size={16} />
+              <span className="text-[10px]">Paramètres</span>
             </button>
           </div>
         </div>
