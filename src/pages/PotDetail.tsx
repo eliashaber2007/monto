@@ -664,10 +664,10 @@ export default function PotDetail() {
     <div className="min-h-screen pb-28 bg-background">
       {/* Sticky top bar */}
       <div className="bg-card border-b border-border sticky top-0 z-20">
-        <div className="max-w-lg mx-auto px-5 py-4 flex items-center gap-3">
+        <div className="max-w-lg mx-auto px-5 py-3 flex items-center gap-3">
           <button
             onClick={() => navigate('/')}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium text-foreground hover:bg-secondary transition-colors"
+            className="flex items-center gap-1.5 text-sm font-medium text-foreground hover:text-primary transition-colors flex-shrink-0"
           >
             <ArrowLeft size={18} />
             <span>Mes cagnottes</span>
@@ -675,9 +675,9 @@ export default function PotDetail() {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               {(pot as any).emoji && <span className="text-lg flex-shrink-0">{(pot as any).emoji}</span>}
-              <h1 className="font-bold text-foreground truncate text-lg">{pot.name}</h1>
+              <h1 className="font-bold text-foreground truncate text-base">{pot.name}</h1>
               <span
-                className="flex-shrink-0 inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full font-semibold text-foreground dark:text-white"
+                className="flex-shrink-0 inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-semibold text-foreground dark:text-white"
                 style={{
                   backgroundColor: 'rgba(29,78,216,0.18)',
                   border: '1px solid rgba(29,78,216,0.4)',
@@ -687,13 +687,12 @@ export default function PotDetail() {
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <button
               onClick={() => setShowChat(true)}
-              className="relative flex flex-col items-center gap-0.5 text-primary font-semibold border border-primary/30 rounded-xl px-2.5 py-1.5 hover:bg-accent transition-colors min-w-[50px]"
+              className="relative p-2 text-primary hover:bg-accent rounded-lg transition-colors flex-shrink-0"
             >
-              <MessageCircle size={16} />
-              <span className="text-[10px]">Chat</span>
+              <MessageCircle size={20} />
               {unreadChatCount > 0 && (
                 <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1">
                   {unreadChatCount > 99 ? '99+' : unreadChatCount}
@@ -702,17 +701,15 @@ export default function PotDetail() {
             </button>
             <button
               onClick={() => setShowInviteModal(true)}
-              className="flex flex-col items-center gap-0.5 text-primary font-semibold border border-primary/30 rounded-xl px-2.5 py-1.5 hover:bg-accent transition-colors min-w-[50px]"
+              className="p-2 text-primary hover:bg-accent rounded-lg transition-colors flex-shrink-0"
             >
-              <Users size={16} />
-              <span className="text-[10px]">Inviter</span>
+              <Users size={20} />
             </button>
             <button
               onClick={() => setShowSettings(true)}
-              className="flex flex-col items-center gap-0.5 text-primary font-semibold border border-primary/30 rounded-xl px-2 py-1.5 hover:bg-accent transition-colors min-w-[58px]"
+              className="p-2 text-primary hover:bg-accent rounded-lg transition-colors flex-shrink-0"
             >
-              <Settings size={16} />
-              <span className="text-[10px]">Paramètres</span>
+              <Settings size={20} />
             </button>
           </div>
         </div>
