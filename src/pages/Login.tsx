@@ -121,24 +121,25 @@ export default function Login() {
         localStorage.removeItem('auth_active');
 
         // Check if user has accepted terms
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('terms_accepted')
-          .eq('id', session.user.id)
-          .single();
+        // NOTE: terms_accepted column temporarily disabled - add via migration if needed
+        // const { data: profile } = await supabase
+        //   .from('profiles')
+        //   .select('terms_accepted')
+        //   .eq('id', session.user.id)
+        //   .single();
 
-        console.log('[Login] Terms accepted:', profile?.terms_accepted);
+        // console.log('[Login] Terms accepted:', profile?.terms_accepted);
 
-        if (!profile?.terms_accepted) {
-          // User hasn't accepted terms - redirect to terms consent screen
-          const pendingToken = getPendingInviteToken();
-          const intendedPath = pendingToken ? `/invite/${encodeURIComponent(pendingToken)}` : '/';
+        // if (!profile?.terms_accepted) {
+        //   // User hasn't accepted terms - redirect to terms consent screen
+        //   const pendingToken = getPendingInviteToken();
+        //   const intendedPath = pendingToken ? `/invite/${encodeURIComponent(pendingToken)}` : '/';
 
-          console.log('[Login] 🔄 Redirecting to terms consent, intended path:', intendedPath);
-          navigate('/terms-consent', { replace: true, state: { from: intendedPath } });
-          setLoading(false);
-          return;
-        }
+        //   console.log('[Login] 🔄 Redirecting to terms consent, intended path:', intendedPath);
+        //   navigate('/terms-consent', { replace: true, state: { from: intendedPath } });
+        //   setLoading(false);
+        //   return;
+        // }
 
         // User has accepted terms - proceed with normal flow
         const pendingToken = getPendingInviteToken();
@@ -178,21 +179,22 @@ export default function Login() {
       localStorage.removeItem('auth_active');
 
       // Check if user has accepted terms
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('terms_accepted')
-        .eq('id', session.user.id)
-        .single();
+      // NOTE: terms_accepted column temporarily disabled - add via migration if needed
+      // const { data: profile } = await supabase
+      //   .from('profiles')
+      //   .select('terms_accepted')
+      //   .eq('id', session.user.id)
+      //   .single();
 
-      if (!profile?.terms_accepted) {
-        // User hasn't accepted terms - redirect to terms consent screen
-        const pendingToken = getPendingInviteToken();
-        const intendedPath = pendingToken ? `/invite/${encodeURIComponent(pendingToken)}` : '/';
+      // if (!profile?.terms_accepted) {
+      //   // User hasn't accepted terms - redirect to terms consent screen
+      //   const pendingToken = getPendingInviteToken();
+      //   const intendedPath = pendingToken ? `/invite/${encodeURIComponent(pendingToken)}` : '/';
 
-        navigate('/terms-consent', { replace: true, state: { from: intendedPath } });
-        setLoading(false);
-        return;
-      }
+      //   navigate('/terms-consent', { replace: true, state: { from: intendedPath } });
+      //   setLoading(false);
+      //   return;
+      // }
 
       // User has accepted terms - proceed with normal flow
       // If there is a pending invite token, hand off to /invite/:token so that

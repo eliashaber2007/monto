@@ -34,8 +34,9 @@ export default function TermsConsent() {
       const { error } = await supabase
         .from('profiles')
         .update({
-          terms_accepted: true,
-          terms_accepted_at: new Date().toISOString()
+          // NOTE: terms_accepted column temporarily disabled - add via migration if needed
+          // terms_accepted: true,
+          // terms_accepted_at: new Date().toISOString()
         })
         .eq('id', user.id);
 
