@@ -1021,14 +1021,6 @@ export default function PotDetail() {
           </TabsContent>
 
           <TabsContent value="members" className="mt-5 space-y-3 max-w-sm mx-auto">
-            {(() => {
-              const totalWithdrawnAll = withdrawals.filter((w: any) => w.status === 'approved').reduce((s: number, w: any) => s + Number(w.amount), 0);
-              return (
-                <div className="text-sm text-muted-foreground text-center py-2">
-                  Total retiré de la cagnotte : <span className="font-bold text-foreground">{formatCurrency(totalWithdrawnAll, currency)}</span>
-                </div>
-              );
-            })()}
             {(members ?? []).map((m) => {
               const memberProfile = (m as any).profiles;
               const memberName = memberProfile?.first_name || 'Member';
@@ -1065,6 +1057,11 @@ export default function PotDetail() {
                         {m.user_id === user?.id ? `${memberName} (${t('common.you')})` : memberName}
                       </p>
                       <p className="text-xs text-muted-foreground capitalize">{m.role}</p>
+                      {totalWithdrawn > 0 && (
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Retiré : <span className="font-semibold">{formatCurrency(totalWithdrawn, currency)}</span>
+                        </p>
+                      )}
                     </div>
                     {m.role === 'creator' && (
                       <span className="text-[11px] px-2 py-0.5 rounded-full bg-primary text-primary-foreground border border-primary font-semibold">
