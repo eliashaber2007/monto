@@ -42,8 +42,18 @@ function formatCurrency(amount: number, currency: string) {
   }).format(amount);
 }
 
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString('en-IE', {
+function getLocaleFromLanguage(language: string): string {
+  const localeMap: Record<string, string> = {
+    'fr': 'fr-FR',
+    'en': 'en-GB',
+    'de': 'de-DE',
+    'es': 'es-ES',
+  };
+  return localeMap[language] || 'en-GB';
+}
+
+function formatDate(dateStr: string, locale: string = 'en-GB') {
+  return new Date(dateStr).toLocaleDateString(locale, {
     day: 'numeric', month: 'short', year: 'numeric',
     hour: '2-digit', minute: '2-digit',
   });
@@ -204,7 +214,8 @@ export default function PotDetail() {
   const [showSettings, setShowSettings] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const locale = getLocaleFromLanguage(i18n.language);
 
   const inviteLink = `https://montofinance.app/invite/${id}`;
 
@@ -858,7 +869,7 @@ export default function PotDetail() {
                               <MemberAvatar userId={tx.user_id} />
                               <div className="flex-1 min-w-0">
                                 <p className="text-sm font-medium text-foreground truncate">{name}</p>
-                                <p className="text-xs text-muted-foreground">{formatDate(tx.created_at)}</p>
+                                <p className="text-xs text-muted-foreground">{formatDate(tx.created_at, locale)}</p>
                               </div>
                               <span className="text-sm font-bold text-success">+{formatCurrency(Number(tx.amount), currency)}</span>
                             </div>
@@ -907,7 +918,7 @@ export default function PotDetail() {
                                 <MemberAvatar userId={w.user_id} />
                                 <div className="flex-1 min-w-0">
                                   <p className="text-sm font-medium text-foreground truncate">{name}</p>
-                                  <p className="text-xs text-muted-foreground">{formatDate(w.processed_at || w.created_at)}</p>
+                                  <p className="text-xs text-muted-foreground">{formatDate(w.processed_at || w.created_at, locale)}</p>
                                   {w.note && <p className="text-xs text-muted-foreground mt-0.5 italic">"{w.note}"</p>}
                                 </div>
                                 <div className="flex flex-col items-end gap-1.5">
@@ -1012,7 +1023,7 @@ export default function PotDetail() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-foreground">{t('potDetail.created', { name: pot.name })}</p>
-                      <p className="text-xs text-muted-foreground">{formatDate(pot.created_at)}</p>
+                      <p className="text-xs text-muted-foreground">{formatDate(pot.created_at, locale)}</p>
                     </div>
                   </div>
                 </>
@@ -1105,7 +1116,7 @@ export default function PotDetail() {
                                   <span className="text-sm font-bold text-destructive">-{formatCurrency(Number(w.amount), currency)}</span>
                                   <span className={`text-[10px] px-2 py-0.5 rounded-full border font-semibold ${st.cls}`}>{st.label}</span>
                                 </div>
-                                <p className="text-[11px] text-muted-foreground">{formatDate(w.created_at)}</p>
+                                <p className="text-[11px] text-muted-foreground">{formatDate(w.created_at, locale)}</p>
                                 {w.note && <p className="text-xs text-foreground/80 italic">"{w.note}"</p>}
                                 <div className="space-y-1">
                                   <div className="w-full h-2.5 rounded-full bg-muted overflow-hidden">
