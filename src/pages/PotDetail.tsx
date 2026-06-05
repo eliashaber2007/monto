@@ -723,6 +723,11 @@ export default function PotDetail() {
             </h2>
           </div>
           <ProgressRing balance={pot.balance ?? 0} peakBalance={((pot as any).peak_balance > 0 ? (pot as any).peak_balance : pot.balance) ?? 0} currency={currency} />
+          {pot.balance === 0 && (
+            <div className="mt-4 px-4 py-3 rounded-xl bg-muted/50 border border-border">
+              <p className="text-sm text-muted-foreground">{t('potDetail.noFundsYet')}</p>
+            </div>
+          )}
           {((pot as any).peak_balance <= 0 && pot.balance <= 0) && !pot.goal_amount && (
             <p className="text-sm text-muted-foreground mt-4">{t('potDetail.noGoalSet')}</p>
           )}

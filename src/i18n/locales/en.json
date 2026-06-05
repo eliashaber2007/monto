@@ -110,6 +110,7 @@
   },
   "potDetail": {
     "noGoalSet": "No initial amount set — save as much as you like! 🎯",
+    "noFundsYet": "No funds yet — add money to get started 💰",
     "receiptVerification": "Receipt verification enabled",
     "requestWithdrawal": "Request Withdrawal",
     "addFunds": "Add Funds",

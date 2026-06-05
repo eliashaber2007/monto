@@ -112,6 +112,13 @@ export default function CreatePotModal({ open, onOpenChange, initialState }: Pro
       document.removeEventListener('visibilitychange', onVisibility);
     };
   }, [open]);
+
+  // If user reaches payment step with €0 amount, skip payment and create pot directly
+  useEffect(() => {
+    if (step === 4 && (!goalAmount || parseFloat(goalAmount) === 0)) {
+      handleSkipDeposit();
+    }
+  }, [step, goalAmount]);
   
 
   const POT_EMOJIS = [
