@@ -703,9 +703,9 @@ export default function PotDetail() {
       <div className="max-w-lg mx-auto px-5 py-8 space-y-6">
         {/* Ring + balance */}
         <div className="bg-card rounded-2xl shadow-sm border border-border p-8 text-center">
-          <div className="flex items-center justify-center gap-2 mb-6">
-            {(pot as any).emoji && <span className="text-2xl">{(pot as any).emoji}</span>}
-            <h1 className="text-xl font-bold text-foreground">{pot.name}</h1>
+          <div className="text-center mb-4">
+            <span className="text-2xl">{(pot as any).emoji}</span>
+            <h2 className="text-xl font-bold text-foreground mt-1">{pot.name}</h2>
           </div>
           <ProgressRing balance={pot.balance ?? 0} peakBalance={((pot as any).peak_balance > 0 ? (pot as any).peak_balance : pot.balance) ?? 0} currency={currency} />
           {((pot as any).peak_balance <= 0 && pot.balance <= 0) && !pot.goal_amount && (
@@ -1017,16 +1017,14 @@ export default function PotDetail() {
           </TabsContent>
 
           <TabsContent value="members" className="mt-5 space-y-3 max-w-sm mx-auto">
-            {/* Total withdrawn summary */}
-            <div className="bg-muted/40 rounded-xl border border-border p-4 flex items-center justify-between">
-              <span className="text-sm font-medium text-muted-foreground">{t('potDetail.totalWithdrawn')}</span>
-              <span className="text-lg font-bold text-destructive">
-                -{formatCurrency(
-                  withdrawals.filter((w: any) => w.status === 'approved').reduce((sum: number, w: any) => sum + Number(w.amount), 0),
-                  currency
-                )}
-              </span>
-            </div>
+            {(() => {
+              const totalWithdrawnAll = withdrawals.filter((w: any) => w.status === 'approved').reduce((s: number, w: any) => s + Number(w.amount), 0);
+              return (
+                <div className="text-sm text-muted-foreground text-center py-2">
+                  Total retiré de la cagnotte : <span className="font-bold text-foreground">{formatCurrency(totalWithdrawnAll, currency)}</span>
+                </div>
+              );
+            })()}
             {(members ?? []).map((m) => {
               const memberProfile = (m as any).profiles;
               const memberName = memberProfile?.first_name || 'Member';
