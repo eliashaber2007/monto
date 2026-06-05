@@ -25,3 +25,13 @@ dist-ssr
 .env
 *.pdf
 supabase/.temp/
+
+# Jupyter Notebooks
+*.ipynb
+.ipynb_checkpoints/
+
+# Data files
+data/
+
+# Graphify output
+graphify-out/
