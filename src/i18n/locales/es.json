@@ -21,7 +21,8 @@
     "creator": "Creador",
     "you": "Tú",
     "today": "Hoy",
-    "yesterday": "Ayer"
+    "yesterday": "Ayer",
+    "optional": "opcional"
   },
   "auth": {
     "signIn": "Iniciar sesión",

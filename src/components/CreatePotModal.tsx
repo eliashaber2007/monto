@@ -269,11 +269,12 @@ export default function CreatePotModal({ open, onOpenChange, initialState }: Pro
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="goalAmount">{t('createPot.potAmount')}</Label>
+                <Label htmlFor="goalAmount">{t('createPot.potAmount')} <span className="text-muted-foreground font-normal">({t('common.optional')})</span></Label>
                 <div className="relative">
                   <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground font-medium text-sm select-none">{currencySymbol}</span>
-                  <Input id="goalAmount" type="number" min="0" step="0.01" placeholder="e.g. 1000" value={goalAmount} onChange={(e) => setGoalAmount(e.target.value)} className="h-11 pl-9" />
+                  <Input id="goalAmount" type="number" min="0" step="0.01" placeholder="0" value={goalAmount} onChange={(e) => setGoalAmount(e.target.value)} className="h-11 pl-9" />
                 </div>
+                <p className="text-xs text-muted-foreground">{t('createPot.potAmountHint')}</p>
               </div>
               <div className="space-y-1.5">
                 <Label>{t('createPot.addIcon')}</Label>
@@ -283,7 +284,7 @@ export default function CreatePotModal({ open, onOpenChange, initialState }: Pro
                   ))}
                 </div>
               </div>
-              <Button className="w-full h-11 rounded-xl" disabled={!potName.trim() || !goalAmount || parseFloat(goalAmount) <= 0} onClick={() => setStep(2)}>{t('common.next')}</Button>
+              <Button className="w-full h-11 rounded-xl" disabled={!potName.trim()} onClick={() => setStep(2)}>{t('common.next')}</Button>
             </div>
           )}
 

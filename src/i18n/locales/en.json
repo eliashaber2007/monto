@@ -21,7 +21,8 @@
     "creator": "Creator",
     "you": "You",
     "today": "Today",
-    "yesterday": "Yesterday"
+    "yesterday": "Yesterday",
+    "optional": "optional"
   },
   "auth": {
     "signIn": "Sign in",

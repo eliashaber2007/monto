@@ -21,7 +21,8 @@
     "creator": "Créateur",
     "you": "Vous",
     "today": "Aujourd'hui",
-    "yesterday": "Hier"
+    "yesterday": "Hier",
+    "optional": "optionnel"
   },
   "auth": {
     "signIn": "Se connecter",
