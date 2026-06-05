@@ -110,7 +110,7 @@
   },
   "potDetail": {
     "noGoalSet": "Pas de montant initial défini — économisez autant que vous voulez ! 🎯",
-    "noFundsYet": "Aucun fonds pour l'instant — ajoutez de l'argent pour commencer 💰",
+    "noFundsYet": "Aucun fonds pour l'instant, ajoutez de l'argent pour commencer 💰",
     "receiptVerification": "Vérification des reçus activée",
     "requestWithdrawal": "Demander un retrait",
     "addFunds": "Ajouter des fonds",

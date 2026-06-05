@@ -113,12 +113,6 @@ export default function CreatePotModal({ open, onOpenChange, initialState }: Pro
     };
   }, [open]);
 
-  // If user reaches payment step with €0 amount, skip payment and create pot directly
-  useEffect(() => {
-    if (step === 4 && (!goalAmount || parseFloat(goalAmount) === 0)) {
-      handleSkipDeposit();
-    }
-  }, [step, goalAmount]);
   
 
   const POT_EMOJIS = [
@@ -355,8 +349,13 @@ export default function CreatePotModal({ open, onOpenChange, initialState }: Pro
                 const potConfig = buildPotConfig();
                 localStorage.setItem('pendingPotData', JSON.stringify(potConfig));
                 setCreatedPotId(potConfig.id);
-                setCreating(false);
-                setStep(4);
+                // If no goal amount, create pot directly without payment step
+                if (!goalAmount || parseFloat(goalAmount) === 0) {
+                  handleSkipDeposit();
+                } else {
+                  setCreating(false);
+                  setStep(4);
+                }
               }} type="button">
                 {t('common.next')}
               </Button>
