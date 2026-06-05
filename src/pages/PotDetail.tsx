@@ -667,7 +667,7 @@ export default function PotDetail() {
         <div className="max-w-lg mx-auto px-5 py-3 flex items-center justify-between">
           <button
             onClick={() => navigate('/')}
-            className="flex items-center gap-1.5 text-sm font-medium text-foreground hover:text-primary transition-colors flex-shrink-0"
+            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-foreground hover:text-primary hover:bg-secondary rounded-xl transition-colors flex-shrink-0"
           >
             <ArrowLeft size={18} />
             <span>Mes cagnottes</span>
@@ -675,9 +675,10 @@ export default function PotDetail() {
           <div className="flex items-center gap-1.5">
             <button
               onClick={() => setShowChat(true)}
-              className="relative p-2 text-primary hover:bg-accent rounded-lg transition-colors flex-shrink-0"
+              className="relative flex flex-col items-center gap-0.5 px-2 py-1.5 text-primary hover:bg-accent rounded-lg transition-colors flex-shrink-0"
             >
               <MessageCircle size={20} />
+              <span className="text-[10px] font-medium">{t('potDetail.chat')}</span>
               {unreadChatCount > 0 && (
                 <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1">
                   {unreadChatCount > 99 ? '99+' : unreadChatCount}
@@ -686,15 +687,17 @@ export default function PotDetail() {
             </button>
             <button
               onClick={() => setShowInviteModal(true)}
-              className="p-2 text-primary hover:bg-accent rounded-lg transition-colors flex-shrink-0"
+              className="flex flex-col items-center gap-0.5 px-2 py-1.5 text-primary hover:bg-accent rounded-lg transition-colors flex-shrink-0"
             >
               <Users size={20} />
+              <span className="text-[10px] font-medium">{t('potDetail.invite')}</span>
             </button>
             <button
               onClick={() => setShowSettings(true)}
-              className="p-2 text-primary hover:bg-accent rounded-lg transition-colors flex-shrink-0"
+              className="flex flex-col items-center gap-0.5 px-2 py-1.5 text-primary hover:bg-accent rounded-lg transition-colors flex-shrink-0"
             >
               <Settings size={20} />
+              <span className="text-[10px] font-medium">{t('potDetail.settings')}</span>
             </button>
           </div>
         </div>
@@ -704,8 +707,9 @@ export default function PotDetail() {
         {/* Ring + balance */}
         <div className="bg-card rounded-2xl shadow-sm border border-border p-8 text-center">
           <div className="text-center mb-4">
-            <span className="text-2xl">{(pot as any).emoji}</span>
-            <h2 className="text-xl font-bold text-foreground mt-1">{pot.name}</h2>
+            <h2 className="text-xl font-bold text-foreground">
+              {pot.name} {(pot as any).emoji && <span className="text-2xl">{(pot as any).emoji}</span>}
+            </h2>
           </div>
           <ProgressRing balance={pot.balance ?? 0} peakBalance={((pot as any).peak_balance > 0 ? (pot as any).peak_balance : pot.balance) ?? 0} currency={currency} />
           {((pot as any).peak_balance <= 0 && pot.balance <= 0) && !pot.goal_amount && (
