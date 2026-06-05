@@ -664,7 +664,7 @@ export default function PotDetail() {
     <div className="min-h-screen pb-28 bg-background">
       {/* Sticky top bar */}
       <div className="bg-card border-b border-border sticky top-0 z-20">
-        <div className="max-w-lg mx-auto px-5 py-3 flex items-center gap-3">
+        <div className="max-w-lg mx-auto px-5 py-3 flex items-center justify-between">
           <button
             onClick={() => navigate('/')}
             className="flex items-center gap-1.5 text-sm font-medium text-foreground hover:text-primary transition-colors flex-shrink-0"
@@ -672,21 +672,6 @@ export default function PotDetail() {
             <ArrowLeft size={18} />
             <span>Mes cagnottes</span>
           </button>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              {(pot as any).emoji && <span className="text-lg flex-shrink-0">{(pot as any).emoji}</span>}
-              <h1 className="font-bold text-foreground truncate text-base">{pot.name}</h1>
-              <span
-                className="flex-shrink-0 inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-semibold text-foreground dark:text-white"
-                style={{
-                  backgroundColor: 'rgba(29,78,216,0.18)',
-                  border: '1px solid rgba(29,78,216,0.4)',
-                }}
-              >
-                {isCreator ? t('potDetail.creatorRole') : isLeader ? t('potDetail.leaderRole') : t('potDetail.memberRole')}
-              </span>
-            </div>
-          </div>
           <div className="flex items-center gap-1.5">
             <button
               onClick={() => setShowChat(true)}
@@ -718,6 +703,10 @@ export default function PotDetail() {
       <div className="max-w-lg mx-auto px-5 py-8 space-y-6">
         {/* Ring + balance */}
         <div className="bg-card rounded-2xl shadow-sm border border-border p-8 text-center">
+          <div className="flex items-center justify-center gap-2 mb-6">
+            {(pot as any).emoji && <span className="text-2xl">{(pot as any).emoji}</span>}
+            <h1 className="text-xl font-bold text-foreground">{pot.name}</h1>
+          </div>
           <ProgressRing balance={pot.balance ?? 0} peakBalance={((pot as any).peak_balance > 0 ? (pot as any).peak_balance : pot.balance) ?? 0} currency={currency} />
           {((pot as any).peak_balance <= 0 && pot.balance <= 0) && !pot.goal_amount && (
             <p className="text-sm text-muted-foreground mt-4">{t('potDetail.noGoalSet')}</p>
@@ -1028,6 +1017,16 @@ export default function PotDetail() {
           </TabsContent>
 
           <TabsContent value="members" className="mt-5 space-y-3 max-w-sm mx-auto">
+            {/* Total withdrawn summary */}
+            <div className="bg-muted/40 rounded-xl border border-border p-4 flex items-center justify-between">
+              <span className="text-sm font-medium text-muted-foreground">{t('potDetail.totalWithdrawn')}</span>
+              <span className="text-lg font-bold text-destructive">
+                -{formatCurrency(
+                  withdrawals.filter((w: any) => w.status === 'approved').reduce((sum: number, w: any) => sum + Number(w.amount), 0),
+                  currency
+                )}
+              </span>
+            </div>
             {(members ?? []).map((m) => {
               const memberProfile = (m as any).profiles;
               const memberName = memberProfile?.first_name || 'Member';
