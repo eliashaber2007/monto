@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { DarkModeProvider } from "@/contexts/DarkModeContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import CookieBanner from "@/components/CookieBanner";
 import { clearPendingInvite } from "@/lib/inviteJoin";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -150,6 +151,7 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
+        <CookieBanner />
       </TooltipProvider>
       </DarkModeProvider>
     </AuthProvider>
