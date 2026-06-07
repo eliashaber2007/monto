@@ -77,13 +77,13 @@ export default function Login() {
     dismiss();
   }
 
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
   const [showUnverified, setShowUnverified] = useState(false);
-  const [lockoutUntil, setLockoutUntil] = useState<number | null>(null);
+  const [showOAuthSuggestion, setShowOAuthSuggestion] = useState(false);
   const hasProcessedPendingInvite = useRef(false);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -220,23 +220,6 @@ export default function Login() {
     }
   }, [isVerified, setSearchParams]);
 
-  // Check for existing lockout on mount
-  useEffect(() => {
-    const lockoutData = localStorage.getItem('login_lockout');
-    if (lockoutData) {
-      try {
-        const { lockedUntil } = JSON.parse(lockoutData);
-        if (Date.now() < lockedUntil) {
-          setLockoutUntil(lockedUntil);
-        } else {
-          localStorage.removeItem('login_lockout');
-        }
-      } catch {
-        localStorage.removeItem('login_lockout');
-      }
-    }
-  }, []);
-
   const handleResendVerification = async () => {
     if (!email) {
       toast({ title: t('auth.enterEmail'), description: t('auth.enterEmailDesc'), variant: 'destructive' });
@@ -259,30 +242,9 @@ export default function Login() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Check lockout before attempting login
-    const lockoutData = localStorage.getItem('login_lockout');
-    if (lockoutData) {
-      try {
-        const { lockedUntil, attempts } = JSON.parse(lockoutData);
-        if (Date.now() < lockedUntil && attempts >= 5) {
-          const minutesRemaining = Math.ceil((lockedUntil - Date.now()) / 60000);
-          toast({
-            title: t('auth.tooManyAttempts', 'Too many login attempts'),
-            description: t('auth.tryAgainIn', `Please wait ${minutesRemaining} minute(s) before trying again.`),
-            variant: 'destructive',
-          });
-          return;
-        } else if (Date.now() >= lockedUntil) {
-          localStorage.removeItem('login_lockout');
-          setLockoutUntil(null);
-        }
-      } catch {
-        localStorage.removeItem('login_lockout');
-      }
-    }
-
     setLoading(true);
     setShowUnverified(false);
+    setShowOAuthSuggestion(false);
 
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
@@ -294,47 +256,35 @@ export default function Login() {
         return;
       }
 
-      // Track failed login attempts
-      let attempts = 1;
-      const existingLockout = localStorage.getItem('login_lockout');
-      if (existingLockout) {
-        try {
-          const parsed = JSON.parse(existingLockout);
-          attempts = (parsed.attempts || 0) + 1;
-        } catch {
-          // Invalid data, start fresh
-        }
-      }
+      // Show OAuth suggestion for auth errors
+      setShowOAuthSuggestion(true);
 
-      const lockedUntil = Date.now() + 15 * 60 * 1000; // 15 minutes from now
-
-      if (attempts >= 5) {
-        localStorage.setItem('login_lockout', JSON.stringify({ attempts, lockedUntil }));
-        setLockoutUntil(lockedUntil);
-        toast({
-          title: t('auth.accountLocked', 'Account temporarily locked'),
-          description: t('auth.tooManyFailedAttempts', 'Too many failed login attempts. Please wait 15 minutes before trying again.'),
-          variant: 'destructive',
-        });
-      } else {
-        localStorage.setItem('login_lockout', JSON.stringify({ attempts, lockedUntil }));
-        toast({
-          title: t('auth.loginFailed'),
-          description: `${error.message} (${5 - attempts} attempt(s) remaining)`,
-          variant: 'destructive',
-        });
-      }
+      toast({
+        title: t('auth.loginFailed'),
+        description: error.message,
+        variant: 'destructive',
+      });
       return;
     }
 
-    // Success — clear lockout
+    // Success — clear OAuth suggestion and old lockout data (backwards compat)
     localStorage.removeItem('login_lockout');
-    setLockoutUntil(null);
+    setShowOAuthSuggestion(false);
 
     if (data.session && !session) {
       hasProcessedPendingInvite.current = false;
     }
   };
+
+  function getOAuthSuggestionMessage(language: string): string {
+    const messages: Record<string, string> = {
+      'fr': "Il semble que vous vous soyez inscrit avec Google. Veuillez utiliser le bouton \"Continuer avec Google\" pour vous connecter.",
+      'en': "It looks like you signed up with Google. Please use the \"Continue with Google\" button to sign in.",
+      'de': "Es scheint, dass Sie sich mit Google angemeldet haben. Bitte verwenden Sie die Schaltfläche \"Mit Google fortfahren\", um sich anzumelden.",
+      'es': "Parece que te registraste con Google. Por favor usa el botón \"Continuar con Google\" para iniciar sesión.",
+    };
+    return messages[language] || messages['en'];
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-5">
@@ -356,14 +306,11 @@ export default function Login() {
           </div>
         )}
 
-        {lockoutUntil && Date.now() < lockoutUntil && (
-          <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 rounded-xl px-4 py-3 mb-5 text-sm">
-            <div className="flex items-center gap-2">
-              <AlertCircle size={18} className="flex-shrink-0" />
-              <span>
-                {t('auth.accountLocked', 'Account temporarily locked')}.{' '}
-                {t('auth.tryAgainIn', `Please wait ${Math.ceil((lockoutUntil - Date.now()) / 60000)} minute(s) before trying again.`)}
-              </span>
+        {showOAuthSuggestion && (
+          <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 rounded-xl px-4 py-3 mb-5 text-sm">
+            <div className="flex items-start gap-2">
+              <AlertCircle size={18} className="flex-shrink-0 mt-0.5" />
+              <span>{getOAuthSuggestionMessage(i18n.language)}</span>
             </div>
           </div>
         )}
@@ -404,7 +351,7 @@ export default function Login() {
             <Button
               type="submit"
               className="w-full h-12 rounded-xl mt-1"
-              disabled={loading || (lockoutUntil !== null && Date.now() < lockoutUntil)}
+              disabled={loading}
             >
               {loading ? t('auth.signingIn') : t('auth.signIn')}
             </Button>
