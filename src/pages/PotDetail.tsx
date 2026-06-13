@@ -376,10 +376,6 @@ export default function PotDetail() {
   }, [id, user, showChat]);
 
   const handleApproveWithdrawal = async (withdrawal: any) => {
-    if (withdrawal.user_id === user?.id) {
-      toast({ title: t('common.error'), description: t('potDetail.cannotApproveOwn'), variant: 'destructive' });
-      return;
-    }
     if (withdrawal.status !== 'pending') {
       toast({ title: t('common.error'), description: t('potDetail.noLongerPending'), variant: 'destructive' });
       return;
@@ -418,13 +414,19 @@ export default function PotDetail() {
 
       toast({ title: t('potDetail.withdrawalApproved') });
       playWithdrawalSound();
-      const fly = document.createElement('div');
-      fly.textContent = '€';
-      fly.className = 'money-fly';
-      fly.style.left = `${window.innerWidth / 2 - 20}px`;
-      fly.style.top = `${window.innerHeight / 2}px`;
-      document.body.appendChild(fly);
-      setTimeout(() => fly.remove(), 1100);
+      confetti({ particleCount: 120, spread: 100, origin: { y: 0.4 }, colors: ['#3B82F6', '#8B5CF6', '#10B981', '#F59E0B'], startVelocity: 50 });
+      const overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,0.75);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;';
+      const emojis = document.createElement('div');
+      emojis.textContent = '🎉💸✨';
+      emojis.style.cssText = 'font-size:64px;line-height:1;';
+      const label = document.createElement('p');
+      label.textContent = 'Retrait approuvé !';
+      label.style.cssText = 'color:#fff;font-size:24px;font-weight:700;margin:0;';
+      overlay.appendChild(emojis);
+      overlay.appendChild(label);
+      document.body.appendChild(overlay);
+      setTimeout(() => overlay.remove(), 2500);
       setApproveConfirm(null);
       refetch();
       fetchWithdrawals();

@@ -29,18 +29,33 @@ export default function SplashScreen({ onDone }: SplashScreenProps) {
         backgroundColor: '#0a0a0f',
       }}
     >
-      <span
+      <img
+        src="/monto_logo.svg"
+        alt="Monto"
         className="splash-letter"
         style={{
-          fontSize: 96,
-          fontWeight: 700,
-          color: '#3B82F6',
-          lineHeight: 1,
+          width: 120,
+          height: 120,
+          borderRadius: 24,
           userSelect: 'none',
         }}
+      />
+
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 60,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: 200,
+          height: 4,
+          borderRadius: 2,
+          backgroundColor: 'rgba(255,255,255,0.1)',
+          overflow: 'hidden',
+        }}
       >
-        M
-      </span>
+        <div className="splash-loading-bar" />
+      </div>
     </div>
   );
 }

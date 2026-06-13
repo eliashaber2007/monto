@@ -410,13 +410,18 @@
 
 /* Splash screen */
 @keyframes splashPulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50%       { opacity: 0.7; transform: scale(1.08); }
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.05); }
 }
 
 @keyframes splashFadeOut {
   0%   { opacity: 1; }
   100% { opacity: 0; }
+}
+
+@keyframes loadingBar {
+  0%   { width: 0%; }
+  100% { width: 100%; }
 }
 
 .splash-letter {
@@ -425,4 +430,11 @@
 
 .splash-fade-out {
   animation: splashFadeOut 0.4s ease-out forwards;
+}
+
+.splash-loading-bar {
+  height: 100%;
+  border-radius: 2px;
+  background-color: #3B82F6;
+  animation: loadingBar 2s linear forwards;
 }
