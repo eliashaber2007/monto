@@ -193,7 +193,7 @@ export default function MyPots() {
               <button
                 key={pot.id}
                 onClick={() => navigate(`/pots/${pot.id}`)}
-                className="w-full bg-card rounded-2xl border border-border shadow-sm hover:shadow-md p-5 flex items-center gap-4 text-left transition-all duration-200 active:scale-[0.99] group"
+                className="pot-card-animated w-full rounded-2xl border border-border p-5 flex items-center gap-4 text-left active:scale-[0.99] group"
               >
                 <LiquidBubble balance={pot.balance ?? 0} peakBalance={pot.peak_balance ?? 0} />
 

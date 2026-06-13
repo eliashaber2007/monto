@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -29,6 +29,7 @@ import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import TermsConsent from "./pages/TermsConsent";
 import NotFound from "./pages/NotFound";
+import SplashScreen from "./components/SplashScreen";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -59,8 +60,12 @@ function RootCleaner() {
   return null;
 }
 
-const App = () => (
+const App = () => {
+  const [showSplash, setShowSplash] = useState(true);
+
+  return (
   <QueryClientProvider client={queryClient}>
+    {showSplash && <SplashScreen onDone={() => setShowSplash(false)} />}
     <AuthProvider>
       <DarkModeProvider>
       <TooltipProvider>
@@ -156,6 +161,7 @@ const App = () => (
       </DarkModeProvider>
     </AuthProvider>
   </QueryClientProvider>
-);
+  );
+};
 
 export default App;
