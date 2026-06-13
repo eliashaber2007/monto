@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import confetti from 'canvas-confetti';
+import { playDepositSound, playWithdrawalSound } from '@/lib/sounds';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Users, Plus, CheckCircle2, Image as ImageIcon, Upload, X, LogOut, Copy, Check, Landmark, ThumbsUp, ThumbsDown, MessageCircle, KeyRound, ChevronDown, ChevronRight, Receipt, Bell, FileDown, Settings } from 'lucide-react';
@@ -234,6 +235,7 @@ export default function PotDetail() {
     const payment = searchParams.get('payment');
     if (payment === 'success') {
       toast({ title: t('potDetail.paymentSuccess'), description: t('potDetail.paymentSuccessDesc') });
+      playDepositSound();
       const end = Date.now() + 3000;
       const colors = ['#3B82F6', '#8B5CF6', '#06B6D4', '#ffffff'];
       const burst = () => {
@@ -415,6 +417,7 @@ export default function PotDetail() {
       await supabase.from('withdrawals').update({ status: 'approved', processed_at: new Date().toISOString() }).eq('id', withdrawal.id);
 
       toast({ title: t('potDetail.withdrawalApproved') });
+      playWithdrawalSound();
       const fly = document.createElement('div');
       fly.textContent = '€';
       fly.className = 'money-fly';
