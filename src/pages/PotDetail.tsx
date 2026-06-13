@@ -376,6 +376,10 @@ export default function PotDetail() {
   }, [id, user, showChat]);
 
   const handleApproveWithdrawal = async (withdrawal: any) => {
+    if (data?.myRole === 'member') {
+      toast({ title: t('common.error'), description: t('potDetail.cannotApproveOwn'), variant: 'destructive' });
+      return;
+    }
     if (withdrawal.status !== 'pending') {
       toast({ title: t('common.error'), description: t('potDetail.noLongerPending'), variant: 'destructive' });
       return;
@@ -1013,8 +1017,8 @@ export default function PotDetail() {
                                 </div>
                               </div>
 
-                              {/* Creator/Leader approve/reject for pending (not own requests) */}
-                              {isPending && isCreatorOrLeader && !isMyRequest && (
+                              {/* Creator/Leader approve/reject for pending */}
+                              {isPending && isCreatorOrLeader && (
                                 <div className="flex gap-2 ml-11">
                                   <button
                                     onClick={() => setApproveConfirm(w)}

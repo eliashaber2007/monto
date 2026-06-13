@@ -34,8 +34,8 @@ export default function SplashScreen({ onDone }: SplashScreenProps) {
         alt="Monto"
         className="splash-letter"
         style={{
-          width: 120,
-          height: 120,
+          width: 200,
+          height: 200,
           borderRadius: 24,
           userSelect: 'none',
         }}

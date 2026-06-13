@@ -151,7 +151,10 @@ export default function WithdrawalModal({
           }
         );
         const payoutResult = await payoutRes.json();
-        if (!payoutRes.ok) throw new Error(payoutResult.error || 'Payout failed');
+        if (!payoutRes.ok) {
+          await supabase.from('withdrawals').delete().eq('id', withdrawalId);
+          throw new Error(payoutResult.error || 'Payout failed');
+        }
 
         toast({ title: t('withdrawalModal.withdrawalApproved') });
       } else {
