@@ -35,9 +35,6 @@ Deno.serve(async (req) => {
       if (!isCreatorOrLeader) {
         return new Response(JSON.stringify({ error: "Not authorized" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
-      if (requestingUserId === recipient_user_id) {
-        return new Response(JSON.stringify({ error: "You cannot approve your own withdrawal request" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      }
     } else {
       if (requestingUserId !== recipient_user_id) {
         return new Response(JSON.stringify({ error: "You can only process your own withdrawals" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
