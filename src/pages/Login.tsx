@@ -239,6 +239,26 @@ export default function Login() {
     }
   };
 
+  const getOAuthSuggestionMessage = (lang: string): string => {
+    const msgs: Record<string, string> = {
+      fr: 'Il semble que vous utilisez Google pour vous connecter. Essayez "Continuer avec Google".',
+      en: 'It looks like you use Google to sign in. Try "Continue with Google".',
+      de: 'Es scheint, dass Sie Google zum Anmelden verwenden. Versuchen Sie "Mit Google fortfahren".',
+      es: 'Parece que usas Google para iniciar sesión. Prueba "Continuar con Google".',
+    };
+    return msgs[lang] ?? msgs['en'];
+  };
+
+  const getInvalidCredentialsMessage = (lang: string): string => {
+    const msgs: Record<string, string> = {
+      fr: 'Identifiants incorrects. Si vous utilisez Google, cliquez sur "Continuer avec Google".',
+      en: 'Incorrect credentials. If you signed up with Google, click "Continue with Google".',
+      de: 'Falsche Anmeldedaten. Falls Sie Google verwenden, klicken Sie auf "Mit Google fortfahren".',
+      es: 'Credenciales incorrectas. Si te registraste con Google, haz clic en "Continuar con Google".',
+    };
+    return msgs[lang] ?? msgs['en'];
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -259,9 +279,12 @@ export default function Login() {
       // Show OAuth suggestion for auth errors
       setShowOAuthSuggestion(true);
 
+      const isInvalidCredentials = error.message.toLowerCase().includes('invalid login credentials');
       toast({
         title: t('auth.loginFailed'),
-        description: error.message,
+        description: isInvalidCredentials
+          ? getInvalidCredentialsMessage(i18n.language)
+          : error.message,
         variant: 'destructive',
       });
       return;
@@ -301,7 +324,7 @@ export default function Login() {
           <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 rounded-xl px-4 py-3 mb-5 text-sm">
             <div className="flex items-start gap-2">
               <AlertCircle size={18} className="flex-shrink-0 mt-0.5" />
-              <span>{t('auth.oauthSuggestion')}</span>
+              <span>{getOAuthSuggestionMessage(i18n.language)}</span>
             </div>
           </div>
         )}
