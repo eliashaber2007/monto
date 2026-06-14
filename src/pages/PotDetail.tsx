@@ -418,19 +418,35 @@ export default function PotDetail() {
 
       toast({ title: t('potDetail.withdrawalApproved') });
       playWithdrawalSound();
-      confetti({ particleCount: 120, spread: 100, origin: { y: 0.4 }, colors: ['#3B82F6', '#8B5CF6', '#10B981', '#F59E0B'], startVelocity: 50 });
+      if (!document.getElementById('wd-overlay-kf')) {
+        const s = document.createElement('style');
+        s.id = 'wd-overlay-kf';
+        s.textContent = '@keyframes wdFadeIn{from{opacity:0}to{opacity:1}}@keyframes wdFadeOut{from{opacity:1}to{opacity:0}}@keyframes wdCircle{from{transform:scale(0)}to{transform:scale(1)}}';
+        document.head.appendChild(s);
+      }
       const overlay = document.createElement('div');
-      overlay.style.cssText = 'position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,0.75);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;';
-      const emojis = document.createElement('div');
-      emojis.textContent = '🎉💸✨';
-      emojis.style.cssText = 'font-size:64px;line-height:1;';
-      const label = document.createElement('p');
-      label.textContent = 'Retrait approuvé !';
-      label.style.cssText = 'color:#fff;font-size:24px;font-weight:700;margin:0;';
-      overlay.appendChild(emojis);
-      overlay.appendChild(label);
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,0.85);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;backdrop-filter:blur(8px);animation:wdFadeIn 0.3s ease-out forwards;';
+      const circle = document.createElement('div');
+      circle.style.cssText = 'width:80px;height:80px;border-radius:50%;background:#10B981;display:flex;align-items:center;justify-content:center;animation:wdCircle 0.4s ease-out forwards;';
+      circle.innerHTML = '<svg width="40" height="40" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      const titleEl = document.createElement('p');
+      titleEl.textContent = 'Retrait approuvé';
+      titleEl.style.cssText = 'color:#fff;font-size:22px;font-weight:700;letter-spacing:-0.5px;margin:0;';
+      const amountEl = document.createElement('p');
+      amountEl.textContent = formatCurrency(withdrawal.amount, data?.pot.currency ?? 'EUR');
+      amountEl.style.cssText = 'color:#10B981;font-size:36px;font-weight:800;margin:0;';
+      const subtitleEl = document.createElement('p');
+      subtitleEl.textContent = 'Les fonds arrivent sous 1-3 jours ouvrés';
+      subtitleEl.style.cssText = 'color:rgba(255,255,255,0.5);font-size:14px;margin:0;text-align:center;';
+      overlay.appendChild(circle);
+      overlay.appendChild(titleEl);
+      overlay.appendChild(amountEl);
+      overlay.appendChild(subtitleEl);
       document.body.appendChild(overlay);
-      setTimeout(() => overlay.remove(), 2500);
+      setTimeout(() => {
+        overlay.style.animation = 'wdFadeOut 0.3s ease-out forwards';
+        setTimeout(() => overlay.remove(), 300);
+      }, 2500);
       setApproveConfirm(null);
       refetch();
       fetchWithdrawals();
