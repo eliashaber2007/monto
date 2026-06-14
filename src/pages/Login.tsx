@@ -276,15 +276,6 @@ export default function Login() {
     }
   };
 
-  function getOAuthSuggestionMessage(language: string): string {
-    const messages: Record<string, string> = {
-      'fr': "Il semble que vous vous soyez inscrit avec Google. Veuillez utiliser le bouton \"Continuer avec Google\" pour vous connecter.",
-      'en': "It looks like you signed up with Google. Please use the \"Continue with Google\" button to sign in.",
-      'de': "Es scheint, dass Sie sich mit Google angemeldet haben. Bitte verwenden Sie die Schaltfläche \"Mit Google fortfahren\", um sich anzumelden.",
-      'es': "Parece que te registraste con Google. Por favor usa el botón \"Continuar con Google\" para iniciar sesión.",
-    };
-    return messages[language] || messages['en'];
-  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-5">
@@ -310,7 +301,7 @@ export default function Login() {
           <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 rounded-xl px-4 py-3 mb-5 text-sm">
             <div className="flex items-start gap-2">
               <AlertCircle size={18} className="flex-shrink-0 mt-0.5" />
-              <span>{getOAuthSuggestionMessage(i18n.language)}</span>
+              <span>{t('auth.oauthSuggestion')}</span>
             </div>
           </div>
         )}

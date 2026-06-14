@@ -227,7 +227,7 @@ export default function PotDetail() {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast({ title: 'Failed to copy', variant: 'destructive' });
+      toast({ title: t('potDetail.failedToCopy'), variant: 'destructive' });
     }
   };
 
@@ -443,10 +443,6 @@ export default function PotDetail() {
   };
 
   const handleRejectWithdrawal = async (withdrawal: any, reason: string) => {
-    if (withdrawal.user_id === user?.id) {
-      toast({ title: t('common.error'), description: t('potDetail.cannotRejectOwn'), variant: 'destructive' });
-      return;
-    }
     setProcessingWithdrawal(withdrawal.id);
     try {
       await supabase.from('withdrawals').update({ status: 'rejected', processed_at: new Date().toISOString() }).eq('id', withdrawal.id);
@@ -480,7 +476,7 @@ export default function PotDetail() {
       const memberProfile = (member as any)?.profiles;
       const memberName = memberProfile?.first_name || 'Member';
       const { count } = await supabase.from('pot_members').select('id', { count: 'exact', head: true }).eq('pot_id', id!).eq('role', 'leader');
-      if ((count ?? 0) >= 3) { toast({ title: 'You can only have up to 3 leaders per pot.', variant: 'destructive' }); setAssigningLeader(null); return; }
+      if ((count ?? 0) >= 3) { toast({ title: t('potDetail.tooManyLeaders'), variant: 'destructive' }); setAssigningLeader(null); return; }
       const { error } = await supabase.from('pot_members').update({ role: 'leader' }).eq('id', member.id);
       if (error) throw error;
       try {
