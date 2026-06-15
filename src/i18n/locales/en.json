@@ -40,6 +40,7 @@
     "hasAccount": "Already have an account?",
     "createOne": "Create one",
     "loginFailed": "Login failed",
+    "oauthSuggestion": "It looks like you signed up with Google. Please use the \"Continue with Google\" button to sign in.",
     "signupFailed": "Sign up failed",
     "passwordTooShort": "Password too short",
     "passwordTooShortDesc": "Use at least 6 characters.",
@@ -109,6 +110,7 @@
     "createPot": "Create pot"
   },
   "potDetail": {
+    "progressOf": "{{pct}}% of {{amount}}",
     "noGoalSet": "No initial amount set — save as much as you like! 🎯",
     "noFundsYet": "No funds yet, add money to get started 💰",
     "receiptVerification": "Receipt verification enabled",
@@ -202,6 +204,7 @@
     "noLongerPending": "This withdrawal is no longer pending.",
     "leaderAssigned": "{{name}} is now a leader of this pot.",
     "leaderRemoved": "{{name}} is no longer a leader.",
+    "tooManyLeaders": "You can only have up to 3 leaders per pot.",
     "receiptApproved": "Approved",
     "receiptRejected": "Rejected",
     "removeMember": "Remove from pot",

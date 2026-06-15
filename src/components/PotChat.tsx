@@ -294,7 +294,7 @@ export default function PotChat({ potId, potName, potEmoji, members, onClose }: 
           <ArrowLeft size={20} />
         </button>
         <div className="flex-1 min-w-0">
-          <h2 className="font-bold text-foreground text-base">{potEmoji ? `${potEmoji} ` : ''}{t('chat.title')}</h2>
+          <h2 className="font-bold text-foreground text-base truncate">{potEmoji ? `${potEmoji} ` : ''}{potName}</h2>
           <p className="text-xs text-muted-foreground">{members.length} {t('common.members')}</p>
         </div>
       </div>

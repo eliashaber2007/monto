@@ -123,6 +123,7 @@ function computeStreak(transactions: { created_at: string; amount: number }[]): 
 }
 
 function ProgressRing({ balance, peakBalance, currency }: { balance: number; peakBalance: number; currency: string }) {
+  const { t } = useTranslation();
   const radius = 88;
   const stroke = 10;
   const norm = radius - stroke / 2;
@@ -169,7 +170,7 @@ function ProgressRing({ balance, peakBalance, currency }: { balance: number; pea
         const pctColor = pctVal >= 50 ? 'text-emerald-400' : pctVal >= 20 ? 'text-amber-400' : 'text-red-500';
         return (
           <div className={`text-xs text-center mt-2 font-semibold ${pctColor}`}>
-            {pctVal}% of {formatCurrency(peakBalance, currency)}
+            {t('potDetail.progressOf', { pct: pctVal, amount: formatCurrency(peakBalance, currency) })}
           </div>
         );
       })()}
@@ -776,10 +777,10 @@ export default function PotDetail() {
 
         {/* Action row */}
         <div className="flex gap-3">
-          <Button variant="outline" className="flex-1 h-12 rounded-xl font-semibold border-primary text-primary hover:bg-primary/10" onClick={() => setShowWithdrawal(true)}>
+          <Button variant="outline" className="flex-1 h-12 rounded-xl font-semibold border-border text-foreground hover:bg-accent" onClick={() => setShowWithdrawal(true)}>
             {t('potDetail.requestWithdrawal')}
           </Button>
-          <Button variant="secondary" className="flex-1 h-12 rounded-xl font-semibold bg-muted text-foreground hover:bg-muted/80" onClick={() => setShowAddFunds(true)}>
+          <Button className="flex-1 h-12 rounded-xl font-semibold" onClick={() => setShowAddFunds(true)}>
             <Plus size={16} className="mr-1" />
             {t('potDetail.addFunds')}
           </Button>
@@ -969,17 +970,17 @@ export default function PotDetail() {
                                   {w.status === 'approved' && isMyRequest ? (
                                     <button
                                       onClick={() => navigate(`/expenses/${w.id}`)}
-                                      className="text-xs flex items-center gap-1.5 text-primary-foreground font-semibold bg-primary px-3 py-1.5 rounded-lg hover:bg-primary/90 transition-colors mt-0.5"
+                                      className="text-xs flex items-center gap-1 text-muted-foreground font-medium border border-border px-2.5 py-1 rounded-md hover:bg-accent transition-colors mt-0.5"
                                     >
-                                      <Receipt size={12} />
+                                      <Receipt size={11} />
                                        {t('potDetail.justifyExpenses')}
                                     </button>
                                   ) : w.status === 'approved' && isCreatorOrLeader ? (
                                     <button
                                       onClick={() => navigate(`/expenses/${w.id}`)}
-                                      className="text-xs flex items-center gap-1.5 text-primary-foreground font-semibold bg-primary px-3 py-1.5 rounded-lg hover:bg-primary/90 transition-colors mt-0.5"
+                                      className="text-xs flex items-center gap-1 text-muted-foreground font-medium border border-border px-2.5 py-1 rounded-md hover:bg-accent transition-colors mt-0.5"
                                     >
-                                      <Receipt size={12} />
+                                      <Receipt size={11} />
                                        {t('potDetail.viewJustifiedExpenses')}
                                     </button>
                                   ) : null}

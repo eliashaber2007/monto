@@ -40,6 +40,7 @@
     "hasAccount": "Bereits ein Konto?",
     "createOne": "Konto erstellen",
     "loginFailed": "Anmeldung fehlgeschlagen",
+    "oauthSuggestion": "Es scheint, dass Sie sich mit Google angemeldet haben. Bitte verwenden Sie die Schaltfläche \"Mit Google fortfahren\", um sich anzumelden.",
     "signupFailed": "Registrierung fehlgeschlagen",
     "passwordTooShort": "Passwort zu kurz",
     "passwordTooShortDesc": "Verwenden Sie mindestens 6 Zeichen.",
@@ -108,6 +109,7 @@
     "createPot": "Kasse erstellen"
   },
   "potDetail": {
+    "progressOf": "{{pct}}% von {{amount}}",
     "noGoalSet": "Kein Ziel festgelegt — sparen Sie so viel Sie möchten! 🎯",
     "noFundsYet": "Noch keine Mittel, füge Geld hinzu, um zu beginnen 💰",
     "receiptVerification": "Belegprüfung aktiviert",
@@ -201,6 +203,7 @@
     "noLongerPending": "Diese Auszahlung ist nicht mehr ausstehend.",
     "leaderAssigned": "{{name}} ist jetzt Leiter dieser Kasse.",
     "leaderRemoved": "{{name}} ist kein Leiter mehr.",
+    "tooManyLeaders": "Eine Kasse kann höchstens 3 Leiter haben.",
     "receiptApproved": "Genehmigt",
     "receiptRejected": "Abgelehnt",
     "removeMember": "Aus der Kasse entfernen",

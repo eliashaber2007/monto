@@ -40,6 +40,7 @@
     "hasAccount": "Vous avez déjà un compte ?",
     "createOne": "Créer un compte",
     "loginFailed": "Échec de la connexion",
+    "oauthSuggestion": "Il semble que vous vous soyez inscrit avec Google. Veuillez utiliser le bouton \"Continuer avec Google\" pour vous connecter.",
     "signupFailed": "Échec de l'inscription",
     "passwordTooShort": "Mot de passe trop court",
     "passwordTooShortDesc": "Utilisez au moins 6 caractères.",
@@ -109,6 +110,7 @@
     "createPot": "Créer une cagnotte"
   },
   "potDetail": {
+    "progressOf": "{{pct}}% de {{amount}}",
     "noGoalSet": "Pas de montant initial défini — économisez autant que vous voulez ! 🎯",
     "noFundsYet": "Aucun fonds pour l'instant, ajoutez de l'argent pour commencer 💰",
     "receiptVerification": "Vérification des reçus activée",
@@ -202,6 +204,7 @@
     "noLongerPending": "Ce retrait n'est plus en attente.",
     "leaderAssigned": "{{name}} est maintenant responsable de cette cagnotte.",
     "leaderRemoved": "{{name}} n'est plus responsable.",
+    "tooManyLeaders": "Vous ne pouvez avoir que 3 responsables par cagnotte.",
     "receiptApproved": "Approuvé",
     "receiptRejected": "Rejeté",
     "removeMember": "Retirer de la cagnotte",

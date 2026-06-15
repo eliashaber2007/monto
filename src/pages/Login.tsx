@@ -308,9 +308,9 @@ export default function Login() {
       </div>
 
       <div className="w-full max-w-sm">
-        {/* Brand title — above the card */}
-        <div className="text-center mb-10">
-          <h1 className="text-4xl font-extrabold tracking-tight text-foreground">{t('common.monto')}</h1>
+        {/* Brand logo — above the card */}
+        <div className="flex justify-center mb-10">
+          <img src="/monto_logo.svg" alt="Monto" style={{ width: 64, height: 64, borderRadius: 16 }} />
         </div>
 
         {isVerified && (
