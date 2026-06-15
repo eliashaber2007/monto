@@ -148,6 +148,22 @@ Deno.serve(async (req) => {
 
     console.log(`Processed payment: pot=${pot_id} user=${user_id} pot_receives=€${amountEur}`);
 
+    // Track platform commission
+    try {
+      const { error: revenueError } = await supabaseAdmin.from('platform_revenue').insert({
+        stripe_session_id: session.id,
+        pot_id,
+        user_id,
+        base_amount_eur: amountEur,
+        total_charged_eur: amountTotal / 100,
+        commission_eur: (amountTotal / 100) - amountEur,
+        payment_method: metadata.payment_method ?? 'card',
+      });
+      if (revenueError) console.error('platform_revenue insert error:', revenueError);
+    } catch (revenueErr) {
+      console.error('platform_revenue tracking failed:', revenueErr);
+    }
+
     // Send email notification for funds added
     try {
       await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email-notification`, {
