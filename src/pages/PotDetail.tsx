@@ -445,11 +445,13 @@ export default function PotDetail() {
       document.body.appendChild(overlay);
       setTimeout(() => {
         overlay.style.animation = 'wdFadeOut 0.3s ease-out forwards';
-        setTimeout(() => overlay.remove(), 300);
+        setTimeout(() => {
+          overlay.remove();
+          refetch();
+          fetchWithdrawals();
+        }, 300);
       }, 2500);
       setApproveConfirm(null);
-      refetch();
-      fetchWithdrawals();
     } catch (err: any) {
       // Payout failed — withdrawal stays pending, balance untouched
       toast({ title: t('common.error'), description: err.message, variant: 'destructive' });
