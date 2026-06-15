@@ -150,14 +150,22 @@ Deno.serve(async (req) => {
 
     // Track platform commission
     try {
+      const totalCharged = amountTotal / 100;
+      const paymentMethod = metadata.payment_method ?? 'card';
+      const stripeFee =
+        paymentMethod === 'revolut_pay' ? totalCharged * 0.01 + 0.23 :
+        paymentMethod === 'sepa'        ? totalCharged * 0.008 + 0.25 :
+                                          totalCharged * 0.015 + 0.25;
+      const montoMargin = parseFloat((totalCharged - amountEur - stripeFee).toFixed(4));
       const { error: revenueError } = await supabaseAdmin.from('platform_revenue').insert({
         stripe_session_id: session.id,
         pot_id,
         user_id,
         base_amount_eur: amountEur,
-        total_charged_eur: amountTotal / 100,
-        commission_eur: (amountTotal / 100) - amountEur,
-        payment_method: metadata.payment_method ?? 'card',
+        total_charged_eur: totalCharged,
+        commission_eur: totalCharged - amountEur,
+        payment_method: paymentMethod,
+        monto_margin_eur: montoMargin,
       });
       if (revenueError) console.error('platform_revenue insert error:', revenueError);
     } catch (revenueErr) {
