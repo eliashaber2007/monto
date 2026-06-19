@@ -108,7 +108,8 @@
     "noPotsDesc": "Create your first pot with your friends. It only takes a minute! ✨",
     "createFirstPot": "Create my first pot",
     "createPot": "Create pot",
-    "backLabel": "My pots"
+    "backLabel": "My pots",
+    "archiveLabel": "Archive"
   },
   "potDetail": {
     "progressOf": "{{pct}}% of {{amount}}",

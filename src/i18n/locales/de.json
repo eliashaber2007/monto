@@ -107,7 +107,8 @@
     "noPotsDesc": "Erstellen Sie Ihre erste Kasse mit Ihren Freunden. Es dauert nur eine Minute! ✨",
     "createFirstPot": "Erste Kasse erstellen",
     "createPot": "Kasse erstellen",
-    "backLabel": "Meine Töpfe"
+    "backLabel": "Meine Töpfe",
+    "archiveLabel": "Archiv"
   },
   "potDetail": {
     "progressOf": "{{pct}}% von {{amount}}",

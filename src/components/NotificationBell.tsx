@@ -4,7 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
-export default function NotificationBell() {
+interface NotificationBellProps {
+  label?: string;
+}
+
+export default function NotificationBell({ label }: NotificationBellProps = {}) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [unreadCount, setUnreadCount] = useState(0);
@@ -29,6 +33,23 @@ export default function NotificationBell() {
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [user]);
+
+  if (label) {
+    return (
+      <button
+        onClick={() => navigate('/notifications')}
+        className="relative flex flex-col items-center gap-0.5 px-2 py-1.5 text-primary hover:bg-accent rounded-lg transition-colors"
+      >
+        <Bell size={20} />
+        <span className="text-[10px] font-medium">{label}</span>
+        {unreadCount > 0 && (
+          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center px-1">
+            {unreadCount > 99 ? '99+' : unreadCount}
+          </span>
+        )}
+      </button>
+    );
+  }
 
   return (
     <button

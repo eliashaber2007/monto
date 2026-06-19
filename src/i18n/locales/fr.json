@@ -108,7 +108,8 @@
     "noPotsDesc": "Créez votre première cagnotte avec vos amis. Ça ne prend qu'une minute ! ✨",
     "createFirstPot": "Créer ma première cagnotte",
     "createPot": "Créer une cagnotte",
-    "backLabel": "Mes cagnottes"
+    "backLabel": "Mes cagnottes",
+    "archiveLabel": "Archives"
   },
   "potDetail": {
     "progressOf": "{{pct}}% de {{amount}}",

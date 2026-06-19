@@ -139,19 +139,21 @@ export default function MyPots() {
                 <span className="font-bold text-foreground text-base group-hover:text-primary transition-colors">{t('profile.myProfile')}</span>
               </button>
           <div className="flex items-center gap-1">
-            <NotificationBell />
+            <NotificationBell label={t('notifications.title')} />
             <button
               onClick={() => navigate('/archive')}
-              className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:bg-secondary transition-colors"
+              className="flex flex-col items-center gap-0.5 px-2 py-1.5 text-primary hover:bg-accent rounded-lg transition-colors"
               aria-label="Pot archive"
             >
-              <Archive size={18} />
+              <Archive size={20} />
+              <span className="text-[10px] font-medium">{t('myPots.archiveLabel')}</span>
             </button>
             <button
               onClick={signOut}
-              className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:bg-secondary transition-colors"
+              className="flex flex-col items-center gap-0.5 px-2 py-1.5 text-primary hover:bg-accent rounded-lg transition-colors"
             >
-              <LogOut size={18} />
+              <LogOut size={20} />
+              <span className="text-[10px] font-medium">{t('auth.logout')}</span>
             </button>
           </div>
         </div>

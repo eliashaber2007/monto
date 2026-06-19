@@ -108,7 +108,8 @@
     "noPotsDesc": "Crea tu primer bote con tus amigos. ¡Solo toma un minuto! ✨",
     "createFirstPot": "Crear mi primer bote",
     "createPot": "Crear bote",
-    "backLabel": "Mis cajas"
+    "backLabel": "Mis cajas",
+    "archiveLabel": "Archivos"
   },
   "potDetail": {
     "progressOf": "{{pct}}% de {{amount}}",
