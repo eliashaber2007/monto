@@ -107,7 +107,8 @@
     "noPots": "No pots yet!",
     "noPotsDesc": "Create your first pot with your friends. It only takes a minute! ✨",
     "createFirstPot": "Create my first pot",
-    "createPot": "Create pot"
+    "createPot": "Create pot",
+    "backLabel": "My pots"
   },
   "potDetail": {
     "progressOf": "{{pct}}% of {{amount}}",

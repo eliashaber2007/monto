@@ -720,7 +720,7 @@ export default function PotDetail() {
             className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-foreground hover:text-primary hover:bg-secondary rounded-xl transition-colors flex-shrink-0"
           >
             <ArrowLeft size={18} />
-            <span>Mes cagnottes</span>
+            <span>{t('myPots.backLabel')}</span>
           </button>
           <div className="flex items-center gap-1.5">
             <button
