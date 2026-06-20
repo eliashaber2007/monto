@@ -138,7 +138,7 @@ export default function MyPots() {
                 </div>
                 <span className="font-bold text-foreground text-base group-hover:text-primary transition-colors">{t('profile.myProfile')}</span>
               </button>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             <NotificationBell label={t('notifications.title')} />
             <button
               onClick={() => navigate('/archive')}
