@@ -16,6 +16,7 @@ const LANGUAGES = [
   { code: 'fr', emoji: '🇫🇷', label: 'FR' },
   { code: 'de', emoji: '🇩🇪', label: 'DE' },
   { code: 'es', emoji: '🇪🇸', label: 'ES' },
+  { code: 'it', emoji: '🇮🇹', label: 'IT' },
 ];
 
 function LanguageSelector() {

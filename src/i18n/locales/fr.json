@@ -89,7 +89,7 @@
     "welcome": "Une cagnotte avec des règles",
     "welcomeTitle": "Bienvenue sur Monto 👋",
     "welcomeSubtitle": "La trésorerie de groupe, enfin simple et transparente.",
-    "welcomeBody": "Créez une cagnotte, invitez vos membres. Chaque retrait doit être approuvé par le créateur — fini les dépenses non justifiées.",
+    "welcomeBody": "Créez une cagnotte, invitez vos membres. Chaque retrait doit être approuvé par le créateur — finies les dépenses non justifiées.",
     "howItWorks": "Connectez votre compte bancaire",
     "howItWorksBody": "Pour recevoir des retraits, connectez votre IBAN en 1 minute depuis votre profil. Vos fonds arrivent directement sur votre compte.",
     "connectBank": "Connectez votre compte bancaire",
@@ -523,9 +523,9 @@
     "q6": "Puis-je quitter une cagnotte ?",
     "a6": "Oui, vous pouvez quitter n'importe quelle cagnotte à tout moment. Si vous êtes le créateur, vous pouvez fermer la cagnotte entièrement, ce qui déclenchera un retrait final des fonds restants.",
     "q7": "Qui peut inviter des gens dans une cagnotte ?",
-    "a7": "Le créateur et les membres peuvent partager le lien d'invitation pour amener de nouvelles personnes dans une cagnotte.",
+    "a7": "Le créateur et les membres peuvent partager le lien d'invitation pour inviter de nouvelles personnes dans une cagnotte.",
     "q8": "Que se passe-t-il si un retrait est rejeté ?",
-    "a8": "Si le créateur rejette une demande de retrait, aucun argent n'est déplacé et le demandeur reçoit une notification."
+    "a8": "Si le créateur rejette une demande de retrait, aucune somme n'est déplacée et le demandeur reçoit une notification."
   },
   "potSettings": {
     "title": "Paramètres du pot",

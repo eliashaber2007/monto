@@ -22,6 +22,7 @@ const LANGUAGES = [
   { code: 'fr', emoji: '🇫🇷', label: 'FR', fullName: 'Français' },
   { code: 'de', emoji: '🇩🇪', label: 'DE', fullName: 'Deutsch' },
   { code: 'es', emoji: '🇪🇸', label: 'ES', fullName: 'Español' },
+  { code: 'it', emoji: '🇮🇹', label: 'IT', fullName: 'Italiano' },
 ];
 
 function formatCurrency(amount: number) {
