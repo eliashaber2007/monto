@@ -142,7 +142,7 @@ export default function MyPots() {
             <NotificationBell label={t('notifications.title')} />
             <button
               onClick={() => navigate('/archive')}
-              className="flex flex-col items-center gap-0.5 px-3 py-2 bg-secondary/15 border border-secondary/30 text-primary rounded-full"
+              className="flex flex-col items-center gap-0.5 px-3 py-2 bg-secondary/15 text-primary rounded-full"
               aria-label="Pot archive"
             >
               <Archive size={20} />
@@ -150,7 +150,7 @@ export default function MyPots() {
             </button>
             <button
               onClick={signOut}
-              className="flex flex-col items-center gap-0.5 px-3 py-2 bg-secondary/15 border border-secondary/30 text-primary rounded-full"
+              className="flex flex-col items-center gap-0.5 px-3 py-2 bg-secondary/15 text-primary rounded-full"
             >
               <LogOut size={20} />
               <span className="text-[10px] font-medium">{t('auth.logout')}</span>

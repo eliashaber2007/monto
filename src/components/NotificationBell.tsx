@@ -38,7 +38,7 @@ export default function NotificationBell({ label }: NotificationBellProps = {}) 
     return (
       <button
         onClick={() => navigate('/notifications')}
-        className="relative flex flex-col items-center gap-0.5 px-3 py-2 text-primary bg-secondary/15 border border-secondary/30 rounded-full"
+        className="relative flex flex-col items-center gap-0.5 px-3 py-2 text-primary bg-secondary/15 rounded-full"
       >
         <Bell size={20} />
         <span className="text-[10px] font-medium">{label}</span>
