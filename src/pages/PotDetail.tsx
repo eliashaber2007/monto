@@ -725,7 +725,7 @@ export default function PotDetail() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowChat(true)}
-              className="relative flex flex-col items-center gap-0.5 px-3 py-2 bg-secondary/15 text-primary rounded-full flex-shrink-0"
+              className="relative flex flex-col items-center gap-0.5 px-3 py-2 text-primary rounded-full flex-shrink-0"
             >
               <MessageCircle size={20} />
               <span className="text-[10px] font-medium">{t('potDetail.chat')}</span>
@@ -737,14 +737,14 @@ export default function PotDetail() {
             </button>
             <button
               onClick={() => setShowInviteModal(true)}
-              className="flex flex-col items-center gap-0.5 px-3 py-2 bg-secondary/15 text-primary rounded-full flex-shrink-0"
+              className="flex flex-col items-center gap-0.5 px-3 py-2 text-primary rounded-full flex-shrink-0"
             >
               <Users size={20} />
               <span className="text-[10px] font-medium">{t('potDetail.invite')}</span>
             </button>
             <button
               onClick={() => setShowSettings(true)}
-              className="flex flex-col items-center gap-0.5 px-3 py-2 bg-secondary/15 text-primary rounded-full flex-shrink-0"
+              className="flex flex-col items-center gap-0.5 px-3 py-2 text-primary rounded-full flex-shrink-0"
             >
               <Settings size={20} />
               <span className="text-[10px] font-medium">{t('potDetail.settings')}</span>
