@@ -7,7 +7,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 import PaymentMethodList, { PaymentMethod, calcFee } from '@/components/PaymentMethodList';
@@ -30,16 +29,15 @@ export default function AddFundsModal({
   currency,
 }: AddFundsModalProps) {
   const { t } = useTranslation();
-  const [selected, setSelected] = useState<number | null>(null);
-  const [custom, setCustom] = useState('');
+  // Single source of truth: the raw string the user is typing
+  const [rawInput, setRawInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     if (open) {
-      setSelected(null);
-      setCustom('');
+      setRawInput('');
       setPaymentMethod(null);
       setLoading(false);
     }
@@ -57,7 +55,7 @@ export default function AddFundsModal({
     };
   }, [open]);
 
-  const amount = selected ?? (custom ? parseFloat(custom) : null);
+  const amount = rawInput ? parseFloat(rawInput) : null;
   const showSepa = amount != null && amount > 0;
 
   const fmt = useMemo(
@@ -69,6 +67,13 @@ export default function AddFundsModal({
     if (!amount || amount <= 0 || !paymentMethod) return amount ?? 0;
     return parseFloat((amount + calcFee(amount, paymentMethod)).toFixed(2));
   }, [amount, paymentMethod]);
+
+  const handleRawChange = (val: string) => {
+    // Allow empty, integers, or decimals with up to 2 decimal places
+    if (val === '' || /^\d+(\.\d{0,2})?$/.test(val)) {
+      setRawInput(val);
+    }
+  };
 
   const handleConfirm = async () => {
     if (!amount || amount <= 0 || !paymentMethod) {
@@ -102,11 +107,17 @@ export default function AddFundsModal({
         </DialogHeader>
 
         <div className="mt-2 space-y-5">
-          {/* Hero amount display */}
-          <div className="text-center py-3">
-            <p className="text-5xl font-bold tracking-tight text-foreground tabular-nums">
-              {amount != null && amount > 0 ? fmt(amount) : fmt(0)}
-            </p>
+          {/* Hero amount — the input IS the big display */}
+          <div className="flex items-center justify-center gap-1 py-3">
+            <span className="text-5xl font-bold text-foreground select-none">€</span>
+            <input
+              type="text"
+              inputMode="decimal"
+              value={rawInput}
+              onChange={(e) => handleRawChange(e.target.value)}
+              placeholder="0"
+              className="text-5xl font-bold text-foreground bg-transparent border-none outline-none focus:outline-none ring-0 focus:ring-0 w-36 text-left tabular-nums p-0 placeholder:text-foreground/30 caret-primary"
+            />
           </div>
 
           {/* Quick-amount chips */}
@@ -114,9 +125,9 @@ export default function AddFundsModal({
             {QUICK_AMOUNTS.map((a) => (
               <button
                 key={a}
-                onClick={() => { setSelected(a); setCustom(''); }}
+                onClick={() => setRawInput(String(a))}
                 className={`px-4 py-2 rounded-full text-sm font-semibold border transition-colors ${
-                  selected === a
+                  rawInput === String(a)
                     ? 'bg-primary text-primary-foreground border-primary'
                     : 'bg-muted text-muted-foreground border-border hover:border-primary/40'
                 }`}
@@ -125,18 +136,6 @@ export default function AddFundsModal({
               </button>
             ))}
           </div>
-
-          {/* Custom amount input */}
-          <Input
-            id="customAmount"
-            type="number"
-            min="1"
-            step="0.01"
-            placeholder={t('addFunds.customAmount')}
-            value={custom}
-            onChange={(e) => { setCustom(e.target.value); setSelected(null); }}
-            className="h-11 text-center"
-          />
 
           {/* Payment method selection */}
           {amount != null && amount > 0 && (

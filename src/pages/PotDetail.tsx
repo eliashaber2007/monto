@@ -242,24 +242,41 @@ export default function PotDetail() {
         document.head.appendChild(s);
       }
       const depOverlay = document.createElement('div');
-      depOverlay.style.cssText = 'position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,0.6);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;animation:depFadeIn 0.3s ease-out forwards;';
-      const depCircle = document.createElement('div');
-      depCircle.style.cssText = 'width:80px;height:80px;border-radius:50%;background:#10B981;display:flex;align-items:center;justify-content:center;animation:depCircle 0.4s ease-out forwards;';
-      depCircle.innerHTML = '<svg width="40" height="40" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-      const depTitle = document.createElement('p');
-      depTitle.textContent = t('potDetail.paymentSuccess').replace(/🎉\s*/g, '');
-      depTitle.style.cssText = 'color:#fff;font-size:22px;font-weight:700;letter-spacing:-0.5px;margin:0;';
-      const depSub = document.createElement('p');
-      depSub.textContent = t('potDetail.paymentSuccessDesc');
-      depSub.style.cssText = 'color:rgba(255,255,255,0.5);font-size:14px;margin:0;text-align:center;padding:0 24px;';
-      depOverlay.appendChild(depCircle);
-      depOverlay.appendChild(depTitle);
-      depOverlay.appendChild(depSub);
-      document.body.appendChild(depOverlay);
-      setTimeout(() => {
+      depOverlay.style.cssText = 'position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;padding:24px;animation:depFadeIn 0.3s ease-out forwards;';
+
+      const closeDepOverlay = () => {
         depOverlay.style.animation = 'depFadeOut 0.3s ease-out forwards';
         setTimeout(() => depOverlay.remove(), 300);
-      }, 2500);
+      };
+      depOverlay.onclick = closeDepOverlay;
+
+      const depCard = document.createElement('div');
+      depCard.style.cssText = 'background:hsl(var(--card));border-radius:20px;padding:36px 28px 32px;max-width:360px;width:100%;display:flex;flex-direction:column;align-items:center;gap:20px;box-shadow:0 24px 64px rgba(0,0,0,0.35);position:relative;';
+      depCard.onclick = (e) => e.stopPropagation();
+
+      const depClose = document.createElement('button');
+      depClose.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      depClose.style.cssText = 'position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:50%;border:none;background:hsl(var(--muted));color:hsl(var(--muted-foreground));cursor:pointer;display:flex;align-items:center;justify-content:center;';
+      depClose.onclick = closeDepOverlay;
+
+      const depCircle = document.createElement('div');
+      depCircle.style.cssText = 'width:72px;height:72px;border-radius:50%;background:#10B981;display:flex;align-items:center;justify-content:center;animation:depCircle 0.4s ease-out forwards;';
+      depCircle.innerHTML = '<svg width="36" height="36" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+      const depTitle = document.createElement('p');
+      depTitle.textContent = t('potDetail.paymentSuccess').replace(/🎉\s*/g, '');
+      depTitle.style.cssText = 'color:hsl(var(--foreground));font-size:20px;font-weight:700;letter-spacing:-0.3px;margin:0;text-align:center;';
+
+      const depSub = document.createElement('p');
+      depSub.textContent = t('potDetail.paymentSuccessDesc');
+      depSub.style.cssText = 'color:hsl(var(--muted-foreground));font-size:14px;margin:0;text-align:center;';
+
+      depCard.appendChild(depClose);
+      depCard.appendChild(depCircle);
+      depCard.appendChild(depTitle);
+      depCard.appendChild(depSub);
+      depOverlay.appendChild(depCard);
+      document.body.appendChild(depOverlay);
       // Multiple staggered refetches to catch webhook processing
       refetch();
       setTimeout(() => refetch(), 1500);
