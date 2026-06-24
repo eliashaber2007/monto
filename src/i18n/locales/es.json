@@ -318,7 +318,9 @@
     "payoutFee": "Incluye {{fee}} de tarifa de pago Stripe",
     "amountReceived": "Recibirás: {{amount}}",
     "totalDeducted": "Tomado del bote: {{amount}}",
-    "maxCapMessage": "El máximo que puedes retirar es {{amount}} después de la comisión de pago de {{fee}}, lo que vaciará el bote."
+    "maxCapMessage": "El máximo que puedes retirar es {{amount}} después de la comisión de pago de {{fee}}, lo que vaciará el bote.",
+    "fundsArriveIn": "Los fondos llegan en 1–3 días hábiles",
+    "requestSentDesc": "El líder del bote deberá aprobar tu solicitud"
   },
   "profile": {
     "myProfile": "Mi perfil",

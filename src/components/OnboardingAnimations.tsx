@@ -101,6 +101,35 @@ export function ProgressRingAnimation() {
   );
 }
 
+// Raw SVG string exported so it can be injected into imperative DOM overlays.
+// Wrap with scaleX(-1) to show Monto-wallet (left) → bank-building (right).
+export const bankConnectSvgHtml = `<svg width="140" height="80" viewBox="0 0 140 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g>
+    <path d="M15 30 L35 15 L55 30 Z" fill="hsl(221 83% 53% / 0.15)" stroke="hsl(221 83% 53%)" stroke-width="1.5"/>
+    <rect x="18" y="30" width="34" height="25" fill="hsl(221 83% 53% / 0.08)" stroke="hsl(221 83% 53%)" stroke-width="1.5"/>
+    <line x1="25" y1="32" x2="25" y2="53" stroke="hsl(221 83% 53% / 0.5)" stroke-width="2"/>
+    <line x1="35" y1="32" x2="35" y2="53" stroke="hsl(221 83% 53% / 0.5)" stroke-width="2"/>
+    <line x1="45" y1="32" x2="45" y2="53" stroke="hsl(221 83% 53% / 0.5)" stroke-width="2"/>
+    <rect x="15" y="55" width="40" height="4" rx="1" fill="hsl(221 83% 53% / 0.2)" stroke="hsl(221 83% 53%)" stroke-width="1"/>
+  </g>
+  <line x1="58" y1="42" x2="82" y2="42" stroke="hsl(252 96% 67% / 0.3)" stroke-width="1.5" stroke-dasharray="3 3" class="onboarding-connect-line"/>
+  <circle cx="63" cy="42" r="1.5" fill="hsl(221 83% 53%)" class="onboarding-pulse-dot"/>
+  <circle cx="70" cy="42" r="1.5" fill="hsl(252 96% 67%)" class="onboarding-pulse-dot" style="animation-delay:0.3s"/>
+  <circle cx="77" cy="42" r="1.5" fill="hsl(221 83% 53%)" class="onboarding-pulse-dot" style="animation-delay:0.6s"/>
+  <g>
+    <rect x="85" y="22" width="30" height="45" rx="5" fill="hsl(252 96% 67% / 0.08)" stroke="hsl(252 96% 67%)" stroke-width="1.5"/>
+    <rect x="89" y="28" width="22" height="30" rx="2" fill="hsl(252 96% 67% / 0.04)"/>
+    <rect x="93" y="36" width="14" height="10" rx="2" fill="hsl(252 96% 67% / 0.15)" stroke="hsl(252 96% 67% / 0.5)" stroke-width="1"/>
+    <circle cx="104" cy="41" r="2" fill="hsl(252 96% 67% / 0.4)"/>
+    <rect x="95" y="24" width="10" height="2.5" rx="1.25" fill="hsl(252 96% 67% / 0.15)"/>
+  </g>
+  <g class="onboarding-lock" style="transform-origin:70px 62px">
+    <rect x="64" y="60" width="12" height="9" rx="2" fill="hsl(142 71% 45%)"/>
+    <path d="M66.5 60 L66.5 57 Q66.5 54 70 54 Q73.5 54 73.5 57 L73.5 60" stroke="hsl(142 71% 45%)" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <circle cx="70" cy="64" r="1.5" fill="white"/>
+  </g>
+</svg>`;
+
 export function BankConnectAnimation() {
   return (
     <div className="flex justify-center mb-4">

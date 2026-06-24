@@ -318,7 +318,9 @@
     "payoutFee": "Inclut {{fee}} de frais de virement Stripe",
     "amountReceived": "Vous recevrez : {{amount}}",
     "totalDeducted": "Prélevé de la cagnotte : {{amount}}",
-    "maxCapMessage": "Le maximum que vous pouvez retirer est {{amount}} après les frais de virement de {{fee}}, ce qui videra la cagnotte."
+    "maxCapMessage": "Le maximum que vous pouvez retirer est {{amount}} après les frais de virement de {{fee}}, ce qui videra la cagnotte.",
+    "fundsArriveIn": "Les fonds arrivent sous 1–3 jours ouvrés",
+    "requestSentDesc": "Le leader de la cagnotte devra approuver votre demande"
   },
   "profile": {
     "myProfile": "Mon profil",

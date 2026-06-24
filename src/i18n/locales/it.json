@@ -318,7 +318,9 @@
     "payoutFee": "Include {{fee}} di commissioni di bonifico Stripe",
     "amountReceived": "Riceverai: {{amount}}",
     "totalDeducted": "Prelevato dalla raccolta: {{amount}}",
-    "maxCapMessage": "Il massimo che puoi prelevare è {{amount}} dopo le commissioni di bonifico di {{fee}}, il che svuoterà la raccolta."
+    "maxCapMessage": "Il massimo che puoi prelevare è {{amount}} dopo le commissioni di bonifico di {{fee}}, il che svuoterà la raccolta.",
+    "fundsArriveIn": "I fondi arrivano entro 1–3 giorni lavorativi",
+    "requestSentDesc": "Il leader della raccolta dovrà approvare la tua richiesta"
   },
   "profile": {
     "myProfile": "Il mio profilo",

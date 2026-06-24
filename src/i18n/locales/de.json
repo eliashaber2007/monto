@@ -317,7 +317,9 @@
     "payoutFee": "Inkl. {{fee}} Stripe-Auszahlungsgebühr",
     "amountReceived": "Du erhältst: {{amount}}",
     "totalDeducted": "Vom Topf abgezogen: {{amount}}",
-    "maxCapMessage": "Der maximale Auszahlungsbetrag beträgt {{amount}} nach der Auszahlungsgebühr von {{fee}}, wodurch der Topf geleert wird."
+    "maxCapMessage": "Der maximale Auszahlungsbetrag beträgt {{amount}} nach der Auszahlungsgebühr von {{fee}}, wodurch der Topf geleert wird.",
+    "fundsArriveIn": "Gutschrift in 1–3 Werktagen",
+    "requestSentDesc": "Der Leader der Kasse muss Ihre Anfrage genehmigen"
   },
   "profile": {
     "myProfile": "Mein Profil",
