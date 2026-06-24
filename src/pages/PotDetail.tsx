@@ -415,6 +415,7 @@ export default function PotDetail() {
       await supabase.from('withdrawals').update({ status: 'approved', processed_at: new Date().toISOString() }).eq('id', withdrawal.id);
 
       playWithdrawalSound();
+      setShowWithdrawal(false);
       const amountHtml = `<p style="color:#10B981;font-size:28px;font-weight:800;margin:0;text-align:center;">${formatCurrency(withdrawal.amount, data?.pot.currency ?? 'EUR')}</p>`;
       const flowHtml = `<div style="display:flex;justify-content:center;">${bankConnectSvgHtml}</div>`;
       showSuccessOverlay({

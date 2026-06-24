@@ -102,23 +102,31 @@ export function ProgressRingAnimation() {
 }
 
 // Raw SVG string exported so it can be injected into imperative DOM overlays.
-// Shows Monto logo (left) → animated dots → bank building (right). No flip needed.
-export const bankConnectSvgHtml = `<svg width="200" height="80" viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Monto logo on the left -->
-  <image href="/monto_logo.svg" x="5" y="15" width="50" height="50"/>
+// Monto logo inlined directly (no external file load), bank building on right, wide gap.
+export const bankConnectSvgHtml = `<svg width="210" height="90" viewBox="0 0 210 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="monto-logo-grad" x1="5" y1="20" x2="55" y2="70" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0A0C18"/>
+      <stop offset="55%" stop-color="#0D0F1C"/>
+      <stop offset="100%" stop-color="#2563EB"/>
+    </linearGradient>
+  </defs>
+  <!-- Monto logo: inlined from monto_logo.svg (rounded rect + bold M) -->
+  <rect x="5" y="20" width="50" height="50" rx="11" fill="url(#monto-logo-grad)"/>
+  <text x="30" y="57" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="30" font-weight="700" fill="white" text-anchor="middle">M</text>
   <!-- Wide connecting line with animated dots -->
-  <line x1="62" y1="40" x2="138" y2="40" stroke="hsl(252 96% 67% / 0.35)" stroke-width="1.5" stroke-dasharray="4 4" class="onboarding-connect-line"/>
-  <circle cx="80" cy="40" r="2" fill="hsl(221 83% 53%)" class="onboarding-pulse-dot"/>
-  <circle cx="100" cy="40" r="2" fill="hsl(252 96% 67%)" class="onboarding-pulse-dot" style="animation-delay:0.35s"/>
-  <circle cx="120" cy="40" r="2" fill="hsl(221 83% 53%)" class="onboarding-pulse-dot" style="animation-delay:0.7s"/>
+  <line x1="60" y1="45" x2="150" y2="45" stroke="hsl(252 96% 67% / 0.35)" stroke-width="1.5" stroke-dasharray="4 4" class="onboarding-connect-line"/>
+  <circle cx="80" cy="45" r="2" fill="hsl(221 83% 53%)" class="onboarding-pulse-dot"/>
+  <circle cx="105" cy="45" r="2" fill="hsl(252 96% 67%)" class="onboarding-pulse-dot" style="animation-delay:0.35s"/>
+  <circle cx="130" cy="45" r="2" fill="hsl(221 83% 53%)" class="onboarding-pulse-dot" style="animation-delay:0.7s"/>
   <!-- Bank building on the right -->
   <g>
-    <path d="M143 42 L163 27 L183 42 Z" fill="hsl(221 83% 53% / 0.15)" stroke="hsl(221 83% 53%)" stroke-width="1.5"/>
-    <rect x="146" y="42" width="34" height="22" fill="hsl(221 83% 53% / 0.08)" stroke="hsl(221 83% 53%)" stroke-width="1.5"/>
-    <line x1="153" y1="44" x2="153" y2="62" stroke="hsl(221 83% 53% / 0.5)" stroke-width="2"/>
-    <line x1="163" y1="44" x2="163" y2="62" stroke="hsl(221 83% 53% / 0.5)" stroke-width="2"/>
-    <line x1="173" y1="44" x2="173" y2="62" stroke="hsl(221 83% 53% / 0.5)" stroke-width="2"/>
-    <rect x="143" y="64" width="40" height="4" rx="1" fill="hsl(221 83% 53% / 0.2)" stroke="hsl(221 83% 53%)" stroke-width="1"/>
+    <path d="M153 47 L173 32 L193 47 Z" fill="hsl(221 83% 53% / 0.15)" stroke="hsl(221 83% 53%)" stroke-width="1.5"/>
+    <rect x="156" y="47" width="34" height="22" fill="hsl(221 83% 53% / 0.08)" stroke="hsl(221 83% 53%)" stroke-width="1.5"/>
+    <line x1="163" y1="49" x2="163" y2="67" stroke="hsl(221 83% 53% / 0.5)" stroke-width="2"/>
+    <line x1="173" y1="49" x2="173" y2="67" stroke="hsl(221 83% 53% / 0.5)" stroke-width="2"/>
+    <line x1="183" y1="49" x2="183" y2="67" stroke="hsl(221 83% 53% / 0.5)" stroke-width="2"/>
+    <rect x="153" y="69" width="40" height="4" rx="1" fill="hsl(221 83% 53% / 0.2)" stroke="hsl(221 83% 53%)" stroke-width="1"/>
   </g>
 </svg>`;
 

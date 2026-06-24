@@ -42,7 +42,6 @@ export function showSuccessOverlay({ title, subtitle, extraHtml, onClose }: Succ
       onClose?.();
     }, 300);
   };
-  overlay.addEventListener('click', close);
 
   // Solid card — uses CSS variables so it respects light/dark theme
   const card = document.createElement('div');
@@ -53,9 +52,13 @@ export function showSuccessOverlay({ title, subtitle, extraHtml, onClose }: Succ
     'display:flex;flex-direction:column;align-items:center;gap:16px;',
     'box-shadow:0 24px 64px rgba(0,0,0,0.35);position:relative;',
   ].join('');
-  card.addEventListener('click', (e) => e.stopPropagation());
 
-  // X close button — type=button prevents any accidental form submit; addEventListener is more reliable than onclick
+  // Backdrop close: only fire when the click lands OUTSIDE the card
+  overlay.addEventListener('click', (e) => {
+    if (!card.contains(e.target as Node)) close();
+  });
+
+  // X close button — has its own dedicated listener; no stopPropagation needed on card
   const closeBtn = document.createElement('button');
   closeBtn.type = 'button';
   closeBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -64,9 +67,9 @@ export function showSuccessOverlay({ title, subtitle, extraHtml, onClose }: Succ
     'width:32px;height:32px;border-radius:50%;border:none;',
     'background:hsl(var(--muted));color:hsl(var(--muted-foreground));',
     'cursor:pointer;display:flex;align-items:center;justify-content:center;',
-    'pointer-events:all;z-index:1;',
+    'z-index:1;',
   ].join('');
-  closeBtn.addEventListener('click', (e) => { e.stopPropagation(); close(); });
+  closeBtn.addEventListener('click', () => close());
 
   // Green checkmark circle
   const check = document.createElement('div');
