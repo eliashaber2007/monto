@@ -1,3 +1,4 @@
+import { memo, useMemo } from 'react';
 import { CreditCard, Building2, Wallet } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -33,22 +34,22 @@ interface RowProps {
   onSelect: () => void;
 }
 
-function Row({ method, icon, name, speedLabel, speedTone, amount, currency, selected, onSelect }: RowProps) {
+const Row = memo(function Row({ method, icon, name, speedLabel, speedTone, amount, currency, selected, onSelect }: RowProps) {
   const { t } = useTranslation();
   const fmt = (v: number) =>
     new Intl.NumberFormat('en-IE', { style: 'currency', currency }).format(v);
-  const fee = calcFee(amount, method);
-  const total = parseFloat((amount + fee).toFixed(2));
+  const fee = useMemo(() => calcFee(amount, method), [amount, method]);
+  const total = useMemo(() => parseFloat((amount + fee).toFixed(2)), [amount, fee]);
 
   return (
     <button
       type="button"
       onClick={onSelect}
-      className="w-full flex items-center gap-3 rounded-xl p-3.5 text-left transition-all"
+      className="w-full flex items-center gap-3 rounded-xl p-3.5 text-left transition-colors"
       style={{
         border: selected
           ? '1.5px solid #1D4ED8'
-          : '1px solid rgba(127,127,127,0.18)',
+          : '1.5px solid rgba(127,127,127,0.18)',
         backgroundColor: selected ? 'rgba(29,78,216,0.08)' : 'transparent',
       }}
     >
@@ -100,7 +101,7 @@ function Row({ method, icon, name, speedLabel, speedTone, amount, currency, sele
       </span>
     </button>
   );
-}
+});
 
 export default function PaymentMethodList({
   amount,

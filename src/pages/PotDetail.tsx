@@ -237,13 +237,9 @@ export default function PotDetail() {
     if (payment === 'success') {
       toast({ title: t('potDetail.paymentSuccess'), description: t('potDetail.paymentSuccessDesc') });
       playDepositSound();
-      const end = Date.now() + 3000;
       const colors = ['#3B82F6', '#8B5CF6', '#06B6D4', '#ffffff'];
-      const burst = () => {
-        confetti({ particleCount: 60, spread: 80, origin: { y: 0 }, colors, startVelocity: 45 });
-        if (Date.now() < end) requestAnimationFrame(burst);
-      };
-      burst();
+      confetti({ particleCount: 120, spread: 90, origin: { y: 0 }, colors, startVelocity: 45 });
+      setTimeout(() => confetti({ particleCount: 80, spread: 70, origin: { y: 0 }, colors, startVelocity: 35 }), 400);
       // Multiple staggered refetches to catch webhook processing
       refetch();
       setTimeout(() => refetch(), 1500);
@@ -426,7 +422,7 @@ export default function PotDetail() {
         document.head.appendChild(s);
       }
       const overlay = document.createElement('div');
-      overlay.style.cssText = 'position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,0.85);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;backdrop-filter:blur(8px);animation:wdFadeIn 0.3s ease-out forwards;';
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,0.6);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;animation:wdFadeIn 0.3s ease-out forwards;';
       const circle = document.createElement('div');
       circle.style.cssText = 'width:80px;height:80px;border-radius:50%;background:#10B981;display:flex;align-items:center;justify-content:center;animation:wdCircle 0.4s ease-out forwards;';
       circle.innerHTML = '<svg width="40" height="40" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';

@@ -114,7 +114,7 @@ export default function AddFundsModal({
                 <button
                   key={a}
                   onClick={() => { setSelected(a); setCustom(''); }}
-                  className={`h-10 rounded-xl text-sm font-semibold border transition-all ${
+                  className={`h-10 rounded-xl text-sm font-semibold border transition-colors ${
                     selected === a
                       ? 'bg-primary text-primary-foreground border-primary'
                       : 'bg-secondary text-foreground border-border hover:border-primary/40'
