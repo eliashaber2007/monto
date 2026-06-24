@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-import confetti from 'canvas-confetti';
 import { playDepositSound, playWithdrawalSound } from '@/lib/sounds';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
@@ -235,11 +234,32 @@ export default function PotDetail() {
   useEffect(() => {
     const payment = searchParams.get('payment');
     if (payment === 'success') {
-      toast({ title: t('potDetail.paymentSuccess'), description: t('potDetail.paymentSuccessDesc') });
       playDepositSound();
-      const colors = ['#3B82F6', '#8B5CF6', '#06B6D4', '#ffffff'];
-      confetti({ particleCount: 120, spread: 90, origin: { y: 0 }, colors, startVelocity: 45 });
-      setTimeout(() => confetti({ particleCount: 80, spread: 70, origin: { y: 0 }, colors, startVelocity: 35 }), 400);
+      if (!document.getElementById('dep-overlay-kf')) {
+        const s = document.createElement('style');
+        s.id = 'dep-overlay-kf';
+        s.textContent = '@keyframes depFadeIn{from{opacity:0}to{opacity:1}}@keyframes depFadeOut{from{opacity:1}to{opacity:0}}@keyframes depCircle{from{transform:scale(0)}to{transform:scale(1)}}';
+        document.head.appendChild(s);
+      }
+      const depOverlay = document.createElement('div');
+      depOverlay.style.cssText = 'position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,0.6);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;animation:depFadeIn 0.3s ease-out forwards;';
+      const depCircle = document.createElement('div');
+      depCircle.style.cssText = 'width:80px;height:80px;border-radius:50%;background:#10B981;display:flex;align-items:center;justify-content:center;animation:depCircle 0.4s ease-out forwards;';
+      depCircle.innerHTML = '<svg width="40" height="40" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      const depTitle = document.createElement('p');
+      depTitle.textContent = t('potDetail.paymentSuccess').replace(/🎉\s*/g, '');
+      depTitle.style.cssText = 'color:#fff;font-size:22px;font-weight:700;letter-spacing:-0.5px;margin:0;';
+      const depSub = document.createElement('p');
+      depSub.textContent = t('potDetail.paymentSuccessDesc');
+      depSub.style.cssText = 'color:rgba(255,255,255,0.5);font-size:14px;margin:0;text-align:center;padding:0 24px;';
+      depOverlay.appendChild(depCircle);
+      depOverlay.appendChild(depTitle);
+      depOverlay.appendChild(depSub);
+      document.body.appendChild(depOverlay);
+      setTimeout(() => {
+        depOverlay.style.animation = 'depFadeOut 0.3s ease-out forwards';
+        setTimeout(() => depOverlay.remove(), 300);
+      }, 2500);
       // Multiple staggered refetches to catch webhook processing
       refetch();
       setTimeout(() => refetch(), 1500);

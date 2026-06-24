@@ -278,6 +278,7 @@
     "revolutFee": "Includes {{fee}} Revolut Pay fee",
     "sepaFee": "Includes {{fee}} bank transfer fee",
     "totalCharged": "You'll be charged: {{total}}",
+    "confirmAdd": "Add {{amount}}",
     "payWithStripe": "Pay with Stripe",
     "redirecting": "Redirecting…",
     "restricted": "Restricted",

@@ -278,6 +278,7 @@
     "revolutFee": "Include {{fee}} di commissioni Revolut Pay",
     "sepaFee": "Include {{fee}} di commissioni di bonifico",
     "totalCharged": "Ti verrà addebitato: {{total}}",
+    "confirmAdd": "Aggiungi {{amount}}",
     "payWithStripe": "Paga con Stripe",
     "redirecting": "Reindirizzamento…",
     "restricted": "Limitato",

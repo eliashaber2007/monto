@@ -5,12 +5,8 @@ import { useTranslation } from 'react-i18next';
 export type PaymentMethod = 'card' | 'revolut_pay' | 'sepa';
 
 export function calcFee(amount: number, method: PaymentMethod) {
-  if (method === 'sepa') {
-    return parseFloat(((amount * 0.005) + 0.35).toFixed(2));
-  }
-  if (method === 'revolut_pay') {
-    return parseFloat(((amount * 0.012) + 0.15).toFixed(2));
-  }
+  if (method === 'sepa') return parseFloat(((amount * 0.005) + 0.35).toFixed(2));
+  if (method === 'revolut_pay') return parseFloat(((amount * 0.012) + 0.15).toFixed(2));
   return parseFloat(((amount * 0.02) + 0.25).toFixed(2));
 }
 
@@ -45,33 +41,20 @@ const Row = memo(function Row({ method, icon, name, speedLabel, speedTone, amoun
     <button
       type="button"
       onClick={onSelect}
-      className="w-full flex items-center gap-3 rounded-xl p-3.5 text-left transition-colors"
-      style={{
-        border: selected
-          ? '1.5px solid #1D4ED8'
-          : '1.5px solid rgba(127,127,127,0.18)',
-        backgroundColor: selected ? 'rgba(29,78,216,0.08)' : 'transparent',
-      }}
+      className={`w-full flex items-center gap-3 rounded-xl p-3.5 text-left border-2 transition-colors ${
+        selected
+          ? 'border-primary bg-primary/10'
+          : 'border-border/40 bg-transparent hover:border-border'
+      }`}
     >
-      {/* Radio */}
-      <span
-        className="flex-shrink-0 inline-flex items-center justify-center rounded-full"
-        style={{
-          width: 18,
-          height: 18,
-          border: selected ? '1.5px solid #1D4ED8' : '1.5px solid rgba(127,127,127,0.5)',
-          backgroundColor: 'transparent',
-        }}
-      >
-        {selected && (
-          <span
-            className="rounded-full"
-            style={{ width: 10, height: 10, backgroundColor: '#1D4ED8' }}
-          />
-        )}
+      {/* Radio indicator — constant size, only color changes */}
+      <span className={`flex-shrink-0 w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center transition-colors ${
+        selected ? 'border-primary' : 'border-muted-foreground/40'
+      }`}>
+        {selected && <span className="w-2.5 h-2.5 rounded-full bg-primary" />}
       </span>
 
-      {/* Icon + name + amounts */}
+      {/* Icon + name + fee breakdown */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
           <span className="text-foreground">{icon}</span>
@@ -89,14 +72,11 @@ const Row = memo(function Row({ method, icon, name, speedLabel, speedTone, amoun
       </div>
 
       {/* Speed pill */}
-      <span
-        className="flex-shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full"
-        style={{
-          backgroundColor:
-            speedTone === 'fast' ? 'rgba(34,197,94,0.15)' : 'rgba(127,127,127,0.18)',
-          color: speedTone === 'fast' ? 'rgb(34,197,94)' : 'hsl(var(--muted-foreground))',
-        }}
-      >
+      <span className={`flex-shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+        speedTone === 'fast'
+          ? 'bg-success/15 text-success'
+          : 'bg-muted text-muted-foreground'
+      }`}>
         {speedLabel}
       </span>
     </button>
