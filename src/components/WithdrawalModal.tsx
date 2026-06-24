@@ -158,18 +158,22 @@ export default function WithdrawalModal({
           throw new Error(payoutResult.error || 'Payout failed');
         }
 
+        // Close the modal immediately so it's gone before the overlay paints
+        handleClose(false);
         const amountHtml = `<p style="color:#10B981;font-size:28px;font-weight:800;margin:0;text-align:center;">${formatCurrency(numAmount)}</p>`;
-        const flowHtml = `<div style="transform:scaleX(-1);display:flex;justify-content:center;">${bankConnectSvgHtml}</div>`;
-        showSuccessOverlay({
-          title: t('withdrawalModal.withdrawalApproved').replace(/[✅!]/g, '').trim(),
-          subtitle: t('withdrawalModal.fundsArriveIn'),
-          extraHtml: amountHtml + flowHtml,
-          onClose: () => {
-            queryClient.invalidateQueries({ queryKey: ['pot', potId] });
-            queryClient.invalidateQueries({ queryKey: ['pots'] });
-            handleClose(false);
-          },
-        });
+        const flowHtml = `<div style="display:flex;justify-content:center;">${bankConnectSvgHtml}</div>`;
+        // Double rAF: let React unmount the Dialog before appending the overlay
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          showSuccessOverlay({
+            title: t('withdrawalModal.withdrawalApproved').replace(/[✅!]/g, '').trim(),
+            subtitle: t('withdrawalModal.fundsArriveIn'),
+            extraHtml: amountHtml + flowHtml,
+            onClose: () => {
+              queryClient.invalidateQueries({ queryKey: ['pot', potId] });
+              queryClient.invalidateQueries({ queryKey: ['pots'] });
+            },
+          });
+        }));
       } else {
         const wRes = await fetch(
           `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-withdrawal`,
@@ -198,15 +202,17 @@ export default function WithdrawalModal({
         } catch (emailErr) {
           // Email notification failed silently
         }
-        showSuccessOverlay({
-          title: t('withdrawalModal.requestSentApproval').replace(/\s*—.*/, '').trim(),
-          subtitle: t('withdrawalModal.requestSentDesc'),
-          onClose: () => {
-            queryClient.invalidateQueries({ queryKey: ['pot', potId] });
-            queryClient.invalidateQueries({ queryKey: ['pots'] });
-            handleClose(false);
-          },
-        });
+        handleClose(false);
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          showSuccessOverlay({
+            title: t('withdrawalModal.requestSentApproval').replace(/\s*—.*/, '').trim(),
+            subtitle: t('withdrawalModal.requestSentDesc'),
+            onClose: () => {
+              queryClient.invalidateQueries({ queryKey: ['pot', potId] });
+              queryClient.invalidateQueries({ queryKey: ['pots'] });
+            },
+          });
+        }));
       }
     } catch (err: any) {
       toast({ title: t('common.error'), description: err.message, variant: 'destructive' });

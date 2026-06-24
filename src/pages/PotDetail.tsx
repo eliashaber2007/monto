@@ -416,7 +416,7 @@ export default function PotDetail() {
 
       playWithdrawalSound();
       const amountHtml = `<p style="color:#10B981;font-size:28px;font-weight:800;margin:0;text-align:center;">${formatCurrency(withdrawal.amount, data?.pot.currency ?? 'EUR')}</p>`;
-      const flowHtml = `<div style="transform:scaleX(-1);display:flex;justify-content:center;">${bankConnectSvgHtml}</div>`;
+      const flowHtml = `<div style="display:flex;justify-content:center;">${bankConnectSvgHtml}</div>`;
       showSuccessOverlay({
         title: t('withdrawalModal.withdrawalApproved').replace(/[✅!]/g, '').trim(),
         subtitle: t('withdrawalModal.fundsArriveIn'),
