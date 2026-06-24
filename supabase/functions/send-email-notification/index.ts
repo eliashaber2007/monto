@@ -45,12 +45,13 @@ function formatCurrency(amount: number, currency = 'EUR') {
 }
 
 interface EmailPayload {
-  type: 'member_joined' | 'withdrawal_requested' | 'withdrawal_approved' | 'funds_added' | 'pot_closed' | 'expense_reminder' | 'mention' | 'leader_assigned' | 'leader_removed';
+  type: 'member_joined' | 'withdrawal_requested' | 'withdrawal_approved' | 'withdrawal_rejected' | 'funds_added' | 'pot_closed' | 'expense_reminder' | 'mention' | 'leader_assigned' | 'leader_removed';
   pot_id: string;
   user_id?: string;
   amount?: number;
   currency?: string;
   creator_name?: string;
+  reason?: string;
 }
 
 async function hasPushSubscription(userId: string): Promise<boolean> {
@@ -163,6 +164,43 @@ async function handleNotification(payload: EmailPayload) {
         `Your withdrawal of ${formatCurrency(payload.amount ?? 0, currency)} from ${pot.name} has been approved. Funds will arrive within 1-3 business days.`,
       );
       await sendPush(payload.user_id, pot.name, `Your withdrawal of ${formatCurrency(payload.amount ?? 0, currency)} has been approved ✅`, potUrl);
+      break;
+    }
+
+    case 'withdrawal_rejected': {
+      if (!payload.user_id) break;
+      const reason = payload.reason || '';
+      const rejectedAmount = formatCurrency(payload.amount ?? 0, currency);
+      const rejectionMessage = reason
+        ? `Your withdrawal request of ${rejectedAmount} from "${pot.name}" was declined. Reason: ${reason}`
+        : `Your withdrawal request of ${rejectedAmount} from "${pot.name}" was declined.`;
+
+      // In-app bell notification
+      const { error: notifErr } = await supabaseAdmin.from('notifications').insert({
+        user_id: payload.user_id,
+        pot_id: payload.pot_id,
+        type: 'withdrawal_rejected',
+        message: rejectionMessage,
+        variables: { amount: String(payload.amount ?? 0), pot: pot.name, reason },
+      });
+      if (notifErr) {
+        console.error('Failed to insert withdrawal_rejected notification:', notifErr);
+        throw new Error(`Notification insert failed: ${notifErr.message}`);
+      }
+
+      // Email fallback (only if user has no push subscription)
+      const recipientEmail = await getUserEmail(payload.user_id);
+      if (recipientEmail) {
+        await sendEmailIfNoPush(
+          payload.user_id,
+          recipientEmail,
+          `Your withdrawal request was declined — ${pot.name}`,
+          rejectionMessage,
+        );
+      }
+
+      // Push notification
+      await sendPush(payload.user_id, pot.name, rejectionMessage, potUrl);
       break;
     }
 
